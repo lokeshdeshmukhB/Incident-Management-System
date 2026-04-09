@@ -1,0 +1,12 @@
+{
+  "name": "aims",
+  "version": "1.0.0",
+  "description": "Automated Incident Management System - AI-powered multi-agent incident handling",
+  "private": true,
+  "scripts": {
+    "dev:server": "cd server && npm run dev",
+    "dev:client": "cd client && npm run dev",
+    "install:all": "cd server && npm install && cd ../client && npm install",
+    "seed": "cd server && node seed.js"
+  }
+}
