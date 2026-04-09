@@ -6,7 +6,6 @@ const { processAlert } = require('../engine/incidentPipeline');
 const logger = require('../services/logger');
 const env = require('../config/env');
 
-const processedAlertIds = new Set();
 let isPolling = false;
 
 async function pollAlerts(io) {
@@ -23,34 +22,31 @@ async function pollAlerts(io) {
     const alerts = await parseAlerts(csvPath);
 
     for (const alert of alerts) {
-      if (!alert.alert_id || processedAlertIds.has(alert.alert_id)) continue;
+      if (!alert.alert_id) continue;
 
-      const existing = await AlertModel.findByAlertId(alert.alert_id).catch(() => null);
-      if (existing?.processed) {
-        processedAlertIds.add(alert.alert_id);
-        continue;
-      }
+      const existing = await AlertModel.findByAlertId(alert.alert_id);
+      if (existing?.processed) continue;
 
-      processedAlertIds.add(alert.alert_id);
       logger.info(`[AlertJob] Processing new alert: ${alert.alert_id} (${alert.alert_type})`);
 
-      if (!existing) {
-        await AlertModel.create({
-          alert_id: alert.alert_id,
-          alert_type: alert.alert_type,
-          severity: alert.severity,
-          service: alert.service,
-          host: alert.host,
-          metric_value: alert.metric_value,
-          threshold: alert.threshold,
-          timestamp: alert.timestamp,
-          processed: false,
-        }).catch(() => {});
-      }
-
-      processAlert(alert, io).catch((err) => {
-        logger.error(`[AlertJob] Pipeline error for ${alert.alert_id}: ${err.message}`);
+      await AlertModel.upsertByAlertId({
+        alert_id: alert.alert_id,
+        alert_type: alert.alert_type,
+        severity: alert.severity,
+        service: alert.service,
+        host: alert.host,
+        metric_value: alert.metric_value,
+        threshold: alert.threshold,
+        timestamp: alert.timestamp,
+        processed: false,
       });
+
+      try {
+        // Process sequentially to avoid races and FK violations on incident insert.
+        await processAlert(alert, io);
+      } catch (err) {
+        logger.error(`[AlertJob] Pipeline error for ${alert.alert_id}: ${err.message}`);
+      }
     }
   } catch (err) {
     logger.error(`[AlertJob] Polling error: ${err.message}`);

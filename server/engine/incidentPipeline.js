@@ -12,6 +12,7 @@ const AlertModel = require('../models/Alert');
 const IncidentModel = require('../models/Incident');
 const ReportModel = require('../models/Report');
 const logger = require('../services/logger');
+const { setActivity } = require('../services/agentActivityStore');
 
 const activeIncidents = new Map();
 
@@ -28,10 +29,14 @@ async function processAlert(rawAlert, io) {
   try {
     // ── Stage 1: Detection ──
     addTimelineEvent('Alert received, starting detection');
+    setActivity({ agent: 'detection', status: 'running' });
+    if (io) io.emit('agent:activity', { agent: 'detection', status: 'running' });
     const detection = await detectionAgent.run(rawAlert);
 
     if (detection.error || !detection.valid) {
       addTimelineEvent(`Detection failed or invalid alert: ${detection.message || 'invalid schema'}`);
+      setActivity({ agent: 'detection', status: 'error', message: detection.message || 'invalid alert' });
+      if (io) io.emit('agent:activity', { agent: 'detection', status: 'error' });
       return { success: false, reason: 'invalid_alert', detection };
     }
 
@@ -49,6 +54,19 @@ async function processAlert(rawAlert, io) {
     const incidentId = `INC-${uuidv4().split('-')[0].toUpperCase()}`;
     addTimelineEvent(`Incident created: ${incidentId}`);
 
+    // Ensure the alert exists before inserting incident (prevents FK violations on incidents.alert_id)
+    await AlertModel.upsertByAlertId({
+      alert_id: alertId,
+      alert_type: detection.alert_type || rawAlert.alert_type,
+      severity: detection.severity || rawAlert.severity || 'medium',
+      service: detection.service || rawAlert.service,
+      host: rawAlert.host || detection.host || 'unknown',
+      metric_value: rawAlert.metric_value ?? null,
+      threshold: rawAlert.threshold ?? null,
+      timestamp: rawAlert.timestamp ? new Date(rawAlert.timestamp).toISOString() : new Date().toISOString(),
+      processed: false,
+    });
+
     const incident = await IncidentModel.create({
       incident_id: incidentId,
       alert_id: alertId,
@@ -62,15 +80,18 @@ async function processAlert(rawAlert, io) {
       agent_outputs: { detection },
     });
 
-    await AlertModel.markProcessed(alertId).catch(() => {});
+    await AlertModel.markProcessed(alertId);
 
     if (io) {
       io.emit('incident:created', incident);
+      setActivity({ agent: 'detection', incident_id: incidentId, status: 'completed' });
       io.emit('agent:activity', { agent: 'detection', incident_id: incidentId, status: 'completed' });
     }
 
     // ── Stage 3: Decision ──
     addTimelineEvent('Starting decision phase');
+    setActivity({ agent: 'decision', incident_id: incidentId, status: 'running' });
+    if (io) io.emit('agent:activity', { agent: 'decision', incident_id: incidentId, status: 'running' });
     const workflowRules = await workflowEngine.getRules();
     const recentIncidents = await IncidentModel.findRecentByService(detection.service);
 
@@ -90,6 +111,7 @@ async function processAlert(rawAlert, io) {
 
     if (io) {
       io.emit('incident:updated', { incident_id: incidentId, status: 'in_progress', decision });
+      setActivity({ agent: 'decision', incident_id: incidentId, status: 'completed' });
       io.emit('agent:activity', { agent: 'decision', incident_id: incidentId, status: 'completed' });
     }
 
@@ -100,6 +122,8 @@ async function processAlert(rawAlert, io) {
     if (decision.safe_to_execute && !decision.escalate) {
       addTimelineEvent(`Executing action: ${decision.action}`);
 
+      setActivity({ agent: 'action', incident_id: incidentId, status: 'running' });
+      if (io) io.emit('agent:activity', { agent: 'action', incident_id: incidentId, status: 'running' });
       const actionPlan = await actionAgent.run({ decision, alert: detection });
       addTimelineEvent(`Action plan: ${actionPlan.execution_command || decision.action}`);
 
@@ -115,15 +139,25 @@ async function processAlert(rawAlert, io) {
       );
 
       if (io) {
-        io.emit('agent:activity', { agent: 'action', incident_id: incidentId, status: 'completed', result: executionResult });
+        setActivity({ agent: 'action', incident_id: incidentId, status: 'completed', result: executionResult });
+        io.emit('agent:activity', {
+          agent: 'action',
+          incident_id: incidentId,
+          status: 'completed',
+          result: executionResult,
+        });
       }
     } else {
       addTimelineEvent(`Action skipped: ${decision.escalation_reason || 'not safe to execute'}`);
       actionResult = { executed: false, success: false, output_log: 'Action skipped — escalation required' };
+      setActivity({ agent: 'action', incident_id: incidentId, status: 'completed', result: { skipped: true } });
+      if (io) io.emit('agent:activity', { agent: 'action', incident_id: incidentId, status: 'completed' });
     }
 
     // ── Stage 5: Resolution ──
     addTimelineEvent('Starting resolution verification');
+    setActivity({ agent: 'resolution', incident_id: incidentId, status: 'running' });
+    if (io) io.emit('agent:activity', { agent: 'resolution', incident_id: incidentId, status: 'running' });
 
     const healthResult = await runHealthCheck(
       { ...rawAlert, ...detection },
@@ -143,7 +177,13 @@ async function processAlert(rawAlert, io) {
     addTimelineEvent(`Resolution: ${resolution.status} — ${resolution.resolution_summary || ''}`);
 
     if (io) {
-      io.emit('agent:activity', { agent: 'resolution', incident_id: incidentId, status: 'completed', result: resolution });
+      setActivity({ agent: 'resolution', incident_id: incidentId, status: 'completed', result: resolution });
+      io.emit('agent:activity', {
+        agent: 'resolution',
+        incident_id: incidentId,
+        status: 'completed',
+        result: resolution,
+      });
     }
 
     // Handle retry/escalation
@@ -153,6 +193,8 @@ async function processAlert(rawAlert, io) {
 
     if (resolution.status === 'escalated' || decision.escalate) {
       addTimelineEvent('Triggering escalation');
+      setActivity({ agent: 'escalation', incident_id: incidentId, status: 'running' });
+      if (io) io.emit('agent:activity', { agent: 'escalation', incident_id: incidentId, status: 'running' });
       const escalation = await escalationAgent.run({
         incidentId,
         alert: detection,
@@ -174,6 +216,7 @@ async function processAlert(rawAlert, io) {
 
       if (io) {
         io.emit('incident:updated', { incident_id: incidentId, status: 'escalated' });
+        setActivity({ agent: 'escalation', incident_id: incidentId, status: 'completed' });
         io.emit('agent:activity', { agent: 'escalation', incident_id: incidentId, status: 'completed' });
       }
     } else {
@@ -196,6 +239,8 @@ async function processAlert(rawAlert, io) {
     addTimelineEvent('Generating incident report');
     const mttrSec = Math.round((Date.now() - pipelineStart) / 1000);
 
+    setActivity({ agent: 'reporting', incident_id: incidentId, status: 'running' });
+    if (io) io.emit('agent:activity', { agent: 'reporting', incident_id: incidentId, status: 'running' });
     const report = await reportingAgent.run({
       incidentId,
       alert: rawAlert,
@@ -226,6 +271,7 @@ async function processAlert(rawAlert, io) {
     }
 
     if (io) {
+      setActivity({ agent: 'reporting', incident_id: incidentId, status: 'completed' });
       io.emit('agent:activity', { agent: 'reporting', incident_id: incidentId, status: 'completed' });
       io.emit('incident:report_ready', { incident_id: incidentId });
     }
@@ -240,6 +286,8 @@ async function processAlert(rawAlert, io) {
     };
   } catch (err) {
     logger.error(`[Pipeline] Fatal error: ${err.message}`);
+    setActivity({ agent: 'detection', status: 'error', message: err.message });
+    if (io) io.emit('agent:activity', { agent: 'detection', status: 'error' });
     return { success: false, reason: 'pipeline_error', error: err.message };
   }
 }

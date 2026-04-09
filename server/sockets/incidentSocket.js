@@ -1,4 +1,5 @@
 const logger = require('../services/logger');
+const { getSnapshot } = require('../services/agentActivityStore');
 
 function setupIncidentSocket(io) {
   io.on('connection', (socket) => {
@@ -12,6 +13,11 @@ function setupIncidentSocket(io) {
     socket.on('subscribe:agents', () => {
       socket.join('agents');
       logger.debug(`[Socket] ${socket.id} subscribed to agent activity`);
+
+      // Send last-known activity so late subscribers don't appear permanently "idle".
+      for (const activity of getSnapshot()) {
+        socket.emit('agent:activity', activity);
+      }
     });
 
     socket.on('disconnect', () => {

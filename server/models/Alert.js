@@ -9,6 +9,16 @@ const AlertModel = {
     return data;
   },
 
+  async upsertByAlertId(alert) {
+    const { data, error } = await supabase
+      .from(TABLE)
+      .upsert(alert, { onConflict: 'alert_id' })
+      .select()
+      .single();
+    if (error) throw error;
+    return data;
+  },
+
   async findByAlertId(alertId) {
     const { data, error } = await supabase.from(TABLE).select('*').eq('alert_id', alertId).single();
     if (error && error.code !== 'PGRST116') throw error;
