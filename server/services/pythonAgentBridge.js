@@ -4,6 +4,20 @@ const logger = require('./logger');
 
 const REPO_ROOT = path.resolve(__dirname, '..', '..');
 
+const DETECTION_FIELD_ALIASES = [
+  ['isDuplicate', 'is_duplicate'],
+  ['enrichedAt', 'enriched_at'],
+];
+
+function normalizeDetectionOutput(obj) {
+  if (!obj || typeof obj !== 'object' || obj.error) return obj;
+  const o = { ...obj };
+  for (const [camel, snake] of DETECTION_FIELD_ALIASES) {
+    if (o[snake] === undefined && o[camel] !== undefined) o[snake] = o[camel];
+  }
+  return o;
+}
+
 /** Groq sometimes returns camelCase despite JSON schema; pipeline expects snake_case. */
 const DECISION_FIELD_ALIASES = [
   ['safeToExecute', 'safe_to_execute'],
@@ -50,6 +64,7 @@ const RESOLUTION_FIELD_ALIASES = [
   ['retryRecommended', 'retry_recommended'],
   ['escalationRequired', 'escalation_required'],
   ['nextAction', 'next_action'],
+  ['resolutionStatus', 'status'],
 ];
 
 function normalizeResolutionOutput(obj) {
@@ -64,6 +79,38 @@ function normalizeResolutionOutput(obj) {
 function resolvePythonCmd() {
   if (process.env.PYTHON) return process.env.PYTHON;
   return process.platform === 'win32' ? 'python' : 'python3';
+}
+
+/**
+ * Preload Python + LangChain imports once at server start so the first real
+ * agent invocation does not pay full cold-start cost (~tens of seconds on Windows).
+ */
+function warmupPythonAgentBridge() {
+  if (process.env.PYTHON_AGENT_WARMUP === 'false') return;
+  const python = resolvePythonCmd();
+  const env = { ...process.env };
+  const sep = path.delimiter;
+  env.PYTHONPATH = env.PYTHONPATH ? `${REPO_ROOT}${sep}${env.PYTHONPATH}` : REPO_ROOT;
+  const started = Date.now();
+  const result = spawnSync(
+    python,
+    ['-c', 'import incident_management.bridge; import incident_management.agents.detection_agent'],
+    {
+      cwd: REPO_ROOT,
+      encoding: 'utf-8',
+      env,
+      windowsHide: true,
+    }
+  );
+  if (result.error) {
+    logger.warn(`[pythonAgentBridge] Warmup spawn error: ${result.error.message}`);
+    return;
+  }
+  if (result.status !== 0) {
+    logger.warn(`[pythonAgentBridge] Warmup exited ${result.status}: ${(result.stderr || '').slice(0, 300)}`);
+    return;
+  }
+  logger.info(`[pythonAgentBridge] Python agent warmup completed in ${Date.now() - started}ms`);
 }
 
 /**
@@ -107,6 +154,7 @@ function runAgent(agentName, args) {
 
   try {
     const parsed = JSON.parse(out);
+    if (agentName === 'detection') return normalizeDetectionOutput(parsed);
     if (agentName === 'decision') return normalizeDecisionOutput(parsed);
     if (agentName === 'action') return normalizeActionOutput(parsed);
     if (agentName === 'resolution') return normalizeResolutionOutput(parsed);
@@ -117,4 +165,4 @@ function runAgent(agentName, args) {
   }
 }
 
-module.exports = { runAgent };
+module.exports = { runAgent, warmupPythonAgentBridge };

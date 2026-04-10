@@ -1,5 +1,19 @@
 const WorkflowRuleModel = require('../models/WorkflowRule');
+const { parseWorkflows } = require('../services/csvParser');
 const logger = require('../services/logger');
+
+function normalizeWorkflowRow(row) {
+  if (!row || !row.alert_type) return null;
+  return {
+    alert_type: row.alert_type,
+    action: row.action,
+    priority: row.priority ?? 1,
+    max_retries: row.max_retries ?? 2,
+    escalation_after: row.escalation_after ?? 3,
+    dry_run: row.dry_run === true,
+    notify_channel: row.notify_channel || '#ops-alerts',
+  };
+}
 
 class WorkflowEngine {
   constructor() {
@@ -11,7 +25,15 @@ class WorkflowEngine {
     if (this.cachedRules && Date.now() < this.cacheExpiry) {
       return this.cachedRules;
     }
-    this.cachedRules = await WorkflowRuleModel.findAll();
+    let rules = await WorkflowRuleModel.findAll();
+    if (!rules.length) {
+      const csvRows = await parseWorkflows();
+      rules = csvRows.map(normalizeWorkflowRow).filter(Boolean);
+      if (rules.length) {
+        logger.info(`[WorkflowEngine] Loaded ${rules.length} workflow rules from data/workflows.csv (DB empty)`);
+      }
+    }
+    this.cachedRules = rules;
     this.cacheExpiry = Date.now() + 30000;
     return this.cachedRules;
   }

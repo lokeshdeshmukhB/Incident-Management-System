@@ -6,6 +6,7 @@ const env = require('./config/env');
 const { testConnection } = require('./config/db');
 const { setupIncidentSocket } = require('./sockets/incidentSocket');
 const { startAlertPolling } = require('./jobs/alertIngestionJob');
+const { warmupPythonAgentBridge } = require('./services/pythonAgentBridge');
 const logger = require('./services/logger');
 const { writeListeningPort, registerExitCleanup } = require('./utils/devPortFile');
 
@@ -42,6 +43,10 @@ async function start() {
   const dbOk = await testConnection();
   if (!dbOk) {
     logger.warn('Starting without confirmed DB connection. Ensure Supabase tables are created.');
+  }
+
+  if (env.app.nodeEnv === 'development') {
+    warmupPythonAgentBridge();
   }
 
   startAlertPolling(io);

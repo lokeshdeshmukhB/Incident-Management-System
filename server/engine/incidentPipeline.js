@@ -8,6 +8,96 @@ const IncidentModel = require('../models/Incident');
 const ReportModel = require('../models/Report');
 const logger = require('../services/logger');
 const { setActivity } = require('../services/agentActivityStore');
+const env = require('../config/env');
+
+/** LLM action name → workflow rule action in workflows.csv (when they differ). */
+const DEV_ACTION_ALIASES = {
+  cleanup_disk_space: 'cleanup_logs',
+  restart_api_service: 'switch_to_fallback',
+};
+
+function decisionMatchesWorkflowRule(decisionAction, ruleAction) {
+  if (!decisionAction || !ruleAction) return false;
+  if (decisionAction === ruleAction) return true;
+  return DEV_ACTION_ALIASES[decisionAction] === ruleAction;
+}
+
+/**
+ * When the LLM omits fields, align with the matched workflow rule so action_taken and stages stay consistent.
+ */
+function mergeDecisionFromWorkflowRule(decision, matchedRule) {
+  if (!matchedRule?.action) return decision;
+  const base =
+    decision && typeof decision === 'object' ? { ...decision } : {};
+  delete base.error;
+  delete base.message;
+
+  if (base.action == null || base.action === '') {
+    base.action = matchedRule.action;
+  }
+  if (base.priority == null && matchedRule.priority != null) {
+    base.priority = matchedRule.priority;
+  }
+
+  if (matchedRule.action === 'escalate_to_human') {
+    return {
+      ...base,
+      action: 'escalate_to_human',
+      escalate: true,
+      safe_to_execute: false,
+      escalation_reason:
+        base.escalation_reason || 'No automated workflow action; escalate to human.',
+    };
+  }
+
+  if (base.safe_to_execute == null) base.safe_to_execute = false;
+  if (base.escalate == null) base.escalate = false;
+
+  return base;
+}
+
+/**
+ * In development, if the LLM marked an action as unsafe but it matches the
+ * workflow-rule action (which we trust for demo purposes), override safe_to_execute
+ * so the pipeline actually executes the action and can reach "resolved".
+ * Set DEV_AUTO_APPROVE_WORKFLOW_ACTIONS=false in .env to disable.
+ */
+function devApproveIfWorkflowMatch(decision, matchedRule) {
+  if (!env.pipeline.devAutoApproveWorkflowActions) return decision;
+  if (decision.safe_to_execute) return decision;
+  if (!matchedRule || !matchedRule.action) return decision;
+  if (matchedRule.action === 'escalate_to_human') return decision;
+  if (decision.escalate) return decision;
+  if (!decisionMatchesWorkflowRule(decision.action, matchedRule.action)) return decision;
+  logger.info(`[Pipeline][dev] Auto-approving workflow-aligned action: ${decision.action} (rule: ${matchedRule.action})`);
+  return {
+    ...decision,
+    safe_to_execute: true,
+    escalate: false,
+    escalation_reason: undefined,
+  };
+}
+
+function ensureResolutionStatus(resolution, healthResult, executionResult) {
+  if (resolution && resolution.status && !resolution.error) return resolution;
+  const actionOk = Boolean(executionResult?.success);
+  const healthOk = Boolean(healthResult?.health_check_passed);
+  if (actionOk && healthOk) {
+    return {
+      ...resolution,
+      status: 'resolved',
+      resolution_summary:
+        resolution?.resolution_summary || 'Post-remediation health check passed.',
+    };
+  }
+  return {
+    ...resolution,
+    status: 'escalated',
+    resolution_summary:
+      resolution?.resolution_summary ||
+      'Remediation incomplete, action skipped, or health check did not pass.',
+  };
+}
 
 const activeIncidents = new Map();
 
@@ -32,10 +122,14 @@ async function processAlert(rawAlert, io) {
       addTimelineEvent(`Detection failed or invalid alert: ${detection.message || 'invalid schema'}`);
       setActivity({ agent: 'detection', status: 'error', message: detection.message || 'invalid alert' });
       if (io) io.emit('agent:activity', { agent: 'detection', status: 'error' });
+      // Still mark the CSV row processed so it doesn't replay forever
+      if (rawAlert.alert_id) await AlertModel.markProcessed(rawAlert.alert_id).catch(() => {});
       return { success: false, reason: 'invalid_alert', detection };
     }
 
-    const alertId = detection.alert_id || rawAlert.alert_id || `ALT-${Date.now()}`;
+    // Always use the original CSV alert_id as the canonical key so the polling job's
+    // dedup check (findByAlertId + processed flag) works correctly across restarts.
+    const alertId = rawAlert.alert_id || detection.alert_id || `ALT-${Date.now()}`;
     addTimelineEvent(`Alert classified: ${detection.alert_type} (${detection.severity}), confidence: ${detection.confidence}`);
 
     if (detection.is_duplicate) {
@@ -68,7 +162,7 @@ async function processAlert(rawAlert, io) {
       alert_type: detection.alert_type,
       service: detection.service,
       severity: detection.severity,
-      status: 'pending',
+      status: 'in_progress',
       started_at: new Date().toISOString(),
       retry_count: 0,
       escalated: false,
@@ -90,12 +184,19 @@ async function processAlert(rawAlert, io) {
     const workflowRules = await workflowEngine.getRules();
     const recentIncidents = await IncidentModel.findRecentByService(detection.service);
 
-    const decision = runAgent('decision', {
+    let decision = runAgent('decision', {
       alert: detection,
       workflowRules,
       currentRetryCount: 0,
       recentIncidents,
     });
+
+    // Look up the matched rule now (needed for dev approval + resolution)
+    const matchedRule = await workflowEngine.matchRule(detection.alert_type);
+
+    decision = mergeDecisionFromWorkflowRule(decision, matchedRule);
+    // In development, allow the matched workflow action to run so incidents can resolve
+    decision = devApproveIfWorkflowMatch(decision, matchedRule);
 
     addTimelineEvent(`Decision: action=${decision.action}, safe=${decision.safe_to_execute}, priority=${decision.priority}`);
 
@@ -159,15 +260,15 @@ async function processAlert(rawAlert, io) {
       executionResult?.success ?? false
     );
 
-    const matchedRule = await workflowEngine.matchRule(detection.alert_type);
-
-    const resolution = runAgent('resolution', {
+    let resolution = runAgent('resolution', {
       incidentId,
       actionResult: executionResult || actionResult,
       postActionHealth: healthResult,
       retryCount: 0,
       maxRetries: matchedRule.max_retries,
     });
+
+    resolution = ensureResolutionStatus(resolution, healthResult, executionResult);
 
     addTimelineEvent(`Resolution: ${resolution.status} — ${resolution.resolution_summary || ''}`);
 
@@ -216,13 +317,42 @@ async function processAlert(rawAlert, io) {
       }
     } else {
       const mttrSec = Math.round((Date.now() - pipelineStart) / 1000);
+      let escalationHandoff = null;
+      if (decision.action === 'notify_admin') {
+        addTimelineEvent('Escalation agent: operator notification (notify_admin workflow)');
+        setActivity({ agent: 'escalation', incident_id: incidentId, status: 'running' });
+        if (io) io.emit('agent:activity', { agent: 'escalation', incident_id: incidentId, status: 'running' });
+        escalationHandoff = runAgent('escalation', {
+          incidentId,
+          alert: detection,
+          failedActions: [decision.action],
+          retryCount: 0,
+          severity: detection.severity,
+          service: detection.service,
+          reason:
+            resolution.resolution_summary ||
+            'Workflow requires operator notification; automated remediation completed.',
+        });
+        addTimelineEvent(
+          `Escalation handoff: ${escalationHandoff.escalation_priority || 'standard'} via ${(escalationHandoff.notification_channels || []).join(', ') || 'configured channels'}`
+        );
+        if (io) {
+          setActivity({ agent: 'escalation', incident_id: incidentId, status: 'completed' });
+          io.emit('agent:activity', { agent: 'escalation', incident_id: incidentId, status: 'completed' });
+        }
+      }
+
+      const resolvedOutputs = escalationHandoff
+        ? { detection, decision, action: actionResult, resolution, escalation: escalationHandoff }
+        : { detection, decision, action: actionResult, resolution };
+
       await IncidentModel.update(incidentId, {
         status: 'resolved',
         resolved_at: new Date().toISOString(),
         action_taken: decision.action,
         mttd_sec: mttdSec,
         mttr_sec: mttrSec,
-        agent_outputs: { detection, decision, action: actionResult, resolution },
+        agent_outputs: resolvedOutputs,
       });
 
       if (io) {
@@ -276,7 +406,7 @@ async function processAlert(rawAlert, io) {
     return {
       success: true,
       incident_id: incidentId,
-      status: resolution.status === 'escalated' ? 'escalated' : 'resolved',
+      status: resolution.status === 'escalated' || decision.escalate ? 'escalated' : 'resolved',
       duration_ms: Date.now() - pipelineStart,
     };
   } catch (err) {
@@ -321,12 +451,15 @@ async function handleRetry(incidentId, rawAlert, detection, prevDecision, matche
   await IncidentModel.update(incidentId, { retry_count: retryCount });
 
   const workflowRules = await workflowEngine.getRules();
-  const decision = runAgent('decision', {
+  let decision = runAgent('decision', {
     alert: detection,
     workflowRules,
     currentRetryCount: retryCount,
     recentIncidents: [],
   });
+
+  decision = mergeDecisionFromWorkflowRule(decision, matchedRule);
+  decision = devApproveIfWorkflowMatch(decision, matchedRule);
 
   if (decision.escalate) {
     addTimelineEvent('Decision agent recommends escalation on retry');
@@ -339,13 +472,15 @@ async function handleRetry(incidentId, rawAlert, detection, prevDecision, matche
   const executionResult = await executeAction(decision.action, detection.service, actionPlan.execution_command);
   const healthResult = await runHealthCheck({ ...rawAlert, ...detection }, executionResult.success);
 
-  const resolution = runAgent('resolution', {
+  let resolution = runAgent('resolution', {
     incidentId,
     actionResult: executionResult,
     postActionHealth: healthResult,
     retryCount,
     maxRetries: matchedRule.max_retries,
   });
+
+  resolution = ensureResolutionStatus(resolution, healthResult, executionResult);
 
   if (resolution.status === 'retry') {
     return handleRetry(incidentId, rawAlert, detection, decision, matchedRule, retryCount + 1, timeline, io);

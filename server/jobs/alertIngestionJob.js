@@ -8,7 +8,45 @@ const env = require('../config/env');
 
 let isPolling = false;
 
+/** FIFO queue; pipeline runs here so CSV polls are not blocked. */
+const alertQueue = [];
+/**
+ * Alert IDs queued or currently inside processAlert.
+ * Checked FIRST (before any Supabase call) so that a Supabase outage during a
+ * subsequent poll does not cause "fetch failed" errors for alerts already queued.
+ */
+const inFlightAlertIds = new Set();
+let drainRunning = false;
+
+async function drainAlertQueue(io) {
+  if (drainRunning) return;
+  drainRunning = true;
+  logger.debug('[AlertJob] Drain started');
+
+  try {
+    while (alertQueue.length > 0) {
+      const alert = alertQueue.shift();
+      try {
+        logger.info(`[AlertJob] Processing alert: ${alert.alert_id} (${alert.alert_type})`);
+        await processAlert(alert, io);
+      } catch (err) {
+        logger.error(`[AlertJob] Pipeline error for ${alert.alert_id}: ${err.message}`);
+      } finally {
+        inFlightAlertIds.delete(alert.alert_id);
+      }
+    }
+  } finally {
+    drainRunning = false;
+    logger.debug('[AlertJob] Drain finished');
+  }
+}
+
 async function pollAlerts(io) {
+  // If drain has items but isn't running (it finished and more items arrived), restart it.
+  if (alertQueue.length > 0 && !drainRunning) {
+    void drainAlertQueue(io);
+  }
+
   if (isPolling) return;
   isPolling = true;
 
@@ -24,34 +62,51 @@ async function pollAlerts(io) {
     for (const alert of alerts) {
       if (!alert.alert_id) continue;
 
-      const existing = await AlertModel.findByAlertId(alert.alert_id);
+      // ── Check in-flight FIRST (no Supabase call needed) ──
+      if (inFlightAlertIds.has(alert.alert_id)) continue;
+
+      // ── Only query Supabase for alerts not already tracked ──
+      let existing = null;
+      try {
+        existing = await AlertModel.findByAlertId(alert.alert_id);
+      } catch (dbErr) {
+        logger.warn(`[AlertJob] DB check failed for ${alert.alert_id}: ${dbErr.message} — will retry next poll`);
+        continue;
+      }
+
       if (existing?.processed) continue;
 
-      logger.info(`[AlertJob] Processing new alert: ${alert.alert_id} (${alert.alert_type})`);
-
-      await AlertModel.upsertByAlertId({
-        alert_id: alert.alert_id,
-        alert_type: alert.alert_type,
-        severity: alert.severity,
-        service: alert.service,
-        host: alert.host,
-        metric_value: alert.metric_value,
-        threshold: alert.threshold,
-        timestamp: alert.timestamp,
-        processed: false,
-      });
-
+      // ── Register + upsert before queuing ──
       try {
-        // Process sequentially to avoid races and FK violations on incident insert.
-        await processAlert(alert, io);
-      } catch (err) {
-        logger.error(`[AlertJob] Pipeline error for ${alert.alert_id}: ${err.message}`);
+        await AlertModel.upsertByAlertId({
+          alert_id: alert.alert_id,
+          alert_type: alert.alert_type,
+          severity: alert.severity,
+          service: alert.service,
+          host: alert.host,
+          metric_value: alert.metric_value,
+          threshold: alert.threshold,
+          timestamp: alert.timestamp,
+          processed: false,
+        });
+      } catch (dbErr) {
+        logger.warn(`[AlertJob] DB upsert failed for ${alert.alert_id}: ${dbErr.message} — skipping`);
+        continue;
       }
+
+      inFlightAlertIds.add(alert.alert_id);
+      alertQueue.push(alert);
+      logger.info(`[AlertJob] Queued alert: ${alert.alert_id} (${alert.alert_type})`);
     }
   } catch (err) {
     logger.error(`[AlertJob] Polling error: ${err.message}`);
   } finally {
     isPolling = false;
+  }
+
+  // Kick off drain if there are items (safe to call even if already running).
+  if (alertQueue.length > 0) {
+    void drainAlertQueue(io);
   }
 }
 

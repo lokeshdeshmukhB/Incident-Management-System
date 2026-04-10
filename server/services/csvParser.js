@@ -23,6 +23,14 @@ function parseCSV(filePath) {
           else if (!isNaN(v) && v !== '') v = parseFloat(v);
           cleaned[k] = v;
         }
+        // Trailing blank lines become rows with all empty fields → skip (avoids null alert_id on seed).
+        const hasCell = Object.values(cleaned).some((v) => {
+          if (v === true || v === false) return true;
+          if (typeof v === 'number' && !Number.isNaN(v)) return true;
+          if (typeof v === 'string' && v.length > 0) return true;
+          return false;
+        });
+        if (!hasCell) return;
         results.push(cleaned);
       })
       .on('end', () => resolve(results))

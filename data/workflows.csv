@@ -6,3 +6,10 @@ service_down,restart_service,1,2,3,false,#oncall
 repeated_failure,escalate_to_human,0,0,0,false,#oncall
 memory_leak,restart_service,2,2,3,true,#ops-alerts
 network_timeout,retry_connections,2,3,5,false,#ops-alerts
+unusual_traffic,switch_to_fallback,1,2,3,false,#ops-alerts
+disk_iops,scale_up_instances,1,2,3,false,#ops-alerts
+message_lag,retry_connections,1,2,3,false,#ops-alerts
+pod_crashloop,restart_service,1,2,3,false,#oncall
+certificate_expiry,notify_admin,2,1,2,false,#ops-alerts
+auth_rate_limit,retry_connections,1,2,3,false,#auth-team
+payment_declines,switch_to_fallback,1,2,3,false,#payments

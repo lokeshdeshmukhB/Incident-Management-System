@@ -58,4 +58,15 @@ module.exports = {
   polling: {
     alertPollIntervalMs: parseInt(process.env.ALERT_POLL_INTERVAL_MS, 10) || 10000,
   },
+  /** When true (default in development), align decision with workflows.csv / DB rule so demo actions run and incidents can resolve. */
+  pipeline: {
+    devAutoApproveWorkflowActions:
+      process.env.DEV_AUTO_APPROVE_WORKFLOW_ACTIONS !== 'false' &&
+      (process.env.NODE_ENV || 'development') !== 'production',
+  },
+  /** Mock health check timing; in development keeps pipelines snappy. */
+  healthCheck: {
+    delayMsMin: parseInt(process.env.HEALTH_CHECK_DELAY_MS_MIN, 10),
+    delayMsMax: parseInt(process.env.HEALTH_CHECK_DELAY_MS_MAX, 10),
+  },
 };

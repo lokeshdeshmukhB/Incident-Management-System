@@ -16,8 +16,25 @@ async function seed() {
       logger.info(`Inserted ${data.length} workflow rules`);
     }
 
-    const alerts = await parseAlerts();
+    const rawAlerts = await parseAlerts();
+    const alerts = rawAlerts.filter(
+      (a) => a.alert_id != null && String(a.alert_id).trim() !== ''
+    );
+    if (rawAlerts.length > alerts.length) {
+      logger.warn(`Skipped ${rawAlerts.length - alerts.length} alert row(s) missing alert_id`);
+    }
     if (alerts.length > 0) {
+      const alertIds = alerts.map((a) => a.alert_id);
+      let processedById = new Map();
+      if (alertIds.length > 0) {
+        const { data: existingAlerts, error: selErr } = await supabase
+          .from('alerts')
+          .select('alert_id, processed')
+          .in('alert_id', alertIds);
+        if (selErr) logger.warn('Could not read existing alerts for merge: ' + selErr.message);
+        else processedById = new Map((existingAlerts || []).map((r) => [r.alert_id, Boolean(r.processed)]));
+      }
+
       const formatted = alerts.map((a) => ({
         alert_id: a.alert_id,
         alert_type: a.alert_type,
@@ -27,7 +44,8 @@ async function seed() {
         metric_value: a.metric_value,
         threshold: a.threshold,
         timestamp: a.timestamp,
-        processed: false,
+        // Do not wipe processed=true on re-seed — otherwise CSV polling re-runs every row forever.
+        processed: processedById.get(a.alert_id) === true,
       }));
 
       const { data, error } = await supabase.from('alerts').upsert(formatted, { onConflict: 'alert_id' }).select();

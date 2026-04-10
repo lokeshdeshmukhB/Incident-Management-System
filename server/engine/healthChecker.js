@@ -1,4 +1,5 @@
 const logger = require('../services/logger');
+const env = require('../config/env');
 
 const SERVICE_METRICS = {
   high_cpu: { metric: 'cpu_percent', healthyBelow: 70 },
@@ -13,9 +14,14 @@ async function runHealthCheck(alert, actionSuccess) {
   const alertType = alert.alert_type;
   const config = SERVICE_METRICS[alertType] || { metric: 'generic', healthyBelow: 50 };
 
-  await new Promise((resolve) => setTimeout(resolve, 1000 + Math.random() * 2000));
+  const isDev = env.app.nodeEnv === 'development';
+  const minD = Number.isFinite(env.healthCheck.delayMsMin) ? env.healthCheck.delayMsMin : isDev ? 30 : 1000;
+  const maxD = Number.isFinite(env.healthCheck.delayMsMax) ? env.healthCheck.delayMsMax : isDev ? 120 : 3000;
+  const delay = minD + Math.random() * Math.max(0, maxD - minD);
+  await new Promise((resolve) => setTimeout(resolve, delay));
 
-  const passed = actionSuccess && Math.random() > 0.15;
+  // After a successful (simulated) remediation, treat health as recovered; without it, stay failed.
+  const passed = Boolean(actionSuccess);
 
   let currentValue;
   if (passed) {
