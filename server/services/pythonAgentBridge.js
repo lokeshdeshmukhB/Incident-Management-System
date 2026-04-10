@@ -76,6 +76,24 @@ function normalizeResolutionOutput(obj) {
   return o;
 }
 
+const ESCALATION_FIELD_ALIASES = [
+  ['notificationChannels', 'notification_channels'],
+  ['messageTitle', 'message_title'],
+  ['messageBody', 'message_body'],
+  ['escalationPriority', 'escalation_priority'],
+  ['recommendedManualSteps', 'recommended_manual_steps'],
+  ['escalatedAt', 'escalated_at'],
+];
+
+function normalizeEscalationOutput(obj) {
+  if (!obj || typeof obj !== 'object' || obj.error) return obj;
+  const o = { ...obj };
+  for (const [camel, snake] of ESCALATION_FIELD_ALIASES) {
+    if (o[snake] === undefined && o[camel] !== undefined) o[snake] = o[camel];
+  }
+  return o;
+}
+
 function resolvePythonCmd() {
   if (process.env.PYTHON) return process.env.PYTHON;
   return process.platform === 'win32' ? 'python' : 'python3';
@@ -158,6 +176,7 @@ function runAgent(agentName, args) {
     if (agentName === 'decision') return normalizeDecisionOutput(parsed);
     if (agentName === 'action') return normalizeActionOutput(parsed);
     if (agentName === 'resolution') return normalizeResolutionOutput(parsed);
+    if (agentName === 'escalation') return normalizeEscalationOutput(parsed);
     return parsed;
   } catch (e) {
     logger.error(`[pythonAgentBridge] Invalid JSON: ${out.slice(0, 500)}`);

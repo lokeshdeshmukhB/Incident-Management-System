@@ -13,5 +13,8 @@
   "devDependencies": {
     "concurrently": "^9.1.0",
     "wait-on": "^8.0.1"
+  },
+  "dependencies": {
+    "repomix": "^1.13.1"
   }
 }

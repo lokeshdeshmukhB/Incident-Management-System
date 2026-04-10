@@ -7,6 +7,7 @@ const path = require('path');
 // - env stored at repo root `.env`
 let loaded = dotenv.config({ path: path.resolve(__dirname, '../.env') });
 if (loaded.error) loaded = dotenv.config({ path: path.resolve(__dirname, '../../.env') });
+if (loaded.error) loaded = dotenv.config({ path: path.resolve(__dirname, '../.env.example') });
 if (loaded.error) loaded = dotenv.config({ path: path.resolve(__dirname, '../../.env.example') });
 
 const required = [
@@ -32,6 +33,23 @@ if (missing.length > 0) {
   }
 }
 
+function parseServiceEscalationEmails(raw) {
+  if (!raw || typeof raw !== 'string' || !raw.trim()) {
+    return {};
+  }
+  try {
+    const parsed = JSON.parse(raw);
+    if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+      return parsed;
+    }
+    console.warn('[env] SERVICE_ESCALATION_EMAILS_JSON must be a JSON object, using {}');
+    return {};
+  } catch (e) {
+    console.warn(`[env] Failed to parse SERVICE_ESCALATION_EMAILS_JSON: ${e.message}`);
+    return {};
+  }
+}
+
 module.exports = {
   supabase: {
     url: process.env.SUPABASE_URL,
@@ -54,6 +72,22 @@ module.exports = {
   notifications: {
     slackWebhookUrl: process.env.SLACK_WEBHOOK_URL,
     pagerdutyApiKey: process.env.PAGERDUTY_API_KEY,
+  },
+  email: {
+    host: process.env.SMTP_HOST || '',
+    port: (() => {
+      const p = parseInt(process.env.SMTP_PORT || '587', 10);
+      return Number.isNaN(p) ? 587 : p;
+    })(),
+    secure: process.env.SMTP_SECURE === 'true',
+    user: process.env.SMTP_USER || '',
+    // Gmail app passwords are often copied with spaces between groups; SMTP expects 16 chars without spaces.
+    pass: (process.env.SMTP_PASS || '').replace(/\s+/g, ''),
+    escalationEmails: (process.env.ESCALATION_EMAILS || '')
+      .split(',')
+      .map((v) => v.trim())
+      .filter(Boolean),
+    serviceEscalationEmails: parseServiceEscalationEmails(process.env.SERVICE_ESCALATION_EMAILS_JSON),
   },
   polling: {
     alertPollIntervalMs: parseInt(process.env.ALERT_POLL_INTERVAL_MS, 10) || 10000,

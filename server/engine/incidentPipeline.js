@@ -7,6 +7,7 @@ const AlertModel = require('../models/Alert');
 const IncidentModel = require('../models/Incident');
 const ReportModel = require('../models/Report');
 const logger = require('../services/logger');
+const { notifyEscalation } = require('../services/notifier');
 const { setActivity } = require('../services/agentActivityStore');
 const env = require('../config/env');
 
@@ -310,6 +311,22 @@ async function processAlert(rawAlert, io) {
 
       addTimelineEvent(`Escalated: ${escalation.escalation_priority} via ${(escalation.notification_channels || []).join(', ')}`);
 
+      const incidentForNotify = {
+        incident_id: incidentId,
+        service: detection.service ?? incident.service,
+        alert_type: detection.alert_type ?? incident.alert_type,
+        severity: detection.severity ?? incident.severity,
+        retry_count: incident.retry_count ?? 0,
+        status: 'escalated',
+        escalation_reason: resolution.resolution_summary || decision.escalation_reason,
+        failure_reason: resolution.resolution_summary,
+      };
+      try {
+        await notifyEscalation(escalation, incidentForNotify);
+      } catch (notifyErr) {
+        logger.error(`[Pipeline] notifyEscalation error: ${notifyErr.message}`);
+      }
+
       if (io) {
         io.emit('incident:updated', { incident_id: incidentId, status: 'escalated' });
         setActivity({ agent: 'escalation', incident_id: incidentId, status: 'completed' });
@@ -441,6 +458,23 @@ async function handleRetry(incidentId, rawAlert, detection, prevDecision, matche
       retry_count: retryCount,
       agent_outputs: { detection, escalation },
     });
+
+    const retryFailReason = `Action failed after ${retryCount} retries`;
+    const incidentForNotify = {
+      incident_id: incidentId,
+      service: detection.service,
+      alert_type: detection.alert_type,
+      severity: detection.severity,
+      retry_count: retryCount,
+      status: 'escalated',
+      escalation_reason: retryFailReason,
+      failure_reason: retryFailReason,
+    };
+    try {
+      await notifyEscalation(escalation, incidentForNotify);
+    } catch (notifyErr) {
+      logger.error(`[Pipeline:Retry] notifyEscalation error: ${notifyErr.message}`);
+    }
 
     if (io) io.emit('incident:updated', { incident_id: incidentId, status: 'escalated' });
     return { success: false, incident_id: incidentId, status: 'escalated', retry_count: retryCount };

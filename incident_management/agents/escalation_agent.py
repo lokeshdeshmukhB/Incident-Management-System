@@ -30,7 +30,11 @@ OUTPUT FORMAT (JSON only, no preamble):
 }
 
 RULES:
-- Critical severity = always P1 with PagerDuty + Slack.
+- Every escalation requires manual intervention: `notification_channels` MUST always include "email".
+- Critical severity: P1; use notification_channels ["pagerduty", "slack", "email"] (all three).
+- High severity: use ["slack", "email"] at minimum (add "pagerduty" if paging is required).
+- Medium or low severity when escalating: include "email" at minimum; add "slack" when a Slack notification is useful.
+- If unsure, prefer including "slack" and "email" together for non-critical escalations.
 - Include all failed action details in message body.
 - Output JSON only."""
 
