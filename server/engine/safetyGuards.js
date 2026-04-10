@@ -23,14 +23,22 @@ const SAFE_ACTIONS = new Set([
 ]);
 
 function isDryRunRequired(rule) {
+  if (!rule || typeof rule !== 'object') return false;
   return rule.dry_run === true;
 }
 
 function isUnsafeAction(action) {
+  if (!action) return false;
   return UNSAFE_ACTIONS.has(action);
 }
 
+function isKnownSafeAction(action) {
+  if (!action) return false;
+  return SAFE_ACTIONS.has(action);
+}
+
 function isDuplicateAction(action, service, windowMs = 30000) {
+  if (!action || !service) return false;
   const key = `${action}:${service}`;
   const lastExec = recentActions.get(key);
   const now = Date.now();
@@ -67,8 +75,42 @@ function recordFailure(incidentId) {
   }
 }
 
+/**
+ * Run all safety checks for a proposed action.
+ * Hardened: handles null/undefined action, service, and rule gracefully.
+ */
 function runSafetyChecks(action, service, rule, environment = 'production') {
+  const safeRule = rule && typeof rule === 'object' ? rule : {};
   const checks = [];
+
+  // ── Guard: missing action ──
+  if (!action || typeof action !== 'string' || action.trim() === '') {
+    checks.push({
+      check: 'missing_action',
+      passed: false,
+      message: 'No action specified — cannot validate safety',
+    });
+    return { safe: false, checks, action: action || null, service: service || null };
+  }
+
+  // ── Guard: missing service context ──
+  if (!service || typeof service !== 'string' || service.trim() === '') {
+    checks.push({
+      check: 'missing_context',
+      passed: false,
+      message: 'No service context provided — cannot validate safety',
+    });
+    return { safe: false, checks, action, service: service || null };
+  }
+
+  // ── Guard: unknown action (not in safe OR unsafe list) ──
+  if (!isKnownSafeAction(action) && !isUnsafeAction(action)) {
+    checks.push({
+      check: 'unknown_action',
+      passed: false,
+      message: `Action "${action}" is not in the known safe or unsafe list — requires review`,
+    });
+  }
 
   if (isUnsafeAction(action)) {
     checks.push({
@@ -78,7 +120,7 @@ function runSafetyChecks(action, service, rule, environment = 'production') {
     });
   }
 
-  if (isDryRunRequired(rule)) {
+  if (isDryRunRequired(safeRule)) {
     checks.push({
       check: 'dry_run',
       passed: false,
@@ -124,10 +166,27 @@ function runSafetyChecks(action, service, rule, environment = 'production') {
   };
 }
 
+/**
+ * Build the structured safety_check object for pipeline agent_outputs.
+ */
+function buildSafetyCheckResult(safetyResult) {
+  const failedChecks = (safetyResult.checks || []).filter((c) => !c.passed);
+  return {
+    safe: safetyResult.safe,
+    reason: safetyResult.safe
+      ? 'All safety checks passed'
+      : failedChecks.map((c) => c.message).join('; '),
+    checks: safetyResult.checks || [],
+    checked_at: new Date().toISOString(),
+  };
+}
+
 module.exports = {
   runSafetyChecks,
+  buildSafetyCheckResult,
   isDryRunRequired,
   isUnsafeAction,
+  isKnownSafeAction,
   isDuplicateAction,
   checkCircuitBreaker,
   recordFailure,

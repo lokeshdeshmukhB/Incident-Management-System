@@ -3,6 +3,7 @@ const { runAgent } = require('../services/pythonAgentBridge');
 const workflowEngine = require('./workflowEngine');
 const { runHealthCheck } = require('./healthChecker');
 const { executeAction } = require('../services/actionExecutor');
+const { runSafetyChecks, buildSafetyCheckResult, recordFailure } = require('./safetyGuards');
 const AlertModel = require('../models/Alert');
 const IncidentModel = require('../models/Incident');
 const ReportModel = require('../models/Report');
@@ -11,7 +12,11 @@ const { notifyEscalation } = require('../services/notifier');
 const { setActivity } = require('../services/agentActivityStore');
 const env = require('../config/env');
 
-/** LLM action name → workflow rule action in workflows.csv (when they differ). */
+// ─────────────────────────────────────────────────────────────────────────────
+// Helper: AI-primary decision resolution
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** LLM action name → workflow rule action aliases (when they differ). */
 const DEV_ACTION_ALIASES = {
   cleanup_disk_space: 'cleanup_logs',
   restart_api_service: 'switch_to_fallback',
@@ -24,59 +29,104 @@ function decisionMatchesWorkflowRule(decisionAction, ruleAction) {
 }
 
 /**
- * When the LLM omits fields, align with the matched workflow rule so action_taken and stages stay consistent.
+ * PRIMARY decision function — keep the AI's action unless it's missing/unusable.
+ *
+ * Logic:
+ *  - If the LLM returned a valid, non-empty action → keep it.
+ *  - Only fall back to workflow rule if the LLM returned nothing usable.
+ *  - Preserve escalate_to_human workflow rule as a hard escalation fallback.
  */
-function mergeDecisionFromWorkflowRule(decision, matchedRule) {
-  if (!matchedRule?.action) return decision;
+function chooseFinalAction(decision, matchedRule) {
   const base =
     decision && typeof decision === 'object' ? { ...decision } : {};
   delete base.error;
   delete base.message;
 
-  if (base.action == null || base.action === '') {
-    base.action = matchedRule.action;
-  }
-  if (base.priority == null && matchedRule.priority != null) {
-    base.priority = matchedRule.priority;
+  const hasValidAiAction =
+    typeof base.action === 'string' && base.action.trim() !== '';
+
+  if (hasValidAiAction) {
+    logger.info(`[Pipeline] Using AI-selected action: ${base.action}`);
+    return base;
   }
 
-  if (matchedRule.action === 'escalate_to_human') {
+  // AI returned no action — fall back to workflow rule
+  if (matchedRule && matchedRule.action) {
+    logger.info(`[Pipeline] Falling back to workflow rule action: ${matchedRule.action}`);
+
+    if (matchedRule.action === 'escalate_to_human') {
+      return {
+        ...base,
+        action: 'escalate_to_human',
+        escalate: true,
+        safe_to_execute: false,
+        escalation_reason:
+          base.escalation_reason || 'No AI action available; workflow rule escalates to human.',
+      };
+    }
+
     return {
       ...base,
-      action: 'escalate_to_human',
-      escalate: true,
-      safe_to_execute: false,
-      escalation_reason:
-        base.escalation_reason || 'No automated workflow action; escalate to human.',
+      action: matchedRule.action,
+      // Do NOT auto-set safe_to_execute; leave it for handleUnsafeOrEscalate
     };
   }
 
-  if (base.safe_to_execute == null) base.safe_to_execute = false;
-  if (base.escalate == null) base.escalate = false;
-
-  return base;
+  // No AI action, no workflow rule — escalate
+  logger.warn('[Pipeline] No action from AI or workflow rules, escalating');
+  return {
+    ...base,
+    action: 'escalate_to_human',
+    escalate: true,
+    safe_to_execute: false,
+    escalation_reason: 'Neither AI nor workflow rules produced a usable action.',
+  };
 }
 
 /**
- * In development, if the LLM marked an action as unsafe but it matches the
- * workflow-rule action (which we trust for demo purposes), override safe_to_execute
- * so the pipeline actually executes the action and can reach "resolved".
- * Set DEV_AUTO_APPROVE_WORKFLOW_ACTIONS=false in .env to disable.
+ * Fill in missing non-action fields from the workflow rule as suggestions/defaults.
+ * Does NOT override values the LLM already set.
  */
-function devApproveIfWorkflowMatch(decision, matchedRule) {
-  if (!env.pipeline.devAutoApproveWorkflowActions) return decision;
-  if (decision.safe_to_execute) return decision;
-  if (!matchedRule || !matchedRule.action) return decision;
-  if (matchedRule.action === 'escalate_to_human') return decision;
-  if (decision.escalate) return decision;
-  if (!decisionMatchesWorkflowRule(decision.action, matchedRule.action)) return decision;
-  logger.info(`[Pipeline][dev] Auto-approving workflow-aligned action: ${decision.action} (rule: ${matchedRule.action})`);
-  return {
-    ...decision,
-    safe_to_execute: true,
-    escalate: false,
-    escalation_reason: undefined,
-  };
+function applyWorkflowFallback(decision, matchedRule) {
+  if (!matchedRule || typeof matchedRule !== 'object') return decision;
+  const out = { ...decision };
+
+  if (out.priority == null && matchedRule.priority != null) {
+    out.priority = matchedRule.priority;
+  }
+
+  // Defaults that should exist
+  if (out.safe_to_execute == null) out.safe_to_execute = false;
+  if (out.escalate == null) out.escalate = false;
+
+  return out;
+}
+
+/**
+ * Enforce LLM safety flags — never override unsafe/escalate to safe.
+ * If the LLM says escalate or unsafe, we respect that decision.
+ */
+function handleUnsafeOrEscalate(decision) {
+  const out = { ...decision };
+
+  // If the LLM explicitly says escalate, force the action and safety flag
+  if (out.escalate === true) {
+    logger.info(`[Pipeline] AI marked action for escalation: ${out.escalation_reason || 'no reason given'}`);
+    out.action = 'escalate_to_human';
+    out.safe_to_execute = false;
+    return out;
+  }
+
+  // If the LLM says unsafe, do NOT override — respect the decision
+  if (out.safe_to_execute === false) {
+    logger.info(`[Pipeline] AI marked action unsafe, escalating (action: ${out.action})`);
+    out.escalate = true;
+    out.escalation_reason =
+      out.escalation_reason || out.safety_reason || 'AI decision agent marked action as unsafe';
+    return out;
+  }
+
+  return out;
 }
 
 function ensureResolutionStatus(resolution, healthResult, executionResult) {
@@ -99,6 +149,10 @@ function ensureResolutionStatus(resolution, healthResult, executionResult) {
       'Remediation incomplete, action skipped, or health check did not pass.',
   };
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Main pipeline
+// ─────────────────────────────────────────────────────────────────────────────
 
 const activeIncidents = new Map();
 
@@ -178,7 +232,7 @@ async function processAlert(rawAlert, io) {
       io.emit('agent:activity', { agent: 'detection', incident_id: incidentId, status: 'completed' });
     }
 
-    // ── Stage 3: Decision ──
+    // ── Stage 3: Decision (AI-primary, workflow-secondary) ──
     addTimelineEvent('Starting decision phase');
     setActivity({ agent: 'decision', incident_id: incidentId, status: 'running' });
     if (io) io.emit('agent:activity', { agent: 'decision', incident_id: incidentId, status: 'running' });
@@ -192,14 +246,18 @@ async function processAlert(rawAlert, io) {
       recentIncidents,
     });
 
-    // Look up the matched rule now (needed for dev approval + resolution)
+    // Look up the matched rule now (needed for fallback + resolution)
     const matchedRule = await workflowEngine.matchRule(detection.alert_type);
 
-    decision = mergeDecisionFromWorkflowRule(decision, matchedRule);
-    // In development, allow the matched workflow action to run so incidents can resolve
-    decision = devApproveIfWorkflowMatch(decision, matchedRule);
+    // AI-primary decision pipeline:
+    // 1. Choose final action: AI first, workflow fallback only if AI returned nothing
+    decision = chooseFinalAction(decision, matchedRule);
+    // 2. Fill in missing metadata from workflow rule (priority, etc.)
+    decision = applyWorkflowFallback(decision, matchedRule);
+    // 3. Enforce safety flags: never override AI's unsafe/escalate judgment
+    decision = handleUnsafeOrEscalate(decision);
 
-    addTimelineEvent(`Decision: action=${decision.action}, safe=${decision.safe_to_execute}, priority=${decision.priority}`);
+    addTimelineEvent(`Decision: action=${decision.action}, safe=${decision.safe_to_execute}, escalate=${decision.escalate}, priority=${decision.priority}`);
 
     await IncidentModel.update(incidentId, {
       status: 'in_progress',
@@ -212,37 +270,78 @@ async function processAlert(rawAlert, io) {
       io.emit('agent:activity', { agent: 'decision', incident_id: incidentId, status: 'completed' });
     }
 
-    // ── Stage 4: Action ──
+    // ── Stage 4: Action (with safety guard enforcement) ──
     let actionResult = null;
     let executionResult = null;
+    let safetyCheck = null;
 
     if (decision.safe_to_execute && !decision.escalate) {
-      addTimelineEvent(`Executing action: ${decision.action}`);
-
-      setActivity({ agent: 'action', incident_id: incidentId, status: 'running' });
-      if (io) io.emit('agent:activity', { agent: 'action', incident_id: incidentId, status: 'running' });
-      const actionPlan = runAgent('action', { decision, alert: detection });
-      addTimelineEvent(`Action plan: ${actionPlan.execution_command || decision.action}`);
-
-      executionResult = await executeAction(
+      // ── Run safety checks BEFORE executing ──
+      const safetyResult = runSafetyChecks(
         decision.action,
         detection.service,
-        actionPlan.execution_command
+        matchedRule,
+        env.app.nodeEnv === 'production' ? 'production' : 'development'
       );
+      safetyCheck = buildSafetyCheckResult(safetyResult);
 
-      actionResult = { ...actionPlan, ...executionResult };
-      addTimelineEvent(
-        `Action result: ${executionResult.success ? 'SUCCESS' : 'FAILED'} (${executionResult.duration_ms}ms)`
-      );
+      if (!safetyResult.safe) {
+        // Safety check FAILED — do not execute, escalate instead
+        addTimelineEvent(`Safety check FAILED for action ${decision.action}: ${safetyCheck.reason}`);
+        logger.warn(`[Pipeline] Safety check FAILED — blocking action ${decision.action} on ${detection.service}`);
 
-      if (io) {
-        setActivity({ agent: 'action', incident_id: incidentId, status: 'completed', result: executionResult });
-        io.emit('agent:activity', {
-          agent: 'action',
-          incident_id: incidentId,
-          status: 'completed',
-          result: executionResult,
-        });
+        actionResult = {
+          executed: false,
+          success: false,
+          output_log: `Action blocked by safety guard: ${safetyCheck.reason}`,
+          safety_check: safetyCheck,
+        };
+
+        // Force escalation
+        decision = {
+          ...decision,
+          safe_to_execute: false,
+          escalate: true,
+          escalation_reason: `Safety guard blocked action: ${safetyCheck.reason}`,
+        };
+
+        setActivity({ agent: 'action', incident_id: incidentId, status: 'completed', result: { blocked: true } });
+        if (io) io.emit('agent:activity', { agent: 'action', incident_id: incidentId, status: 'completed', result: { blocked: true } });
+      } else {
+        // Safety check PASSED — proceed with action execution
+        addTimelineEvent(`Safety check PASSED for action: ${decision.action}`);
+        addTimelineEvent(`Executing action: ${decision.action}`);
+
+        setActivity({ agent: 'action', incident_id: incidentId, status: 'running' });
+        if (io) io.emit('agent:activity', { agent: 'action', incident_id: incidentId, status: 'running' });
+        const actionPlan = runAgent('action', { decision, alert: detection });
+        addTimelineEvent(`Action plan: ${actionPlan.execution_command || decision.action}`);
+
+        executionResult = await executeAction(
+          decision.action,
+          detection.service,
+          actionPlan.execution_command
+        );
+
+        actionResult = { ...actionPlan, ...executionResult, safety_check: safetyCheck };
+        addTimelineEvent(
+          `Action result: ${executionResult.success ? 'SUCCESS' : 'FAILED'} (${executionResult.duration_ms}ms)`
+        );
+
+        // Record failure for circuit breaker if action failed
+        if (!executionResult.success) {
+          recordFailure(incidentId);
+        }
+
+        if (io) {
+          setActivity({ agent: 'action', incident_id: incidentId, status: 'completed', result: executionResult });
+          io.emit('agent:activity', {
+            agent: 'action',
+            incident_id: incidentId,
+            status: 'completed',
+            result: executionResult,
+          });
+        }
       }
     } else {
       addTimelineEvent(`Action skipped: ${decision.escalation_reason || 'not safe to execute'}`);
@@ -285,7 +384,7 @@ async function processAlert(rawAlert, io) {
 
     // Handle retry/escalation
     if (resolution.status === 'retry') {
-      return await handleRetry(incidentId, rawAlert, detection, decision, matchedRule, 1, timeline, io);
+      return await handleRetry(incidentId, rawAlert, detection, decision, matchedRule, 1, timeline, io, safetyCheck);
     }
 
     if (resolution.status === 'escalated' || decision.escalate) {
@@ -299,14 +398,17 @@ async function processAlert(rawAlert, io) {
         retryCount: 0,
         severity: detection.severity,
         service: detection.service,
-        reason: resolution.resolution_summary || 'Automated remediation failed',
+        reason: resolution.resolution_summary || decision.escalation_reason || 'Automated remediation failed',
       });
+
+      const agentOutputs = { detection, decision, action: actionResult, resolution, escalation };
+      if (safetyCheck) agentOutputs.safety_check = safetyCheck;
 
       await IncidentModel.update(incidentId, {
         status: 'escalated',
         escalated: true,
         action_taken: decision.action,
-        agent_outputs: { detection, decision, action: actionResult, resolution, escalation },
+        agent_outputs: agentOutputs,
       });
 
       addTimelineEvent(`Escalated: ${escalation.escalation_priority} via ${(escalation.notification_channels || []).join(', ')}`);
@@ -362,6 +464,7 @@ async function processAlert(rawAlert, io) {
       const resolvedOutputs = escalationHandoff
         ? { detection, decision, action: actionResult, resolution, escalation: escalationHandoff }
         : { detection, decision, action: actionResult, resolution };
+      if (safetyCheck) resolvedOutputs.safety_check = safetyCheck;
 
       await IncidentModel.update(incidentId, {
         status: 'resolved',
@@ -434,7 +537,11 @@ async function processAlert(rawAlert, io) {
   }
 }
 
-async function handleRetry(incidentId, rawAlert, detection, prevDecision, matchedRule, retryCount, timeline, io) {
+// ─────────────────────────────────────────────────────────────────────────────
+// Retry handler
+// ─────────────────────────────────────────────────────────────────────────────
+
+async function handleRetry(incidentId, rawAlert, detection, prevDecision, matchedRule, retryCount, timeline, io, prevSafetyCheck) {
   const addTimelineEvent = (event) => {
     timeline.push({ timestamp: new Date().toISOString(), event });
     logger.info(`[Pipeline:Retry] ${event}`);
@@ -452,11 +559,14 @@ async function handleRetry(incidentId, rawAlert, detection, prevDecision, matche
       reason: `Action failed after ${retryCount} retries`,
     });
 
+    const agentOutputs = { detection, escalation };
+    if (prevSafetyCheck) agentOutputs.safety_check = prevSafetyCheck;
+
     await IncidentModel.update(incidentId, {
       status: 'escalated',
       escalated: true,
       retry_count: retryCount,
-      agent_outputs: { detection, escalation },
+      agent_outputs: agentOutputs,
     });
 
     const retryFailReason = `Action failed after ${retryCount} retries`;
@@ -492,8 +602,10 @@ async function handleRetry(incidentId, rawAlert, detection, prevDecision, matche
     recentIncidents: [],
   });
 
-  decision = mergeDecisionFromWorkflowRule(decision, matchedRule);
-  decision = devApproveIfWorkflowMatch(decision, matchedRule);
+  // AI-primary decision pipeline (same as main flow)
+  decision = chooseFinalAction(decision, matchedRule);
+  decision = applyWorkflowFallback(decision, matchedRule);
+  decision = handleUnsafeOrEscalate(decision);
 
   if (decision.escalate) {
     addTimelineEvent('Decision agent recommends escalation on retry');
@@ -502,8 +614,32 @@ async function handleRetry(incidentId, rawAlert, detection, prevDecision, matche
     return { success: false, incident_id: incidentId, status: 'escalated' };
   }
 
+  // ── Safety checks before retry action ──
+  const safetyResult = runSafetyChecks(
+    decision.action,
+    detection.service,
+    matchedRule,
+    env.app.nodeEnv === 'production' ? 'production' : 'development'
+  );
+  const safetyCheck = buildSafetyCheckResult(safetyResult);
+
+  if (!safetyResult.safe) {
+    addTimelineEvent(`Safety check FAILED on retry for action ${decision.action}: ${safetyCheck.reason}`);
+    await IncidentModel.update(incidentId, { status: 'escalated', escalated: true });
+    if (io) io.emit('incident:updated', { incident_id: incidentId, status: 'escalated' });
+    return { success: false, incident_id: incidentId, status: 'escalated', safety_check: safetyCheck };
+  }
+
+  addTimelineEvent(`Safety check PASSED on retry for action: ${decision.action}`);
+
   const actionPlan = runAgent('action', { decision, alert: detection });
   const executionResult = await executeAction(decision.action, detection.service, actionPlan.execution_command);
+
+  // Record failure for circuit breaker
+  if (!executionResult.success) {
+    recordFailure(incidentId);
+  }
+
   const healthResult = await runHealthCheck({ ...rawAlert, ...detection }, executionResult.success);
 
   let resolution = runAgent('resolution', {
@@ -517,7 +653,7 @@ async function handleRetry(incidentId, rawAlert, detection, prevDecision, matche
   resolution = ensureResolutionStatus(resolution, healthResult, executionResult);
 
   if (resolution.status === 'retry') {
-    return handleRetry(incidentId, rawAlert, detection, decision, matchedRule, retryCount + 1, timeline, io);
+    return handleRetry(incidentId, rawAlert, detection, decision, matchedRule, retryCount + 1, timeline, io, safetyCheck);
   }
 
   if (resolution.status === 'resolved') {
