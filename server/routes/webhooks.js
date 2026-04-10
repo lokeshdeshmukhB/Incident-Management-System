@@ -32,6 +32,21 @@ function normalizeDemoWebhookBody(body) {
   };
 }
 
+/** Supabase `alerts` columns only — extra fields break inserts. */
+function toAlertDbRow(alert) {
+  return {
+    alert_id: alert.alert_id,
+    alert_type: alert.alert_type,
+    severity: alert.severity,
+    service: alert.service,
+    host: alert.host,
+    metric_value: alert.metric_value,
+    threshold: alert.threshold,
+    timestamp: alert.timestamp,
+    processed: alert.processed ?? false,
+  };
+}
+
 /**
  * POST /api/webhooks/demo
  * Shared secret via x-webhook-secret (must match WEBHOOK_SHARED_SECRET).
@@ -52,7 +67,9 @@ router.post('/demo', async (req, res) => {
 
     const rawAlert = normalizeDemoWebhookBody(req.body || {});
 
-    await AlertModel.create(rawAlert).catch(() => {});
+    await AlertModel.create(toAlertDbRow(rawAlert)).catch((err) => {
+      logger.warn(`[webhooks/demo] Alert insert skipped: ${err.message}`);
+    });
 
     const io = req.app.get('io');
     const result = await processAlert(rawAlert, io);

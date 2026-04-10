@@ -130,7 +130,12 @@ function handleUnsafeOrEscalate(decision) {
 }
 
 function ensureResolutionStatus(resolution, healthResult, executionResult) {
-  if (resolution && resolution.status && !resolution.error) return resolution;
+  // Only trust the agent's "retry" routing without re-deriving status.
+  // For resolved/escalated, always reconcile with action + health so LLM cannot skip verification.
+  if (resolution?.status === 'retry' && !resolution?.error) {
+    return resolution;
+  }
+
   const actionOk = Boolean(executionResult?.success);
   const healthOk = Boolean(healthResult?.health_check_passed);
   if (actionOk && healthOk) {
@@ -328,7 +333,7 @@ async function processAlert(rawAlert, io) {
 
     await IncidentModel.update(incidentId, {
       status: 'in_progress',
-      agent_outputs: { ...incident.agent_outputs, detection, decision },
+      agent_outputs: { ...(incident.agent_outputs || {}), detection, decision },
     });
 
     if (io) {

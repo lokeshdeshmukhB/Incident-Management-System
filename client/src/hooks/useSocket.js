@@ -7,7 +7,7 @@ import useIncidentStore from '../store/incidentStore';
 const DEV_API_ORIGIN = typeof __AIMS_DEV_API_ORIGIN__ !== 'undefined' ? __AIMS_DEV_API_ORIGIN__ : '';
 
 const SOCKET_URL =
-  import.meta.env.VITE_API_URL ||
+  import.meta.env.VITE_SOCKET_URL ||
   (import.meta.env.DEV && DEV_API_ORIGIN ? DEV_API_ORIGIN : '');
 
 export function useSocket() {
