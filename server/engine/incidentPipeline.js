@@ -3,6 +3,7 @@ const { runAgent } = require('../services/pythonAgentBridge');
 const workflowEngine = require('./workflowEngine');
 const { runHealthCheck } = require('./healthChecker');
 const { executeAction } = require('../services/actionExecutor');
+const { runSafetyChecks, SAFE_ACTIONS, UNSAFE_ACTIONS, recordFailure } = require('./safetyGuards');
 const AlertModel = require('../models/Alert');
 const IncidentModel = require('../models/Incident');
 const ReportModel = require('../models/Report');
@@ -24,58 +25,156 @@ function decisionMatchesWorkflowRule(decisionAction, ruleAction) {
 }
 
 /**
- * When the LLM omits fields, align with the matched workflow rule so action_taken and stages stay consistent.
+ * Treat an action as "usable" when it is a known action our executor/guards understand.
+ * Unknown actions should not be executed automatically.
  */
-function mergeDecisionFromWorkflowRule(decision, matchedRule) {
-  if (!matchedRule?.action) return decision;
-  const base =
-    decision && typeof decision === 'object' ? { ...decision } : {};
-  delete base.error;
-  delete base.message;
-
-  if (base.action == null || base.action === '') {
-    base.action = matchedRule.action;
-  }
-  if (base.priority == null && matchedRule.priority != null) {
-    base.priority = matchedRule.priority;
-  }
-
-  if (matchedRule.action === 'escalate_to_human') {
-    return {
-      ...base,
-      action: 'escalate_to_human',
-      escalate: true,
-      safe_to_execute: false,
-      escalation_reason:
-        base.escalation_reason || 'No automated workflow action; escalate to human.',
-    };
-  }
-
-  if (base.safe_to_execute == null) base.safe_to_execute = false;
-  if (base.escalate == null) base.escalate = false;
-
-  return base;
+function isUsableActionName(actionName) {
+  if (!actionName || typeof actionName !== 'string') return false;
+  const a = actionName.trim();
+  if (!a) return false;
+  if (SAFE_ACTIONS.has(a)) return true;
+  if (UNSAFE_ACTIONS.has(a)) return true;
+  return false;
 }
 
 /**
- * In development, if the LLM marked an action as unsafe but it matches the
- * workflow-rule action (which we trust for demo purposes), override safe_to_execute
- * so the pipeline actually executes the action and can reach "resolved".
- * Set DEV_AUTO_APPROVE_WORKFLOW_ACTIONS=false in .env to disable.
+ * Workflow rules are suggestions/fallbacks, not overrides:
+ * - Keep AI-selected action when it is usable
+ * - Fall back to workflow rule action only when AI omitted/returned unusable action
+ * - Never auto-set safe_to_execute=true based on workflow alignment
+ * - Preserve AI escalate/unsafe flags
  */
-function devApproveIfWorkflowMatch(decision, matchedRule) {
-  if (!env.pipeline.devAutoApproveWorkflowActions) return decision;
-  if (decision.safe_to_execute) return decision;
-  if (!matchedRule || !matchedRule.action) return decision;
-  if (matchedRule.action === 'escalate_to_human') return decision;
-  if (decision.escalate) return decision;
-  if (!decisionMatchesWorkflowRule(decision.action, matchedRule.action)) return decision;
-  logger.info(`[Pipeline][dev] Auto-approving workflow-aligned action: ${decision.action} (rule: ${matchedRule.action})`);
+function chooseFinalDecision(aiDecision, matchedRule) {
+  const base = aiDecision && typeof aiDecision === 'object' ? { ...aiDecision } : {};
+  delete base.error;
+  delete base.message;
+
+  const decision = {
+    ...base,
+    action: typeof base.action === 'string' ? base.action.trim() : base.action,
+    safe_to_execute: base.safe_to_execute === true,
+    escalate: base.escalate === true,
+  };
+
+  // Always respect explicit escalation from the model.
+  if (decision.escalate) {
+    if (!decision.action) decision.action = 'escalate_to_human';
+    decision.safe_to_execute = false;
+    logger.warn('[Pipeline] AI marked action unsafe, escalating');
+    return decision;
+  }
+
+  // Keep AI action when it's usable.
+  if (isUsableActionName(decision.action)) {
+    logger.info(`[Pipeline] Using AI-selected action: ${decision.action}`);
+    if (decision.priority == null && matchedRule?.priority != null) {
+      decision.priority = matchedRule.priority;
+    }
+    if (decision.safe_to_execute !== true) decision.safe_to_execute = false;
+    return decision;
+  }
+
+  // Fall back to workflow rule only if AI provided nothing usable.
+  if (matchedRule?.action) {
+    const ruleAction = String(matchedRule.action).trim();
+    logger.info(`[Pipeline] Falling back to workflow rule action: ${ruleAction}`);
+
+    const fallback = {
+      ...decision,
+      action: ruleAction,
+      safe_to_execute: decision.safe_to_execute === true,
+      escalate: decision.escalate === true,
+      used_workflow_fallback: true,
+    };
+
+    if (fallback.priority == null && matchedRule.priority != null) {
+      fallback.priority = matchedRule.priority;
+    }
+
+    // Hard escalation path when the rule has only "escalate_to_human".
+    if (ruleAction === 'escalate_to_human') {
+      return {
+        ...fallback,
+        action: 'escalate_to_human',
+        escalate: true,
+        safe_to_execute: false,
+        escalation_reason:
+          fallback.escalation_reason || 'Workflow rule requires human escalation.',
+      };
+    }
+
+    // If the workflow suggests an unknown action, do not execute it automatically.
+    if (!isUsableActionName(ruleAction)) {
+      return {
+        ...fallback,
+        escalate: true,
+        safe_to_execute: false,
+        escalation_reason:
+          fallback.escalation_reason ||
+          `Workflow rule suggested unknown action "${ruleAction}", escalating for safety.`,
+      };
+    }
+
+    if (fallback.safe_to_execute !== true) fallback.safe_to_execute = false;
+    return fallback;
+  }
+
+  // No usable action from AI and no workflow fallback -> escalate.
+  logger.warn('[Pipeline] No usable action from AI or workflow; escalating');
   return {
     ...decision,
-    safe_to_execute: true,
-    escalate: false,
-    escalation_reason: undefined,
+    action: decision.action || 'escalate_to_human',
+    escalate: true,
+    safe_to_execute: false,
+    escalation_reason: decision.escalation_reason || 'No usable automated action provided.',
+  };
+}
+
+function applySafetyGuardOrEscalate(decision, detection, matchedRule) {
+  const checked_at = new Date().toISOString();
+  const environment = env?.app?.nodeEnv || process.env.NODE_ENV || 'development';
+
+  if (!decision?.action) {
+    return {
+      decision: {
+        ...(decision || {}),
+        safety_check: { safe: false, reason: 'No action provided', checked_at },
+      },
+      blocked: true,
+      reason: 'no_action',
+    };
+  }
+
+  const safety = runSafetyChecks(decision.action, detection?.service || 'unknown', matchedRule, environment);
+  const firstFailure = (safety.checks || []).find((c) => c && c.passed === false);
+  const failureReason = firstFailure?.message || 'Safety guard blocked action';
+
+  const safety_check = {
+    safe: Boolean(safety.safe),
+    reason: safety.safe ? 'Safety checks passed' : failureReason,
+    checked_at,
+    checks: safety.checks,
+  };
+
+  if (!safety.safe) {
+    logger.warn(`[Pipeline] Safety check failed for action=${decision.action}: ${safety_check.reason}`);
+    return {
+      decision: {
+        ...(decision || {}),
+        safe_to_execute: false,
+        escalate: true,
+        escalation_reason: decision.escalation_reason || safety_check.reason,
+        safety_check,
+      },
+      blocked: true,
+      reason: 'safety_failed',
+    };
+  }
+
+  return {
+    decision: { ...(decision || {}), safety_check },
+    blocked: false,
+    reason: null,
   };
 }
 
@@ -195,9 +294,7 @@ async function processAlert(rawAlert, io) {
     // Look up the matched rule now (needed for dev approval + resolution)
     const matchedRule = await workflowEngine.matchRule(detection.alert_type);
 
-    decision = mergeDecisionFromWorkflowRule(decision, matchedRule);
-    // In development, allow the matched workflow action to run so incidents can resolve
-    decision = devApproveIfWorkflowMatch(decision, matchedRule);
+    decision = chooseFinalDecision(decision, matchedRule);
 
     addTimelineEvent(`Decision: action=${decision.action}, safe=${decision.safe_to_execute}, priority=${decision.priority}`);
 
@@ -217,32 +314,59 @@ async function processAlert(rawAlert, io) {
     let executionResult = null;
 
     if (decision.safe_to_execute && !decision.escalate) {
-      addTimelineEvent(`Executing action: ${decision.action}`);
+      const safetyOutcome = applySafetyGuardOrEscalate(decision, detection, matchedRule);
+      decision = safetyOutcome.decision;
 
-      setActivity({ agent: 'action', incident_id: incidentId, status: 'running' });
-      if (io) io.emit('agent:activity', { agent: 'action', incident_id: incidentId, status: 'running' });
-      const actionPlan = runAgent('action', { decision, alert: detection });
-      addTimelineEvent(`Action plan: ${actionPlan.execution_command || decision.action}`);
+      await IncidentModel.update(incidentId, {
+        status: 'in_progress',
+        agent_outputs: { ...incident.agent_outputs, detection, decision },
+      });
+      if (io) io.emit('incident:updated', { incident_id: incidentId, status: 'in_progress', decision });
 
-      executionResult = await executeAction(
-        decision.action,
-        detection.service,
-        actionPlan.execution_command
-      );
-
-      actionResult = { ...actionPlan, ...executionResult };
-      addTimelineEvent(
-        `Action result: ${executionResult.success ? 'SUCCESS' : 'FAILED'} (${executionResult.duration_ms}ms)`
-      );
-
-      if (io) {
-        setActivity({ agent: 'action', incident_id: incidentId, status: 'completed', result: executionResult });
-        io.emit('agent:activity', {
+      if (safetyOutcome.blocked) {
+        addTimelineEvent(
+          `Action blocked by safety guard: ${decision.safety_check?.reason || 'blocked'}`
+        );
+        actionResult = { executed: false, success: false, output_log: 'Action blocked — safety guard' };
+        setActivity({
           agent: 'action',
           incident_id: incidentId,
           status: 'completed',
-          result: executionResult,
+          result: { skipped: true, blocked: true, reason: safetyOutcome.reason },
         });
+        if (io) io.emit('agent:activity', { agent: 'action', incident_id: incidentId, status: 'completed' });
+      } else {
+        addTimelineEvent(`Executing action: ${decision.action}`);
+
+        setActivity({ agent: 'action', incident_id: incidentId, status: 'running' });
+        if (io) io.emit('agent:activity', { agent: 'action', incident_id: incidentId, status: 'running' });
+        const actionPlan = runAgent('action', { decision, alert: detection });
+        addTimelineEvent(`Action plan: ${actionPlan.execution_command || decision.action}`);
+
+        executionResult = await executeAction(
+          decision.action,
+          detection.service,
+          actionPlan.execution_command
+        );
+
+        if (!executionResult?.success) {
+          recordFailure(incidentId);
+        }
+
+        actionResult = { ...actionPlan, ...executionResult };
+        addTimelineEvent(
+          `Action result: ${executionResult.success ? 'SUCCESS' : 'FAILED'} (${executionResult.duration_ms}ms)`
+        );
+
+        if (io) {
+          setActivity({ agent: 'action', incident_id: incidentId, status: 'completed', result: executionResult });
+          io.emit('agent:activity', {
+            agent: 'action',
+            incident_id: incidentId,
+            status: 'completed',
+            result: executionResult,
+          });
+        }
       }
     } else {
       addTimelineEvent(`Action skipped: ${decision.escalation_reason || 'not safe to execute'}`);
@@ -492,8 +616,7 @@ async function handleRetry(incidentId, rawAlert, detection, prevDecision, matche
     recentIncidents: [],
   });
 
-  decision = mergeDecisionFromWorkflowRule(decision, matchedRule);
-  decision = devApproveIfWorkflowMatch(decision, matchedRule);
+  decision = chooseFinalDecision(decision, matchedRule);
 
   if (decision.escalate) {
     addTimelineEvent('Decision agent recommends escalation on retry');
@@ -502,8 +625,25 @@ async function handleRetry(incidentId, rawAlert, detection, prevDecision, matche
     return { success: false, incident_id: incidentId, status: 'escalated' };
   }
 
+  if (decision.safe_to_execute) {
+    const safetyOutcome = applySafetyGuardOrEscalate(decision, detection, matchedRule);
+    decision = safetyOutcome.decision;
+    await IncidentModel.update(incidentId, { agent_outputs: { detection, decision } });
+    if (io) io.emit('incident:updated', { incident_id: incidentId, decision });
+
+    if (safetyOutcome.blocked) {
+      addTimelineEvent(`Retry action blocked by safety guard: ${decision.safety_check?.reason || 'blocked'}`);
+      await IncidentModel.update(incidentId, { status: 'escalated', escalated: true, retry_count: retryCount });
+      if (io) io.emit('incident:updated', { incident_id: incidentId, status: 'escalated' });
+      return { success: false, incident_id: incidentId, status: 'escalated', retry_count: retryCount };
+    }
+  }
+
   const actionPlan = runAgent('action', { decision, alert: detection });
   const executionResult = await executeAction(decision.action, detection.service, actionPlan.execution_command);
+  if (!executionResult?.success) {
+    recordFailure(incidentId);
+  }
   const healthResult = await runHealthCheck({ ...rawAlert, ...detection }, executionResult.success);
 
   let resolution = runAgent('resolution', {

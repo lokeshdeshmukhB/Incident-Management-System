@@ -5,3 +5,5 @@ timestamp,alert_id,alert_type,severity,service,host,metric_value,threshold
 2025-01-10T10:11:00Z,ALT-004,service_down,critical,auth,host-04,0,1
 2025-01-10T10:13:00Z,ALT-005,high_cpu,critical,checkout,host-01,96.8,9
 2026-04-10T14:00:00Z,ALT-DEMO-ESC-01,repeated_failure,critical,payments-api,host-01,1,0
+2025-01-10T10:13:00Z,ALT-006,high_cpu,critical,checkout,host-01,96.8,9
+2025-01-10T10:09:00Z,ALT-008,api_failure,high,orders,host-03,500,200
