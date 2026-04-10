@@ -16,6 +16,29 @@ const alertQueue = [];
  * subsequent poll does not cause "fetch failed" errors for alerts already queued.
  */
 const inFlightAlertIds = new Set();
+
+/**
+ * Alerts we've already encountered (and successfully queued) in THIS server runtime.
+ *
+ * Why this exists:
+ * - The polling job re-reads alerts.csv from the top every interval.
+ * - When Supabase is temporarily unavailable, the DB "already processed?" check can fail.
+ * - Without an in-memory dedupe, we repeatedly attempt the same DB read for old alerts and spam logs.
+ *
+ * This is NOT a replacement for the DB processed flag. It's a runtime cache to avoid repeated,
+ * noisy Supabase calls for alerts we've already seen in this session.
+ */
+const seenAlertIds = new Set();
+
+/**
+ * Alerts that completed `processAlert` successfully in THIS server runtime.
+ * Used to skip work even if the DB is unavailable and even if alerts.csv is re-polled from the top.
+ */
+const processedThisRun = new Set();
+
+/** Per-alert cooldown for DB failure warnings (suppresses spam). */
+const DB_FAILURE_WARNING_COOLDOWN_MS = 60_000;
+const dbFailureTimestamps = new Map(); // alert_id -> lastWarnEpochMs
 let drainRunning = false;
 
 async function drainAlertQueue(io) {
@@ -29,8 +52,12 @@ async function drainAlertQueue(io) {
       try {
         logger.info(`[AlertJob] Processing alert: ${alert.alert_id} (${alert.alert_type})`);
         await processAlert(alert, io);
+        processedThisRun.add(alert.alert_id);
       } catch (err) {
         logger.error(`[AlertJob] Pipeline error for ${alert.alert_id}: ${err.message}`);
+        // If a previous run succeeded, don't erase it. Otherwise ensure we don't incorrectly
+        // mark this alert as processed for this runtime.
+        if (!processedThisRun.has(alert.alert_id)) processedThisRun.delete(alert.alert_id);
       } finally {
         inFlightAlertIds.delete(alert.alert_id);
       }
@@ -65,12 +92,29 @@ async function pollAlerts(io) {
       // ── Check in-flight FIRST (no Supabase call needed) ──
       if (inFlightAlertIds.has(alert.alert_id)) continue;
 
+      // ── Skip alerts already completed in this runtime ──
+      if (processedThisRun.has(alert.alert_id)) {
+        logger.debug(`[AlertJob] Skipping already processed alert from this run: ${alert.alert_id}`);
+        continue;
+      }
+
       // ── Only query Supabase for alerts not already tracked ──
       let existing = null;
       try {
         existing = await AlertModel.findByAlertId(alert.alert_id);
       } catch (dbErr) {
-        logger.warn(`[AlertJob] DB check failed for ${alert.alert_id}: ${dbErr.message} — will retry next poll`);
+        const now = Date.now();
+        const lastWarn = dbFailureTimestamps.get(alert.alert_id) || 0;
+        const withinCooldown = now - lastWarn < DB_FAILURE_WARNING_COOLDOWN_MS;
+
+        // If we've already seen/queued this alert in this runtime, suppress noisy warnings
+        // during transient Supabase outages. Still allow one warning per cooldown window.
+        if (seenAlertIds.has(alert.alert_id) && withinCooldown) {
+          logger.debug(`[AlertJob] DB check still failing for already-seen ${alert.alert_id} (suppressed)`);
+        } else {
+          logger.warn(`[AlertJob] DB check failed for ${alert.alert_id}: ${dbErr.message} — will retry next poll`);
+          dbFailureTimestamps.set(alert.alert_id, now);
+        }
         continue;
       }
 
@@ -95,6 +139,7 @@ async function pollAlerts(io) {
       }
 
       inFlightAlertIds.add(alert.alert_id);
+      seenAlertIds.add(alert.alert_id);
       alertQueue.push(alert);
       logger.info(`[AlertJob] Queued alert: ${alert.alert_id} (${alert.alert_type})`);
     }

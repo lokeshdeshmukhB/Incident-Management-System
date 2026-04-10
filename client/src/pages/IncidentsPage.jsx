@@ -5,7 +5,16 @@ import { useIncidents, ingestAlert } from '../hooks/useIncidents';
 
 const STATUSES = ['', 'pending', 'in_progress', 'resolved', 'escalated'];
 const SEVERITIES = ['', 'critical', 'high', 'medium', 'low'];
-const SERVICES = ['', 'checkout', 'payments', 'auth', 'orders'];
+const SERVICES = ['', 'checkout', 'payments', 'payments-api', 'auth', 'orders'];
+
+const ESCALATION_DEMO_ALERT = {
+  alert_type: 'repeated_failure',
+  severity: 'critical',
+  service: 'payments-api',
+  host: 'host-01',
+  metric_value: 1,
+  threshold: 0,
+};
 
 export default function IncidentsPage() {
   const [filters, setFilters] = useState({ status: '', severity: '', service: '' });
@@ -54,7 +63,16 @@ export default function IncidentsPage() {
 
       {showIngest && (
         <div className="bg-slate-900 border border-slate-800 rounded-lg p-5">
-          <h3 className="text-sm font-medium text-slate-300 mb-4">Simulate New Alert</h3>
+          <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+            <h3 className="text-sm font-medium text-slate-300">Simulate New Alert</h3>
+            <button
+              type="button"
+              onClick={() => setAlertForm((prev) => ({ ...prev, ...ESCALATION_DEMO_ALERT }))}
+              className="text-xs px-3 py-1.5 rounded-lg border border-amber-700/60 text-amber-200/90 hover:bg-amber-950/40 transition-colors"
+            >
+              Load escalation demo (repeated_failure)
+            </button>
+          </div>
           <div className="grid grid-cols-3 gap-4 mb-4">
             <div>
               <label className="block text-xs text-slate-400 mb-1">Alert Type</label>
@@ -69,6 +87,7 @@ export default function IncidentsPage() {
                 <option value="service_down">service_down</option>
                 <option value="memory_leak">memory_leak</option>
                 <option value="network_timeout">network_timeout</option>
+                <option value="repeated_failure">repeated_failure (escalates — no auto-resolve)</option>
               </select>
             </div>
             <div>
@@ -93,6 +112,7 @@ export default function IncidentsPage() {
               >
                 <option value="checkout">checkout</option>
                 <option value="payments">payments</option>
+                <option value="payments-api">payments-api</option>
                 <option value="auth">auth</option>
                 <option value="orders">orders</option>
               </select>
@@ -138,7 +158,7 @@ export default function IncidentsPage() {
         {[
           { key: 'status', options: STATUSES, labels: ['All Status', 'Pending', 'In Progress', 'Resolved', 'Escalated'] },
           { key: 'severity', options: SEVERITIES, labels: ['All Severity', 'Critical', 'High', 'Medium', 'Low'] },
-          { key: 'service', options: SERVICES, labels: ['All Services', 'checkout', 'payments', 'auth', 'orders'] },
+          { key: 'service', options: SERVICES, labels: ['All Services', 'checkout', 'payments', 'payments-api', 'auth', 'orders'] },
         ].map(({ key, options, labels }) => (
           <select
             key={key}
