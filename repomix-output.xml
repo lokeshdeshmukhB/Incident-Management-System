@@ -72,6 +72,8 @@ data/alerts.csv
 data/it_incident_dataset.csv
 data/migration.sql
 data/workflows.csv
+demo-service/index.js
+demo-service/package.json
 incident_management/__init__.py
 incident_management/agents/__init__.py
 incident_management/agents/action_agent.py
@@ -93,6 +95,8 @@ README.md
 server/.env.example
 server/config/db.js
 server/config/env.js
+server/demo/demoMonitor.js
+server/demo/triggerBreak.js
 server/engine/healthChecker.js
 server/engine/incidentPipeline.js
 server/engine/safetyGuards.js
@@ -109,6 +113,7 @@ server/routes/alerts.js
 server/routes/dashboard.js
 server/routes/incidents.js
 server/routes/reports.js
+server/routes/webhooks.js
 server/routes/workflows.js
 server/seed.js
 server/server.js
@@ -125,6 +130,279 @@ simple.md
 
 <files>
 This section contains the contents of the repository's files.
+
+<file path="demo-service/index.js">
+const express = require('express');
+
+const PORT = parseInt(process.env.DEMO_SERVICE_PORT || '5055', 10) || 5055;
+
+/** In-memory state — intentionally ephemeral for sandbox demos */
+let isBroken = false;
+
+const app = express();
+app.use(express.json());
+
+function healthBody() {
+  if (isBroken) {
+    return { ok: false, status: 'broken' };
+  }
+  return { ok: true, status: 'healthy' };
+}
+
+app.get('/health', (req, res) => {
+  const body = healthBody();
+  if (isBroken) {
+    return res.status(500).json(body);
+  }
+  res.status(200).json(body);
+});
+
+app.post('/break', (req, res) => {
+  isBroken = true;
+  console.log('[demo-service] State -> broken');
+  res.json({ ok: true, status: 'broken', message: 'Demo API marked broken' });
+});
+
+app.post('/repair', (req, res) => {
+  isBroken = false;
+  console.log('[demo-service] State -> healthy (repair)');
+  res.json({ ok: true, status: 'healthy', message: 'Demo API repaired' });
+});
+
+app.get('/state', (req, res) => {
+  res.json({ isBroken, status: isBroken ? 'broken' : 'healthy' });
+});
+
+app.listen(PORT, () => {
+  console.log(`[demo-service] Listening on http://127.0.0.1:${PORT}`);
+});
+</file>
+
+<file path="demo-service/package.json">
+{
+  "name": "aims-demo-service",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Sandbox API for AIMS autonomous remediation hackathon demo",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "node --watch index.js"
+  },
+  "dependencies": {
+    "express": "^4.21.0"
+  }
+}
+</file>
+
+<file path="server/demo/demoMonitor.js">
+/**
+ * Polls the sandbox demo API and POSTs to AIMS when health flips healthy -> unhealthy.
+ * Uses edge detection plus a cooldown so flaky health does not flood the pipeline.
+ */
+const path = require('path');
+const dotenv = require('dotenv');
+
+dotenv.config({ path: path.join(__dirname, '../.env') });
+dotenv.config({ path: path.join(__dirname, '../../.env') });
+
+const logger = (msg) => console.log(`[demo-monitor] ${msg}`);
+
+const DEMO_BASE = (process.env.DEMO_SERVICE_URL || 'http://127.0.0.1:5055').replace(/\/$/, '');
+const WEBHOOK_URL = process.env.DEMO_WEBHOOK_URL || 'http://127.0.0.1:5000/api/webhooks/demo';
+const INTERVAL_MS = parseInt(process.env.DEMO_MONITOR_INTERVAL_MS || '3000', 10) || 3000;
+const COOLDOWN_MS = parseInt(process.env.DEMO_MONITOR_COOLDOWN_MS || '60000', 10) || 60000;
+const WEBHOOK_SECRET = process.env.WEBHOOK_SHARED_SECRET || '';
+
+let wasHealthy = true;
+let lastWebhookAt = 0;
+
+async function fetchHealth() {
+  const res = await fetch(`${DEMO_BASE}/health`, { method: 'GET' });
+  let body = {};
+  try {
+    body = await res.json();
+  } catch {
+    body = {};
+  }
+  const ok = res.ok && body.ok === true && body.status === 'healthy';
+  return { ok, status: res.status, body };
+}
+
+async function sendWebhook() {
+  const now = new Date().toISOString();
+  const alertId = `ALT-DEMO-${Date.now()}`;
+  const payload = {
+    alert_id: alertId,
+    alert_type: 'api_failure',
+    severity: 'critical',
+    service: 'demo-api',
+    host: 'localhost',
+    metric_value: 500,
+    threshold: 200,
+    timestamp: now,
+  };
+
+  const headers = {
+    'Content-Type': 'application/json',
+  };
+  if (WEBHOOK_SECRET) {
+    headers['x-webhook-secret'] = WEBHOOK_SECRET;
+  }
+
+  const res = await fetch(WEBHOOK_URL, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify(payload),
+  });
+
+  const text = await res.text();
+  if (!res.ok) {
+    throw new Error(`Webhook HTTP ${res.status}: ${text.slice(0, 500)}`);
+  }
+  logger(`Webhook accepted (${alertId})`);
+}
+
+async function tick() {
+  try {
+    const { ok, status, body } = await fetchHealth();
+
+    if (ok) {
+      if (!wasHealthy) {
+        logger('Demo API recovered (healthy)');
+      }
+      wasHealthy = true;
+      return;
+    }
+
+    if (wasHealthy) {
+      wasHealthy = false;
+      const now = Date.now();
+      if (now - lastWebhookAt < COOLDOWN_MS) {
+        logger(`Unhealthy edge detected but cooldown active (${COOLDOWN_MS}ms) — skip webhook`);
+        return;
+      }
+      logger(`Unhealthy edge detected (HTTP ${status}) ${JSON.stringify(body)} — sending webhook`);
+      await sendWebhook();
+      lastWebhookAt = now;
+    }
+  } catch (err) {
+    logger(`Poll error: ${err.message}`);
+  }
+}
+
+async function main() {
+  if (!WEBHOOK_SECRET) {
+    logger('WARN: WEBHOOK_SHARED_SECRET is empty — demo webhook route will reject requests. Set it in .env');
+  }
+  logger(`Polling ${DEMO_BASE}/health every ${INTERVAL_MS}ms → ${WEBHOOK_URL}`);
+  await tick();
+  setInterval(tick, INTERVAL_MS);
+}
+
+main().catch((e) => {
+  console.error(e);
+  process.exit(1);
+});
+</file>
+
+<file path="server/demo/triggerBreak.js">
+/**
+ * Manual helper: mark the sandbox demo API as broken (for live demos).
+ */
+const path = require('path');
+const dotenv = require('dotenv');
+
+dotenv.config({ path: path.join(__dirname, '../.env') });
+dotenv.config({ path: path.join(__dirname, '../../.env') });
+
+const base = (process.env.DEMO_SERVICE_URL || 'http://127.0.0.1:5055').replace(/\/$/, '');
+
+fetch(`${base}/break`, { method: 'POST', headers: { 'Content-Type': 'application/json' } })
+  .then(async (res) => {
+    const text = await res.text();
+    console.log(res.status, text);
+    if (!res.ok) process.exit(1);
+  })
+  .catch((err) => {
+    console.error(err.message);
+    process.exit(1);
+  });
+</file>
+
+<file path="server/routes/webhooks.js">
+const express = require('express');
+const crypto = require('crypto');
+const AlertModel = require('../models/Alert');
+const { processAlert } = require('../engine/incidentPipeline');
+const logger = require('../services/logger');
+const env = require('../config/env');
+
+const router = express.Router();
+
+function timingSafeEqualString(a, b) {
+  if (typeof a !== 'string' || typeof b !== 'string') return false;
+  const bufA = Buffer.from(a, 'utf8');
+  const bufB = Buffer.from(b, 'utf8');
+  if (bufA.length !== bufB.length) return false;
+  return crypto.timingSafeEqual(bufA, bufB);
+}
+
+function normalizeDemoWebhookBody(body) {
+  const ts = body.timestamp ? new Date(body.timestamp).toISOString() : new Date().toISOString();
+  return {
+    alert_id: body.alert_id || `ALT-DEMO-${Date.now()}`,
+    alert_type: body.alert_type || 'api_failure',
+    severity: body.severity || 'critical',
+    service: body.service || 'demo-api',
+    host: body.host || 'localhost',
+    metric_value: body.metric_value != null ? Number(body.metric_value) : 500,
+    threshold: body.threshold != null ? Number(body.threshold) : 200,
+    timestamp: ts,
+    processed: false,
+    webhook_received: true,
+    demo_target: 'demo-api',
+  };
+}
+
+/**
+ * POST /api/webhooks/demo
+ * Shared secret via x-webhook-secret (must match WEBHOOK_SHARED_SECRET).
+ */
+router.post('/demo', async (req, res) => {
+  try {
+    const expected = env.demoSandbox.webhookSharedSecret;
+    if (!expected || !String(expected).trim()) {
+      logger.warn('[webhooks/demo] WEBHOOK_SHARED_SECRET is not configured');
+      return res.status(503).json({ error: 'Demo webhook is not configured (WEBHOOK_SHARED_SECRET)' });
+    }
+
+    const provided = req.get('x-webhook-secret') || '';
+    if (!timingSafeEqualString(provided, expected)) {
+      logger.warn('[webhooks/demo] Invalid or missing x-webhook-secret');
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    const rawAlert = normalizeDemoWebhookBody(req.body || {});
+
+    await AlertModel.create(rawAlert).catch(() => {});
+
+    const io = req.app.get('io');
+    const result = await processAlert(rawAlert, io);
+
+    return res.status(201).json({
+      message: 'Demo webhook ingested; pipeline triggered',
+      alert_id: rawAlert.alert_id,
+      pipeline_result: result,
+    });
+  } catch (err) {
+    logger.error(`POST /api/webhooks/demo error: ${err.message}`);
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+module.exports = router;
+</file>
 
 <file path=".cursor/commands/implement.md">
 
@@ -3456,6 +3734,17 @@ SMTP_USER=your_email@gmail.com
 SMTP_PASS=your_app_password
 ESCALATION_EMAILS=devops@company.com,oncall@company.com
 SERVICE_ESCALATION_EMAILS_JSON={"checkout":["checkout-team@company.com"],"payments":["payments-team@company.com"],"auth":["security-team@company.com"],"orders":["orders-team@company.com"]}
+
+# --- Sandbox autonomous remediation demo (optional) ---
+WEBHOOK_SHARED_SECRET=
+ENABLE_REAL_SANDBOX_FIXES=false
+DEMO_SERVICE_URL=http://127.0.0.1:5055
+DEMO_SERVICE_PORT=5055
+DEMO_MONITOR_INTERVAL_MS=3000
+# Where the monitor POSTs alerts (dedicated webhook route)
+DEMO_WEBHOOK_URL=http://127.0.0.1:5000/api/webhooks/demo
+# Min time between webhook sends when the edge fires (safety against flapping)
+DEMO_MONITOR_COOLDOWN_MS=60000
 </file>
 
 <file path="server/config/db.js">
@@ -3481,145 +3770,6 @@ async function testConnection() {
 }
 
 module.exports = { supabase, testConnection };
-</file>
-
-<file path="server/engine/safetyGuards.js">
-const logger = require('../services/logger');
-
-const recentActions = new Map();
-const failureTracker = new Map();
-
-const UNSAFE_ACTIONS = new Set([
-  'drop_database',
-  'delete_all_logs',
-  'delete_all_files',
-  'stop_all_services',
-  'modify_firewall_rules',
-  'rotate_secrets',
-  'rm_rf',
-]);
-
-const SAFE_ACTIONS = new Set([
-  'restart_service',
-  'cleanup_logs',
-  'switch_to_fallback',
-  'retry_connections',
-  'scale_up_instances',
-  'escalate_to_human',
-]);
-
-function isDryRunRequired(rule) {
-  return rule.dry_run === true;
-}
-
-function isUnsafeAction(action) {
-  return UNSAFE_ACTIONS.has(action);
-}
-
-function isDuplicateAction(action, service, windowMs = 30000) {
-  const key = `${action}:${service}`;
-  const lastExec = recentActions.get(key);
-  const now = Date.now();
-
-  if (lastExec && now - lastExec < windowMs) {
-    logger.warn(`[SafetyGuard] Duplicate suppressed: ${action} on ${service} (within ${windowMs / 1000}s)`);
-    return true;
-  }
-
-  recentActions.set(key, now);
-  return false;
-}
-
-function checkCircuitBreaker(windowMs = 600000, maxFailures = 5) {
-  const now = Date.now();
-  let recentFailures = 0;
-
-  for (const [, { timestamp }] of failureTracker) {
-    if (now - timestamp < windowMs) recentFailures++;
-  }
-
-  if (recentFailures >= maxFailures) {
-    logger.error(`[SafetyGuard] CIRCUIT BREAKER: ${recentFailures} failures in ${windowMs / 60000} min. Pausing automation.`);
-    return true;
-  }
-  return false;
-}
-
-function recordFailure(incidentId) {
-  failureTracker.set(incidentId, { timestamp: Date.now() });
-  if (failureTracker.size > 100) {
-    const oldest = [...failureTracker.entries()].sort((a, b) => a[1].timestamp - b[1].timestamp);
-    failureTracker.delete(oldest[0][0]);
-  }
-}
-
-function runSafetyChecks(action, service, rule, environment = 'production') {
-  const checks = [];
-
-  if (isUnsafeAction(action)) {
-    checks.push({
-      check: 'unsafe_action',
-      passed: false,
-      message: `Action "${action}" is in the unsafe list and requires human approval`,
-    });
-  }
-
-  if (isDryRunRequired(rule)) {
-    checks.push({
-      check: 'dry_run',
-      passed: false,
-      message: `Workflow rule requires dry-run first for ${action}`,
-    });
-  }
-
-  if (isDuplicateAction(action, service)) {
-    checks.push({
-      check: 'duplicate_guard',
-      passed: false,
-      message: `Same action (${action}) on ${service} was executed within last 30s`,
-    });
-  }
-
-  if (checkCircuitBreaker()) {
-    checks.push({
-      check: 'circuit_breaker',
-      passed: false,
-      message: '5+ action failures in last 10 minutes. Automation paused.',
-    });
-  }
-
-  if (environment === 'production' && isUnsafeAction(action)) {
-    checks.push({
-      check: 'production_lock',
-      passed: false,
-      message: `Action "${action}" blocked in production without approval token`,
-    });
-  }
-
-  const allPassed = checks.length === 0 || checks.every((c) => c.passed);
-
-  if (!allPassed) {
-    logger.warn(`[SafetyGuard] Blocked: ${action} on ${service} — ${checks.filter((c) => !c.passed).map((c) => c.check).join(', ')}`);
-  }
-
-  return {
-    safe: allPassed,
-    checks,
-    action,
-    service,
-  };
-}
-
-module.exports = {
-  runSafetyChecks,
-  isDryRunRequired,
-  isUnsafeAction,
-  isDuplicateAction,
-  checkCircuitBreaker,
-  recordFailure,
-  SAFE_ACTIONS,
-  UNSAFE_ACTIONS,
-};
 </file>
 
 <file path="server/middleware/auth.js">
@@ -5491,6 +5641,48 @@ cd client && npm run dev   # restart after API is listening so Vite picks up .ai
 | GET | /api/dashboard/timeline | Incidents over time |
 | GET | /api/workflows | List workflow rules |
 | POST | /api/workflows | Create workflow rule |
+| POST | /api/webhooks/demo | Secured demo monitor webhook → same `processAlert` pipeline |
+
+## Sandbox autonomous remediation demo
+
+Optional hackathon flow: a tiny local **demo API** goes unhealthy, a **monitor** calls AIMS through a **shared-secret webhook**, the normal incident pipeline runs, and the action step can perform a **real** `POST /repair` on that API **only** when `ENABLE_REAL_SANDBOX_FIXES=true`. Resolution uses a real `GET /health` probe for `demo-api` in that mode; otherwise behavior stays simulated and matches the legacy health check.
+
+**Architecture (high level)**
+
+```mermaid
+flowchart LR
+  DemoAPI[demo-service /health]
+  Monitor[demoMonitor.js]
+  Webhook[POST /api/webhooks/demo]
+  Pipeline[processAlert pipeline]
+  Repair[POST /repair]
+  DemoAPI --> Monitor
+  Monitor --> Webhook
+  Webhook --> Pipeline
+  Pipeline --> Repair
+  Repair --> DemoAPI
+```
+
+**Configure** (see `server/.env.example`): set `WEBHOOK_SHARED_SECRET` (required for the webhook route), optionally `ENABLE_REAL_SANDBOX_FIXES=true`, `DEMO_SERVICE_URL`, `DEMO_WEBHOOK_URL`, `DEMO_MONITOR_INTERVAL_MS`.
+
+**Run (four processes)**
+
+1. Backend: `npm run dev` from repo root (or `cd server && npm run dev`).
+2. Frontend: included in root `npm run dev`, or `cd client && npm run dev`.
+3. Demo API: `npm run demo:service` (from repo root) — listens on `DEMO_SERVICE_PORT` (default `5055`).
+4. Monitor: `npm run demo:monitor` — polls `GET /health` and posts to `/api/webhooks/demo` on healthy→unhealthy transitions (with cooldown).
+
+**Break the service during a presentation**
+
+- `npm run demo:break`, or `curl -X POST http://127.0.0.1:5055/break`
+
+**Expected dashboard behavior**
+
+- After `/break`, the monitor sends one webhook per transition (cooldown prevents floods). A new incident appears for `demo-api` / `api_failure`. Agent activity progresses through decision → action → resolution. With **real fixes enabled**, the action agent hits the sandbox repair URL; resolution confirms via HTTP `200` on `/health`. With **real fixes off**, remediation stays simulated and the existing simulated health path applies so CSV/demo flows are unchanged.
+
+**Safety defaults**
+
+- Real HTTP repair is allowlisted to `service === "demo-api"` and actions `restart_api_service` / `restart_service` only, gated by `ENABLE_REAL_SANDBOX_FIXES=true`. No arbitrary shell execution. The dedicated webhook route rejects requests if `WEBHOOK_SHARED_SECRET` is unset or the `x-webhook-secret` header does not match.
 
 ## Pipeline Flow
 
@@ -5508,8 +5700,10 @@ Each agent uses Groq AI with structured JSON output. Three API keys are distribu
 
 ```
 aims/
+  demo-service/         - Sandbox Express API (/health, /break, /repair) for live demos
   incident_management/  - Python agents, LangGraph graph, bridge (Groq via LangChain)
   server/
+    demo/               - Health monitor + triggerBreak helper
     config/       - Supabase, environment config
     engine/       - Orchestration pipeline, workflow engine, safety guards
     models/       - Supabase data access layer
@@ -5531,6 +5725,7 @@ aims/
 </file>
 
 <file path="server/engine/healthChecker.js">
+const axios = require('axios');
 const logger = require('../services/logger');
 const env = require('../config/env');
 
@@ -5543,6 +5738,32 @@ const SERVICE_METRICS = {
   network_timeout: { metric: 'latency_ms', healthyBelow: 200 },
 };
 
+async function probeDemoServiceHealth() {
+  const base = env.demoSandbox.serviceUrl.replace(/\/$/, '');
+  const url = `${base}/health`;
+  try {
+    const res = await axios.get(url, { timeout: 10000, validateStatus: () => true });
+    const body = res.data || {};
+    const httpOk = res.status === 200 && body.ok === true && body.status === 'healthy';
+    return {
+      health_check_passed: httpOk,
+      verification_result: httpOk ? 'passed' : 'failed',
+      demo_probe_url: url,
+      metric_current_value: httpOk ? 0 : res.status,
+      detail: body,
+    };
+  } catch (err) {
+    logger.warn(`[HealthChecker] demo-api GET /health failed: ${err.message}`);
+    return {
+      health_check_passed: false,
+      verification_result: 'failed',
+      demo_probe_url: url,
+      metric_current_value: null,
+      error: err.message,
+    };
+  }
+}
+
 async function runHealthCheck(alert, actionSuccess) {
   const alertType = alert.alert_type;
   const config = SERVICE_METRICS[alertType] || { metric: 'generic', healthyBelow: 50 };
@@ -5553,7 +5774,27 @@ async function runHealthCheck(alert, actionSuccess) {
   const delay = minD + Math.random() * Math.max(0, maxD - minD);
   await new Promise((resolve) => setTimeout(resolve, delay));
 
-  // After a successful (simulated) remediation, treat health as recovered; without it, stay failed.
+  const isDemoApi = alert.service === 'demo-api';
+
+  if (isDemoApi && env.demoSandbox.enableRealFixes) {
+    const probe = await probeDemoServiceHealth();
+    const result = {
+      service_responsive: probe.health_check_passed,
+      metric_current_value: probe.metric_current_value,
+      metric_threshold: alert.threshold,
+      health_check_passed: probe.health_check_passed,
+      checked_at: new Date().toISOString(),
+      demo_verification: true,
+      verification_result: probe.verification_result,
+      demo_probe_url: probe.demo_probe_url,
+    };
+    logger.info(
+      `[HealthChecker] demo-api real probe: ${probe.health_check_passed ? 'PASSED' : 'FAILED'} (${probe.demo_probe_url})`
+    );
+    return result;
+  }
+
+  // Simulated path (all non–real-sandbox services, or demo-api with real fixes off)
   const passed = Boolean(actionSuccess);
 
   let currentValue;
@@ -5575,9 +5816,15 @@ async function runHealthCheck(alert, actionSuccess) {
     checked_at: new Date().toISOString(),
   };
 
+  if (isDemoApi) {
+    result.demo_verification = false;
+    result.verification_result = passed ? 'passed' : 'failed';
+    result.remediation_note = 'Simulated health signal (ENABLE_REAL_SANDBOX_FIXES=false); not querying demo /health';
+  }
+
   logger.info(
     `[HealthChecker] ${alert.service}: ${passed ? 'PASSED' : 'FAILED'} ` +
-    `(${config.metric}: ${result.metric_current_value}, threshold: ${alert.threshold})`
+      `(${config.metric}: ${result.metric_current_value}, threshold: ${alert.threshold})`
   );
 
   return result;
@@ -5743,7 +5990,9 @@ module.exports = AlertModel;
   "scripts": {
     "start": "node server.js",
     "dev": "node --watch server.js",
-    "seed": "node seed.js"
+    "seed": "node seed.js",
+    "demo:monitor": "node demo/demoMonitor.js",
+    "demo:break": "node demo/triggerBreak.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.103.0",
@@ -5911,12 +6160,49 @@ seed();
 </file>
 
 <file path="server/services/actionExecutor.js">
+const axios = require('axios');
 const logger = require('./logger');
+const env = require('../config/env');
 
 // In development, use much shorter simulated delays so the pipeline runs quickly.
 const isDev = (process.env.NODE_ENV || 'development') === 'development';
 
 const DELAY_SCALE = isDev ? 0.05 : 1; // 5% of original delays in dev
+
+const DEMO_REPAIR_PATH = '/repair';
+/** Only these actions may trigger a real sandbox HTTP repair for demo-api. */
+const ALLOWED_REAL_SANDBOX_ACTIONS = new Set(['restart_api_service', 'restart_service']);
+
+async function executeRealDemoRepair(service) {
+  const base = env.demoSandbox.serviceUrl.replace(/\/$/, '');
+  const url = `${base}${DEMO_REPAIR_PATH}`;
+  const started = Date.now();
+  logger.info(`[ActionExecutor] Real sandbox repair POST ${url} (service=${service})`);
+  try {
+    const res = await axios.post(url, {}, { timeout: 10000, validateStatus: () => true });
+    const ok = res.status >= 200 && res.status < 300;
+    return {
+      executed: true,
+      success: ok,
+      output_log: ok
+        ? `Sandbox repair OK: POST ${url} → ${res.status}`
+        : `Sandbox repair HTTP ${res.status} from ${url}`,
+      duration_ms: Date.now() - started,
+      real_execution: true,
+      repair_endpoint_called: url,
+    };
+  } catch (err) {
+    return {
+      executed: true,
+      success: false,
+      output_log: `Sandbox repair failed: ${err.message}`,
+      duration_ms: Date.now() - started,
+      real_execution: true,
+      repair_endpoint_called: url,
+      error: err.message,
+    };
+  }
+}
 
 const ACTION_SIMULATORS = {
   async restart_service(service, command) {
@@ -5927,6 +6213,7 @@ const ACTION_SIMULATORS = {
       success: true,
       output_log: `Service ${service} restarted successfully. New PID assigned.`,
       duration_ms: randomBetween(150, 400),
+      real_execution: false,
     };
   },
 
@@ -5938,6 +6225,7 @@ const ACTION_SIMULATORS = {
       success: true,
       output_log: `API service ${service} restarted. Error rate normalized. All health probes passing.`,
       duration_ms: randomBetween(150, 350),
+      real_execution: false,
     };
   },
 
@@ -5950,6 +6238,7 @@ const ACTION_SIMULATORS = {
       success: true,
       output_log: `Disk cleanup completed on ${service}. Reclaimed ${gbReclaimed}GB. Disk usage now below threshold.`,
       duration_ms: randomBetween(200, 500),
+      real_execution: false,
     };
   },
 
@@ -5963,6 +6252,7 @@ const ACTION_SIMULATORS = {
       success: true,
       output_log: `Cleaned ${filesDeleted} log files, reclaimed ${gbReclaimed}GB on ${service}.`,
       duration_ms: randomBetween(150, 400),
+      real_execution: false,
     };
   },
 
@@ -5974,6 +6264,7 @@ const ACTION_SIMULATORS = {
       success: true,
       output_log: `Traffic for ${service} rerouted to fallback endpoint.`,
       duration_ms: randomBetween(80, 250),
+      real_execution: false,
     };
   },
 
@@ -5985,6 +6276,7 @@ const ACTION_SIMULATORS = {
       success: true,
       output_log: `Network connections for ${service} re-established. 3/3 endpoints healthy.`,
       duration_ms: randomBetween(80, 250),
+      real_execution: false,
     };
   },
 
@@ -5996,6 +6288,7 @@ const ACTION_SIMULATORS = {
       success: true,
       output_log: `Scaled ${service} from 2 to 4 instances. Load distributed.`,
       duration_ms: randomBetween(100, 300),
+      real_execution: false,
     };
   },
 
@@ -6006,6 +6299,7 @@ const ACTION_SIMULATORS = {
       success: true,
       output_log: `Escalation notification sent for ${service}. Awaiting human response.`,
       duration_ms: 50,
+      real_execution: false,
     };
   },
 
@@ -6017,11 +6311,21 @@ const ACTION_SIMULATORS = {
       success: true,
       output_log: `Ops notification queued for ${service}.`,
       duration_ms: randomBetween(80, 200),
+      real_execution: false,
     };
   },
 };
 
 async function executeAction(actionName, service, command) {
+  const allowReal =
+    env.demoSandbox.enableRealFixes &&
+    service === 'demo-api' &&
+    ALLOWED_REAL_SANDBOX_ACTIONS.has(actionName);
+
+  if (allowReal) {
+    return executeRealDemoRepair(service);
+  }
+
   const executor = ACTION_SIMULATORS[actionName];
   if (!executor) {
     logger.warn(`[ActionExecutor] No simulator for action: ${actionName}, using generic`);
@@ -6031,6 +6335,7 @@ async function executeAction(actionName, service, command) {
       success: true,
       output_log: `Action ${actionName} executed on ${service}`,
       duration_ms: randomBetween(100, 300),
+      real_execution: false,
     };
   }
 
@@ -6043,6 +6348,7 @@ async function executeAction(actionName, service, command) {
       success: false,
       output_log: `Action ${actionName} failed on ${service}`,
       duration_ms: 0,
+      real_execution: false,
       error: err.message,
     };
   }
@@ -6422,16 +6728,6 @@ function setupIncidentSocket(io) {
 module.exports = { setupIncidentSocket };
 </file>
 
-<file path="data/alerts.csv">
-timestamp,alert_id,alert_type,severity,service,host,metric_value,threshold
-2025-01-10T10:05:00Z,ALT-001,high_cpu,critical,checkout,host-01,94.2,90
-2025-01-10T10:07:00Z,ALT-002,disk_full,critical,payments,host-02,97.1,95
-2025-01-10T10:09:00Z,ALT-003,api_failure,high,orders,host-03,500,200
-2025-01-10T10:11:00Z,ALT-004,service_down,critical,auth,host-04,0,1
-2025-01-10T10:13:00Z,ALT-005,high_cpu,critical,checkout,host-01,96.8,9
-2026-04-10T14:00:00Z,ALT-DEMO-ESC-01,repeated_failure,critical,payments-api,host-01,1,0
-</file>
-
 <file path="package.json">
 {
   "name": "aims",
@@ -6442,8 +6738,11 @@ timestamp,alert_id,alert_type,severity,service,host,metric_value,threshold
     "dev": "concurrently -k -n server,client -c blue,green \"npm run dev:server\" \"wait-on file:.aims-backend-port && npm run dev:client\"",
     "dev:server": "cd server && npm run dev",
     "dev:client": "cd client && npm run dev",
-    "install:all": "npm install && cd server && npm install && cd ../client && npm install",
-    "seed": "cd server && node seed.js"
+    "install:all": "npm install && cd server && npm install && cd ../client && npm install && cd demo-service && npm install",
+    "seed": "cd server && node seed.js",
+    "demo:service": "cd demo-service && npm start",
+    "demo:monitor": "cd server && node demo/demoMonitor.js",
+    "demo:break": "cd server && node demo/triggerBreak.js"
   },
   "devDependencies": {
     "concurrently": "^9.1.0",
@@ -6453,6 +6752,207 @@ timestamp,alert_id,alert_type,severity,service,host,metric_value,threshold
     "repomix": "^1.13.1"
   }
 }
+</file>
+
+<file path="server/engine/safetyGuards.js">
+const logger = require('../services/logger');
+
+const recentActions = new Map();
+const failureTracker = new Map();
+
+const UNSAFE_ACTIONS = new Set([
+  'drop_database',
+  'delete_all_logs',
+  'delete_all_files',
+  'stop_all_services',
+  'modify_firewall_rules',
+  'rotate_secrets',
+  'rm_rf',
+]);
+
+const SAFE_ACTIONS = new Set([
+  'restart_service',
+  'restart_api_service',
+  'cleanup_logs',
+  'cleanup_disk_space',
+  'switch_to_fallback',
+  'retry_connections',
+  'scale_up_instances',
+  'escalate_to_human',
+  'notify_admin',
+]);
+
+function isDryRunRequired(rule) {
+  if (!rule || typeof rule !== 'object') return false;
+  return rule.dry_run === true;
+}
+
+function isUnsafeAction(action) {
+  if (!action) return false;
+  return UNSAFE_ACTIONS.has(action);
+}
+
+function isKnownSafeAction(action) {
+  if (!action) return false;
+  return SAFE_ACTIONS.has(action);
+}
+
+function isDuplicateAction(action, service, windowMs = 30000) {
+  if (!action || !service) return false;
+  const key = `${action}:${service}`;
+  const lastExec = recentActions.get(key);
+  const now = Date.now();
+
+  if (lastExec && now - lastExec < windowMs) {
+    logger.warn(`[SafetyGuard] Duplicate suppressed: ${action} on ${service} (within ${windowMs / 1000}s)`);
+    return true;
+  }
+
+  recentActions.set(key, now);
+  return false;
+}
+
+function checkCircuitBreaker(windowMs = 600000, maxFailures = 5) {
+  const now = Date.now();
+  let recentFailures = 0;
+
+  for (const [, { timestamp }] of failureTracker) {
+    if (now - timestamp < windowMs) recentFailures++;
+  }
+
+  if (recentFailures >= maxFailures) {
+    logger.error(`[SafetyGuard] CIRCUIT BREAKER: ${recentFailures} failures in ${windowMs / 60000} min. Pausing automation.`);
+    return true;
+  }
+  return false;
+}
+
+function recordFailure(incidentId) {
+  failureTracker.set(incidentId, { timestamp: Date.now() });
+  if (failureTracker.size > 100) {
+    const oldest = [...failureTracker.entries()].sort((a, b) => a[1].timestamp - b[1].timestamp);
+    failureTracker.delete(oldest[0][0]);
+  }
+}
+
+/**
+ * Run all safety checks for a proposed action.
+ * Hardened: handles null/undefined action, service, and rule gracefully.
+ */
+function runSafetyChecks(action, service, rule, environment = 'production') {
+  const safeRule = rule && typeof rule === 'object' ? rule : {};
+  const checks = [];
+
+  // ── Guard: missing action ──
+  if (!action || typeof action !== 'string' || action.trim() === '') {
+    checks.push({
+      check: 'missing_action',
+      passed: false,
+      message: 'No action specified — cannot validate safety',
+    });
+    return { safe: false, checks, action: action || null, service: service || null };
+  }
+
+  // ── Guard: missing service context ──
+  if (!service || typeof service !== 'string' || service.trim() === '') {
+    checks.push({
+      check: 'missing_context',
+      passed: false,
+      message: 'No service context provided — cannot validate safety',
+    });
+    return { safe: false, checks, action, service: service || null };
+  }
+
+  // ── Guard: unknown action (not in safe OR unsafe list) ──
+  if (!isKnownSafeAction(action) && !isUnsafeAction(action)) {
+    checks.push({
+      check: 'unknown_action',
+      passed: false,
+      message: `Action "${action}" is not in the known safe or unsafe list — requires review`,
+    });
+  }
+
+  if (isUnsafeAction(action)) {
+    checks.push({
+      check: 'unsafe_action',
+      passed: false,
+      message: `Action "${action}" is in the unsafe list and requires human approval`,
+    });
+  }
+
+  if (isDryRunRequired(safeRule)) {
+    checks.push({
+      check: 'dry_run',
+      passed: false,
+      message: `Workflow rule requires dry-run first for ${action}`,
+    });
+  }
+
+  if (isDuplicateAction(action, service)) {
+    checks.push({
+      check: 'duplicate_guard',
+      passed: false,
+      message: `Same action (${action}) on ${service} was executed within last 30s`,
+    });
+  }
+
+  if (checkCircuitBreaker()) {
+    checks.push({
+      check: 'circuit_breaker',
+      passed: false,
+      message: '5+ action failures in last 10 minutes. Automation paused.',
+    });
+  }
+
+  if (environment === 'production' && isUnsafeAction(action)) {
+    checks.push({
+      check: 'production_lock',
+      passed: false,
+      message: `Action "${action}" blocked in production without approval token`,
+    });
+  }
+
+  const allPassed = checks.length === 0 || checks.every((c) => c.passed);
+
+  if (!allPassed) {
+    logger.warn(`[SafetyGuard] Blocked: ${action} on ${service} — ${checks.filter((c) => !c.passed).map((c) => c.check).join(', ')}`);
+  }
+
+  return {
+    safe: allPassed,
+    checks,
+    action,
+    service,
+  };
+}
+
+/**
+ * Build the structured safety_check object for pipeline agent_outputs.
+ */
+function buildSafetyCheckResult(safetyResult) {
+  const failedChecks = (safetyResult.checks || []).filter((c) => !c.passed);
+  return {
+    safe: safetyResult.safe,
+    reason: safetyResult.safe
+      ? 'All safety checks passed'
+      : failedChecks.map((c) => c.message).join('; '),
+    checks: safetyResult.checks || [],
+    checked_at: new Date().toISOString(),
+  };
+}
+
+module.exports = {
+  runSafetyChecks,
+  buildSafetyCheckResult,
+  isDryRunRequired,
+  isUnsafeAction,
+  isKnownSafeAction,
+  isDuplicateAction,
+  checkCircuitBreaker,
+  recordFailure,
+  SAFE_ACTIONS,
+  UNSAFE_ACTIONS,
+};
 </file>
 
 <file path="server/server.js">
@@ -6469,6 +6969,7 @@ const logger = require('./services/logger');
 const { writeListeningPort, registerExitCleanup } = require('./utils/devPortFile');
 
 const alertRoutes = require('./routes/alerts');
+const webhookRoutes = require('./routes/webhooks');
 const incidentRoutes = require('./routes/incidents');
 const reportRoutes = require('./routes/reports');
 const dashboardRoutes = require('./routes/dashboard');
@@ -6486,6 +6987,7 @@ app.use(express.json());
 app.set('io', io);
 
 app.use('/api/alerts', alertRoutes);
+app.use('/api/webhooks', webhookRoutes);
 app.use('/api/incidents', incidentRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/dashboard', dashboardRoutes);
@@ -6744,6 +7246,10 @@ function runAgent(agentName, args) {
 module.exports = { runAgent, warmupPythonAgentBridge };
 </file>
 
+<file path="data/alerts.csv">
+timestamp,alert_id,alert_type,severity,service,host,metric_value,threshold
+</file>
+
 <file path="server/config/env.js">
 const dotenv = require('dotenv');
 const path = require('path');
@@ -6849,6 +7355,12 @@ module.exports = {
   healthCheck: {
     delayMsMin: parseInt(process.env.HEALTH_CHECK_DELAY_MS_MIN, 10),
     delayMsMax: parseInt(process.env.HEALTH_CHECK_DELAY_MS_MAX, 10),
+  },
+  /** Sandbox demo: local demo API + webhook monitor + optional real POST /repair. */
+  demoSandbox: {
+    serviceUrl: (process.env.DEMO_SERVICE_URL || 'http://127.0.0.1:5055').replace(/\/$/, ''),
+    enableRealFixes: process.env.ENABLE_REAL_SANDBOX_FIXES === 'true',
+    webhookSharedSecret: process.env.WEBHOOK_SHARED_SECRET || '',
   },
 };
 </file>
@@ -7029,6 +7541,7 @@ const { runAgent } = require('../services/pythonAgentBridge');
 const workflowEngine = require('./workflowEngine');
 const { runHealthCheck } = require('./healthChecker');
 const { executeAction } = require('../services/actionExecutor');
+const { runSafetyChecks, buildSafetyCheckResult, recordFailure } = require('./safetyGuards');
 const AlertModel = require('../models/Alert');
 const IncidentModel = require('../models/Incident');
 const ReportModel = require('../models/Report');
@@ -7037,7 +7550,11 @@ const { notifyEscalation } = require('../services/notifier');
 const { setActivity } = require('../services/agentActivityStore');
 const env = require('../config/env');
 
-/** LLM action name → workflow rule action in workflows.csv (when they differ). */
+// ─────────────────────────────────────────────────────────────────────────────
+// Helper: AI-primary decision resolution
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** LLM action name → workflow rule action aliases (when they differ). */
 const DEV_ACTION_ALIASES = {
   cleanup_disk_space: 'cleanup_logs',
   restart_api_service: 'switch_to_fallback',
@@ -7050,59 +7567,104 @@ function decisionMatchesWorkflowRule(decisionAction, ruleAction) {
 }
 
 /**
- * When the LLM omits fields, align with the matched workflow rule so action_taken and stages stay consistent.
+ * PRIMARY decision function — keep the AI's action unless it's missing/unusable.
+ *
+ * Logic:
+ *  - If the LLM returned a valid, non-empty action → keep it.
+ *  - Only fall back to workflow rule if the LLM returned nothing usable.
+ *  - Preserve escalate_to_human workflow rule as a hard escalation fallback.
  */
-function mergeDecisionFromWorkflowRule(decision, matchedRule) {
-  if (!matchedRule?.action) return decision;
+function chooseFinalAction(decision, matchedRule) {
   const base =
     decision && typeof decision === 'object' ? { ...decision } : {};
   delete base.error;
   delete base.message;
 
-  if (base.action == null || base.action === '') {
-    base.action = matchedRule.action;
-  }
-  if (base.priority == null && matchedRule.priority != null) {
-    base.priority = matchedRule.priority;
+  const hasValidAiAction =
+    typeof base.action === 'string' && base.action.trim() !== '';
+
+  if (hasValidAiAction) {
+    logger.info(`[Pipeline] Using AI-selected action: ${base.action}`);
+    return base;
   }
 
-  if (matchedRule.action === 'escalate_to_human') {
+  // AI returned no action — fall back to workflow rule
+  if (matchedRule && matchedRule.action) {
+    logger.info(`[Pipeline] Falling back to workflow rule action: ${matchedRule.action}`);
+
+    if (matchedRule.action === 'escalate_to_human') {
+      return {
+        ...base,
+        action: 'escalate_to_human',
+        escalate: true,
+        safe_to_execute: false,
+        escalation_reason:
+          base.escalation_reason || 'No AI action available; workflow rule escalates to human.',
+      };
+    }
+
     return {
       ...base,
-      action: 'escalate_to_human',
-      escalate: true,
-      safe_to_execute: false,
-      escalation_reason:
-        base.escalation_reason || 'No automated workflow action; escalate to human.',
+      action: matchedRule.action,
+      // Do NOT auto-set safe_to_execute; leave it for handleUnsafeOrEscalate
     };
   }
 
-  if (base.safe_to_execute == null) base.safe_to_execute = false;
-  if (base.escalate == null) base.escalate = false;
-
-  return base;
+  // No AI action, no workflow rule — escalate
+  logger.warn('[Pipeline] No action from AI or workflow rules, escalating');
+  return {
+    ...base,
+    action: 'escalate_to_human',
+    escalate: true,
+    safe_to_execute: false,
+    escalation_reason: 'Neither AI nor workflow rules produced a usable action.',
+  };
 }
 
 /**
- * In development, if the LLM marked an action as unsafe but it matches the
- * workflow-rule action (which we trust for demo purposes), override safe_to_execute
- * so the pipeline actually executes the action and can reach "resolved".
- * Set DEV_AUTO_APPROVE_WORKFLOW_ACTIONS=false in .env to disable.
+ * Fill in missing non-action fields from the workflow rule as suggestions/defaults.
+ * Does NOT override values the LLM already set.
  */
-function devApproveIfWorkflowMatch(decision, matchedRule) {
-  if (!env.pipeline.devAutoApproveWorkflowActions) return decision;
-  if (decision.safe_to_execute) return decision;
-  if (!matchedRule || !matchedRule.action) return decision;
-  if (matchedRule.action === 'escalate_to_human') return decision;
-  if (decision.escalate) return decision;
-  if (!decisionMatchesWorkflowRule(decision.action, matchedRule.action)) return decision;
-  logger.info(`[Pipeline][dev] Auto-approving workflow-aligned action: ${decision.action} (rule: ${matchedRule.action})`);
-  return {
-    ...decision,
-    safe_to_execute: true,
-    escalate: false,
-    escalation_reason: undefined,
-  };
+function applyWorkflowFallback(decision, matchedRule) {
+  if (!matchedRule || typeof matchedRule !== 'object') return decision;
+  const out = { ...decision };
+
+  if (out.priority == null && matchedRule.priority != null) {
+    out.priority = matchedRule.priority;
+  }
+
+  // Defaults that should exist
+  if (out.safe_to_execute == null) out.safe_to_execute = false;
+  if (out.escalate == null) out.escalate = false;
+
+  return out;
+}
+
+/**
+ * Enforce LLM safety flags — never override unsafe/escalate to safe.
+ * If the LLM says escalate or unsafe, we respect that decision.
+ */
+function handleUnsafeOrEscalate(decision) {
+  const out = { ...decision };
+
+  // If the LLM explicitly says escalate, force the action and safety flag
+  if (out.escalate === true) {
+    logger.info(`[Pipeline] AI marked action for escalation: ${out.escalation_reason || 'no reason given'}`);
+    out.action = 'escalate_to_human';
+    out.safe_to_execute = false;
+    return out;
+  }
+
+  // If the LLM says unsafe, do NOT override — respect the decision
+  if (out.safe_to_execute === false) {
+    logger.info(`[Pipeline] AI marked action unsafe, escalating (action: ${out.action})`);
+    out.escalate = true;
+    out.escalation_reason =
+      out.escalation_reason || out.safety_reason || 'AI decision agent marked action as unsafe';
+    return out;
+  }
+
+  return out;
 }
 
 function ensureResolutionStatus(resolution, healthResult, executionResult) {
@@ -7125,6 +7687,45 @@ function ensureResolutionStatus(resolution, healthResult, executionResult) {
       'Remediation incomplete, action skipped, or health check did not pass.',
   };
 }
+
+/** api_failure for demo-api uses restart_api_service so allowlisted sandbox repair can run. */
+function applyDemoApiRestartRule(rule, service, alertType) {
+  if (service === 'demo-api' && alertType === 'api_failure' && rule && typeof rule === 'object') {
+    return { ...rule, action: 'restart_api_service' };
+  }
+  return rule;
+}
+
+function augmentResolutionSummaryForDemo(resolution, executionResult, healthResult, service) {
+  if (service !== 'demo-api') return resolution;
+  const mode = executionResult?.real_execution ? 'real-sandbox' : 'simulated';
+  const ver =
+    healthResult?.verification_result || (healthResult?.health_check_passed ? 'passed' : 'failed');
+  const line = `Remediation mode: ${mode}. Health verification: ${ver}.`;
+  return {
+    ...resolution,
+    resolution_summary: [line, resolution.resolution_summary].filter(Boolean).join(' '),
+  };
+}
+
+function buildDemoSandboxMeta(rawAlert, detection, actionComposite, healthResult) {
+  if (detection.service !== 'demo-api') return null;
+  const remediation_mode = actionComposite?.real_execution ? 'real-sandbox' : 'simulated';
+  const verification_result =
+    healthResult?.verification_result || (healthResult?.health_check_passed ? 'passed' : 'failed');
+  return {
+    webhook_received: Boolean(rawAlert.webhook_received),
+    remediation_mode,
+    verification_result,
+    demo_target: 'demo-api',
+    repair_endpoint_called: actionComposite?.repair_endpoint_called || null,
+    health_probe_url: healthResult?.demo_probe_url || null,
+  };
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Main pipeline
+// ─────────────────────────────────────────────────────────────────────────────
 
 const activeIncidents = new Map();
 
@@ -7164,6 +7765,14 @@ async function processAlert(rawAlert, io) {
       return { success: false, reason: 'duplicate', detection };
     }
 
+    if (rawAlert.webhook_received && rawAlert.service === 'demo-api') {
+      detection = {
+        ...detection,
+        service: 'demo-api',
+        alert_type: rawAlert.alert_type || detection.alert_type,
+      };
+    }
+
     const mttdSec = Math.round((Date.now() - pipelineStart) / 1000);
 
     // ── Stage 2: Alert (create incident) ──
@@ -7183,6 +7792,20 @@ async function processAlert(rawAlert, io) {
       processed: false,
     });
 
+    const initialOutputs =
+      detection.service === 'demo-api'
+        ? {
+            detection,
+            demo_sandbox: {
+              webhook_received: Boolean(rawAlert.webhook_received),
+              remediation_mode: 'pending',
+              verification_result: 'pending',
+              demo_target: 'demo-api',
+              repair_endpoint_called: null,
+            },
+          }
+        : { detection };
+
     const incident = await IncidentModel.create({
       incident_id: incidentId,
       alert_id: alertId,
@@ -7193,7 +7816,7 @@ async function processAlert(rawAlert, io) {
       started_at: new Date().toISOString(),
       retry_count: 0,
       escalated: false,
-      agent_outputs: { detection },
+      agent_outputs: initialOutputs,
     });
 
     await AlertModel.markProcessed(alertId);
@@ -7204,7 +7827,7 @@ async function processAlert(rawAlert, io) {
       io.emit('agent:activity', { agent: 'detection', incident_id: incidentId, status: 'completed' });
     }
 
-    // ── Stage 3: Decision ──
+    // ── Stage 3: Decision (AI-primary, workflow-secondary) ──
     addTimelineEvent('Starting decision phase');
     setActivity({ agent: 'decision', incident_id: incidentId, status: 'running' });
     if (io) io.emit('agent:activity', { agent: 'decision', incident_id: incidentId, status: 'running' });
@@ -7218,14 +7841,28 @@ async function processAlert(rawAlert, io) {
       recentIncidents,
     });
 
-    // Look up the matched rule now (needed for dev approval + resolution)
+    // Look up the matched rule now (needed for fallback + resolution)
     const matchedRule = await workflowEngine.matchRule(detection.alert_type);
+    const effectiveRule = applyDemoApiRestartRule(matchedRule, detection.service, detection.alert_type);
 
-    decision = mergeDecisionFromWorkflowRule(decision, matchedRule);
-    // In development, allow the matched workflow action to run so incidents can resolve
-    decision = devApproveIfWorkflowMatch(decision, matchedRule);
+    // AI-primary decision pipeline:
+    // 1. Choose final action: AI first, workflow fallback only if AI returned nothing
+    decision = chooseFinalAction(decision, effectiveRule);
+    // 2. Fill in missing metadata from workflow rule (priority, etc.)
+    decision = applyWorkflowFallback(decision, effectiveRule);
+    // 3. Enforce safety flags: never override AI's unsafe/escalate judgment
+    decision = handleUnsafeOrEscalate(decision);
 
-    addTimelineEvent(`Decision: action=${decision.action}, safe=${decision.safe_to_execute}, priority=${decision.priority}`);
+    if (
+      detection.service === 'demo-api' &&
+      detection.alert_type === 'api_failure' &&
+      !decision.escalate &&
+      decision.safe_to_execute === true
+    ) {
+      decision = { ...decision, action: 'restart_api_service' };
+    }
+
+    addTimelineEvent(`Decision: action=${decision.action}, safe=${decision.safe_to_execute}, escalate=${decision.escalate}, priority=${decision.priority}`);
 
     await IncidentModel.update(incidentId, {
       status: 'in_progress',
@@ -7238,37 +7875,78 @@ async function processAlert(rawAlert, io) {
       io.emit('agent:activity', { agent: 'decision', incident_id: incidentId, status: 'completed' });
     }
 
-    // ── Stage 4: Action ──
+    // ── Stage 4: Action (with safety guard enforcement) ──
     let actionResult = null;
     let executionResult = null;
+    let safetyCheck = null;
 
     if (decision.safe_to_execute && !decision.escalate) {
-      addTimelineEvent(`Executing action: ${decision.action}`);
-
-      setActivity({ agent: 'action', incident_id: incidentId, status: 'running' });
-      if (io) io.emit('agent:activity', { agent: 'action', incident_id: incidentId, status: 'running' });
-      const actionPlan = runAgent('action', { decision, alert: detection });
-      addTimelineEvent(`Action plan: ${actionPlan.execution_command || decision.action}`);
-
-      executionResult = await executeAction(
+      // ── Run safety checks BEFORE executing ──
+      const safetyResult = runSafetyChecks(
         decision.action,
         detection.service,
-        actionPlan.execution_command
+        effectiveRule,
+        env.app.nodeEnv === 'production' ? 'production' : 'development'
       );
+      safetyCheck = buildSafetyCheckResult(safetyResult);
 
-      actionResult = { ...actionPlan, ...executionResult };
-      addTimelineEvent(
-        `Action result: ${executionResult.success ? 'SUCCESS' : 'FAILED'} (${executionResult.duration_ms}ms)`
-      );
+      if (!safetyResult.safe) {
+        // Safety check FAILED — do not execute, escalate instead
+        addTimelineEvent(`Safety check FAILED for action ${decision.action}: ${safetyCheck.reason}`);
+        logger.warn(`[Pipeline] Safety check FAILED — blocking action ${decision.action} on ${detection.service}`);
 
-      if (io) {
-        setActivity({ agent: 'action', incident_id: incidentId, status: 'completed', result: executionResult });
-        io.emit('agent:activity', {
-          agent: 'action',
-          incident_id: incidentId,
-          status: 'completed',
-          result: executionResult,
-        });
+        actionResult = {
+          executed: false,
+          success: false,
+          output_log: `Action blocked by safety guard: ${safetyCheck.reason}`,
+          safety_check: safetyCheck,
+        };
+
+        // Force escalation
+        decision = {
+          ...decision,
+          safe_to_execute: false,
+          escalate: true,
+          escalation_reason: `Safety guard blocked action: ${safetyCheck.reason}`,
+        };
+
+        setActivity({ agent: 'action', incident_id: incidentId, status: 'completed', result: { blocked: true } });
+        if (io) io.emit('agent:activity', { agent: 'action', incident_id: incidentId, status: 'completed', result: { blocked: true } });
+      } else {
+        // Safety check PASSED — proceed with action execution
+        addTimelineEvent(`Safety check PASSED for action: ${decision.action}`);
+        addTimelineEvent(`Executing action: ${decision.action}`);
+
+        setActivity({ agent: 'action', incident_id: incidentId, status: 'running' });
+        if (io) io.emit('agent:activity', { agent: 'action', incident_id: incidentId, status: 'running' });
+        const actionPlan = runAgent('action', { decision, alert: detection });
+        addTimelineEvent(`Action plan: ${actionPlan.execution_command || decision.action}`);
+
+        executionResult = await executeAction(
+          decision.action,
+          detection.service,
+          actionPlan.execution_command
+        );
+
+        actionResult = { ...actionPlan, ...executionResult, safety_check: safetyCheck };
+        addTimelineEvent(
+          `Action result: ${executionResult.success ? 'SUCCESS' : 'FAILED'} (${executionResult.duration_ms}ms)`
+        );
+
+        // Record failure for circuit breaker if action failed
+        if (!executionResult.success) {
+          recordFailure(incidentId);
+        }
+
+        if (io) {
+          setActivity({ agent: 'action', incident_id: incidentId, status: 'completed', result: executionResult });
+          io.emit('agent:activity', {
+            agent: 'action',
+            incident_id: incidentId,
+            status: 'completed',
+            result: executionResult,
+          });
+        }
       }
     } else {
       addTimelineEvent(`Action skipped: ${decision.escalation_reason || 'not safe to execute'}`);
@@ -7292,10 +7970,16 @@ async function processAlert(rawAlert, io) {
       actionResult: executionResult || actionResult,
       postActionHealth: healthResult,
       retryCount: 0,
-      maxRetries: matchedRule.max_retries,
+      maxRetries: effectiveRule.max_retries,
     });
 
     resolution = ensureResolutionStatus(resolution, healthResult, executionResult);
+    resolution = augmentResolutionSummaryForDemo(
+      resolution,
+      executionResult,
+      healthResult,
+      detection.service
+    );
 
     addTimelineEvent(`Resolution: ${resolution.status} — ${resolution.resolution_summary || ''}`);
 
@@ -7311,7 +7995,7 @@ async function processAlert(rawAlert, io) {
 
     // Handle retry/escalation
     if (resolution.status === 'retry') {
-      return await handleRetry(incidentId, rawAlert, detection, decision, matchedRule, 1, timeline, io);
+      return await handleRetry(incidentId, rawAlert, detection, decision, effectiveRule, 1, timeline, io, safetyCheck);
     }
 
     if (resolution.status === 'escalated' || decision.escalate) {
@@ -7325,14 +8009,19 @@ async function processAlert(rawAlert, io) {
         retryCount: 0,
         severity: detection.severity,
         service: detection.service,
-        reason: resolution.resolution_summary || 'Automated remediation failed',
+        reason: resolution.resolution_summary || decision.escalation_reason || 'Automated remediation failed',
       });
+
+      const agentOutputs = { detection, decision, action: actionResult, resolution, escalation };
+      if (safetyCheck) agentOutputs.safety_check = safetyCheck;
+      const demoMeta = buildDemoSandboxMeta(rawAlert, detection, executionResult || actionResult, healthResult);
+      if (demoMeta) agentOutputs.demo_sandbox = demoMeta;
 
       await IncidentModel.update(incidentId, {
         status: 'escalated',
         escalated: true,
         action_taken: decision.action,
-        agent_outputs: { detection, decision, action: actionResult, resolution, escalation },
+        agent_outputs: agentOutputs,
       });
 
       addTimelineEvent(`Escalated: ${escalation.escalation_priority} via ${(escalation.notification_channels || []).join(', ')}`);
@@ -7388,6 +8077,14 @@ async function processAlert(rawAlert, io) {
       const resolvedOutputs = escalationHandoff
         ? { detection, decision, action: actionResult, resolution, escalation: escalationHandoff }
         : { detection, decision, action: actionResult, resolution };
+      if (safetyCheck) resolvedOutputs.safety_check = safetyCheck;
+      const demoMetaResolved = buildDemoSandboxMeta(
+        rawAlert,
+        detection,
+        executionResult || actionResult,
+        healthResult
+      );
+      if (demoMetaResolved) resolvedOutputs.demo_sandbox = demoMetaResolved;
 
       await IncidentModel.update(incidentId, {
         status: 'resolved',
@@ -7419,6 +8116,7 @@ async function processAlert(rawAlert, io) {
       timeline,
       mttdSec,
       mttrSec,
+      demo_sandbox: buildDemoSandboxMeta(rawAlert, detection, executionResult || actionResult, healthResult),
     });
 
     if (!report.error) {
@@ -7460,7 +8158,11 @@ async function processAlert(rawAlert, io) {
   }
 }
 
-async function handleRetry(incidentId, rawAlert, detection, prevDecision, matchedRule, retryCount, timeline, io) {
+// ─────────────────────────────────────────────────────────────────────────────
+// Retry handler
+// ─────────────────────────────────────────────────────────────────────────────
+
+async function handleRetry(incidentId, rawAlert, detection, prevDecision, matchedRule, retryCount, timeline, io, prevSafetyCheck) {
   const addTimelineEvent = (event) => {
     timeline.push({ timestamp: new Date().toISOString(), event });
     logger.info(`[Pipeline:Retry] ${event}`);
@@ -7478,11 +8180,14 @@ async function handleRetry(incidentId, rawAlert, detection, prevDecision, matche
       reason: `Action failed after ${retryCount} retries`,
     });
 
+    const agentOutputs = { detection, escalation };
+    if (prevSafetyCheck) agentOutputs.safety_check = prevSafetyCheck;
+
     await IncidentModel.update(incidentId, {
       status: 'escalated',
       escalated: true,
       retry_count: retryCount,
-      agent_outputs: { detection, escalation },
+      agent_outputs: agentOutputs,
     });
 
     const retryFailReason = `Action failed after ${retryCount} retries`;
@@ -7518,8 +8223,19 @@ async function handleRetry(incidentId, rawAlert, detection, prevDecision, matche
     recentIncidents: [],
   });
 
-  decision = mergeDecisionFromWorkflowRule(decision, matchedRule);
-  decision = devApproveIfWorkflowMatch(decision, matchedRule);
+  // AI-primary decision pipeline (same as main flow)
+  decision = chooseFinalAction(decision, matchedRule);
+  decision = applyWorkflowFallback(decision, matchedRule);
+  decision = handleUnsafeOrEscalate(decision);
+
+  if (
+    detection.service === 'demo-api' &&
+    detection.alert_type === 'api_failure' &&
+    !decision.escalate &&
+    decision.safe_to_execute === true
+  ) {
+    decision = { ...decision, action: 'restart_api_service' };
+  }
 
   if (decision.escalate) {
     addTimelineEvent('Decision agent recommends escalation on retry');
@@ -7528,8 +8244,32 @@ async function handleRetry(incidentId, rawAlert, detection, prevDecision, matche
     return { success: false, incident_id: incidentId, status: 'escalated' };
   }
 
+  // ── Safety checks before retry action ──
+  const safetyResult = runSafetyChecks(
+    decision.action,
+    detection.service,
+    matchedRule,
+    env.app.nodeEnv === 'production' ? 'production' : 'development'
+  );
+  const safetyCheck = buildSafetyCheckResult(safetyResult);
+
+  if (!safetyResult.safe) {
+    addTimelineEvent(`Safety check FAILED on retry for action ${decision.action}: ${safetyCheck.reason}`);
+    await IncidentModel.update(incidentId, { status: 'escalated', escalated: true });
+    if (io) io.emit('incident:updated', { incident_id: incidentId, status: 'escalated' });
+    return { success: false, incident_id: incidentId, status: 'escalated', safety_check: safetyCheck };
+  }
+
+  addTimelineEvent(`Safety check PASSED on retry for action: ${decision.action}`);
+
   const actionPlan = runAgent('action', { decision, alert: detection });
   const executionResult = await executeAction(decision.action, detection.service, actionPlan.execution_command);
+
+  // Record failure for circuit breaker
+  if (!executionResult.success) {
+    recordFailure(incidentId);
+  }
+
   const healthResult = await runHealthCheck({ ...rawAlert, ...detection }, executionResult.success);
 
   let resolution = runAgent('resolution', {
@@ -7541,24 +8281,58 @@ async function handleRetry(incidentId, rawAlert, detection, prevDecision, matche
   });
 
   resolution = ensureResolutionStatus(resolution, healthResult, executionResult);
+  resolution = augmentResolutionSummaryForDemo(
+    resolution,
+    executionResult,
+    healthResult,
+    detection.service
+  );
 
   if (resolution.status === 'retry') {
-    return handleRetry(incidentId, rawAlert, detection, decision, matchedRule, retryCount + 1, timeline, io);
+    return handleRetry(incidentId, rawAlert, detection, decision, matchedRule, retryCount + 1, timeline, io, safetyCheck);
   }
+
+  const actionComposite = { ...actionPlan, ...executionResult };
 
   if (resolution.status === 'resolved') {
     addTimelineEvent(`Resolved on retry ${retryCount}`);
-    await IncidentModel.update(incidentId, {
+    const resolvedUpdate = {
       status: 'resolved',
       resolved_at: new Date().toISOString(),
       action_taken: decision.action,
       retry_count: retryCount,
-    });
+    };
+    if (detection.service === 'demo-api') {
+      const prevRow = await IncidentModel.findByIncidentId(incidentId);
+      const prevOut = prevRow?.agent_outputs || {};
+      const dMeta = buildDemoSandboxMeta(rawAlert, detection, actionComposite, healthResult);
+      resolvedUpdate.agent_outputs = {
+        ...prevOut,
+        decision,
+        action: actionComposite,
+        resolution,
+        ...(dMeta ? { demo_sandbox: dMeta } : {}),
+      };
+    }
+    await IncidentModel.update(incidentId, resolvedUpdate);
     if (io) io.emit('incident:updated', { incident_id: incidentId, status: 'resolved' });
     return { success: true, incident_id: incidentId, status: 'resolved', retry_count: retryCount };
   }
 
-  await IncidentModel.update(incidentId, { status: 'escalated', escalated: true, retry_count: retryCount });
+  const escalatedUpdate = { status: 'escalated', escalated: true, retry_count: retryCount };
+  if (detection.service === 'demo-api') {
+    const prevRow = await IncidentModel.findByIncidentId(incidentId);
+    const prevOut = prevRow?.agent_outputs || {};
+    const dMeta = buildDemoSandboxMeta(rawAlert, detection, actionComposite, healthResult);
+    escalatedUpdate.agent_outputs = {
+      ...prevOut,
+      decision,
+      action: actionComposite,
+      resolution,
+      ...(dMeta ? { demo_sandbox: dMeta } : {}),
+    };
+  }
+  await IncidentModel.update(incidentId, escalatedUpdate);
   if (io) io.emit('incident:updated', { incident_id: incidentId, status: 'escalated' });
   return { success: false, incident_id: incidentId, status: 'escalated' };
 }

@@ -1,0 +1,14 @@
+{
+  "name": "aims-demo-service",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Sandbox API for AIMS autonomous remediation hackathon demo",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "node --watch index.js"
+  },
+  "dependencies": {
+    "express": "^4.21.0"
+  }
+}

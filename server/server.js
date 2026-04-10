@@ -11,6 +11,7 @@ const logger = require('./services/logger');
 const { writeListeningPort, registerExitCleanup } = require('./utils/devPortFile');
 
 const alertRoutes = require('./routes/alerts');
+const webhookRoutes = require('./routes/webhooks');
 const incidentRoutes = require('./routes/incidents');
 const reportRoutes = require('./routes/reports');
 const dashboardRoutes = require('./routes/dashboard');
@@ -28,6 +29,7 @@ app.use(express.json());
 app.set('io', io);
 
 app.use('/api/alerts', alertRoutes);
+app.use('/api/webhooks', webhookRoutes);
 app.use('/api/incidents', incidentRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/dashboard', dashboardRoutes);
@@ -49,7 +51,11 @@ async function start() {
     warmupPythonAgentBridge();
   }
 
-  startAlertPolling(io);
+  if (env.polling.enableCsvPolling) {
+    startAlertPolling(io);
+  } else {
+    logger.info('CSV alert polling disabled (ENABLE_CSV_POLLING=false)');
+  }
 
   const isProd = env.app.nodeEnv === 'production';
   if (!isProd) registerExitCleanup();

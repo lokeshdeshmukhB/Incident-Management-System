@@ -91,6 +91,8 @@ module.exports = {
   },
   polling: {
     alertPollIntervalMs: parseInt(process.env.ALERT_POLL_INTERVAL_MS, 10) || 10000,
+    /** When false, `data/alerts.csv` polling is disabled (webhook-only demos). Default: enabled. */
+    enableCsvPolling: process.env.ENABLE_CSV_POLLING !== 'false',
   },
   /** When true (default in development), align decision with workflows.csv / DB rule so demo actions run and incidents can resolve. */
   pipeline: {
@@ -102,5 +104,11 @@ module.exports = {
   healthCheck: {
     delayMsMin: parseInt(process.env.HEALTH_CHECK_DELAY_MS_MIN, 10),
     delayMsMax: parseInt(process.env.HEALTH_CHECK_DELAY_MS_MAX, 10),
+  },
+  /** Sandbox demo: local demo API + webhook monitor + optional real POST /repair. */
+  demoSandbox: {
+    serviceUrl: (process.env.DEMO_SERVICE_URL || 'http://127.0.0.1:5055').replace(/\/$/, ''),
+    enableRealFixes: process.env.ENABLE_REAL_SANDBOX_FIXES === 'true',
+    webhookSharedSecret: process.env.WEBHOOK_SHARED_SECRET || '',
   },
 };

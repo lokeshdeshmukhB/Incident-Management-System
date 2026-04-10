@@ -82,6 +82,48 @@ cd client && npm run dev   # restart after API is listening so Vite picks up .ai
 | GET | /api/dashboard/timeline | Incidents over time |
 | GET | /api/workflows | List workflow rules |
 | POST | /api/workflows | Create workflow rule |
+| POST | /api/webhooks/demo | Secured demo monitor webhook → same `processAlert` pipeline |
+
+## Sandbox autonomous remediation demo
+
+Optional hackathon flow: a tiny local **demo API** goes unhealthy, a **monitor** calls AIMS through a **shared-secret webhook**, the normal incident pipeline runs, and the action step can perform a **real** `POST /repair` on that API **only** when `ENABLE_REAL_SANDBOX_FIXES=true`. Resolution uses a real `GET /health` probe for `demo-api` in that mode; otherwise behavior stays simulated and matches the legacy health check.
+
+**Architecture (high level)**
+
+```mermaid
+flowchart LR
+  DemoAPI[demo-service /health]
+  Monitor[demoMonitor.js]
+  Webhook[POST /api/webhooks/demo]
+  Pipeline[processAlert pipeline]
+  Repair[POST /repair]
+  DemoAPI --> Monitor
+  Monitor --> Webhook
+  Webhook --> Pipeline
+  Pipeline --> Repair
+  Repair --> DemoAPI
+```
+
+**Configure** (see `server/.env.example`): set `WEBHOOK_SHARED_SECRET` (required for the webhook route), optionally `ENABLE_REAL_SANDBOX_FIXES=true`, `DEMO_SERVICE_URL`, `DEMO_WEBHOOK_URL`, `DEMO_MONITOR_INTERVAL_MS`. For webhook-only demos without CSV noise, set **`ENABLE_CSV_POLLING=false`** (skips `startAlertPolling` / `data/alerts.csv` ingestion).
+
+**Run (four processes)**
+
+1. Backend: `npm run dev` from repo root (or `cd server && npm run dev`).
+2. Frontend: included in root `npm run dev`, or `cd client && npm run dev`.
+3. Demo API: `npm run demo:service` (from repo root) — listens on `DEMO_SERVICE_PORT` (default `5055`).
+4. Monitor: `npm run demo:monitor` — polls `GET /health` and posts to `/api/webhooks/demo` on healthy→unhealthy transitions (with cooldown).
+
+**Break the service during a presentation**
+
+- `npm run demo:break`, or `curl -X POST http://127.0.0.1:5055/break`
+
+**Expected dashboard behavior**
+
+- After `/break`, the monitor sends one webhook per transition (cooldown prevents floods). A new incident appears for `demo-api` / `api_failure`. Agent activity progresses through decision → action → resolution. With **real fixes enabled**, the action agent hits the sandbox repair URL; resolution confirms via HTTP `200` on `/health`. With **real fixes off**, remediation stays simulated and the existing simulated health path applies so CSV/demo flows are unchanged.
+
+**Safety defaults**
+
+- Real HTTP repair is allowlisted to `service === "demo-api"` and actions `restart_api_service` / `restart_service` only, gated by `ENABLE_REAL_SANDBOX_FIXES=true`. No arbitrary shell execution. The dedicated webhook route rejects requests if `WEBHOOK_SHARED_SECRET` is unset or the `x-webhook-secret` header does not match.
 
 ## Pipeline Flow
 
@@ -99,8 +141,10 @@ Each agent uses Groq AI with structured JSON output. Three API keys are distribu
 
 ```
 aims/
+  demo-service/         - Sandbox Express API (/health, /break, /repair) for live demos
   incident_management/  - Python agents, LangGraph graph, bridge (Groq via LangChain)
   server/
+    demo/               - Health monitor + triggerBreak helper
     config/       - Supabase, environment config
     engine/       - Orchestration pipeline, workflow engine, safety guards
     models/       - Supabase data access layer

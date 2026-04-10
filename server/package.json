@@ -6,7 +6,9 @@
   "scripts": {
     "start": "node server.js",
     "dev": "node --watch server.js",
-    "seed": "node seed.js"
+    "seed": "node seed.js",
+    "demo:monitor": "node demo/demoMonitor.js",
+    "demo:break": "node demo/triggerBreak.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.103.0",

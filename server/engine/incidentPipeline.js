@@ -150,6 +150,41 @@ function ensureResolutionStatus(resolution, healthResult, executionResult) {
   };
 }
 
+/** api_failure for demo-api uses restart_api_service so allowlisted sandbox repair can run. */
+function applyDemoApiRestartRule(rule, service, alertType) {
+  if (service === 'demo-api' && alertType === 'api_failure' && rule && typeof rule === 'object') {
+    return { ...rule, action: 'restart_api_service' };
+  }
+  return rule;
+}
+
+function augmentResolutionSummaryForDemo(resolution, executionResult, healthResult, service) {
+  if (service !== 'demo-api') return resolution;
+  const mode = executionResult?.real_execution ? 'real-sandbox' : 'simulated';
+  const ver =
+    healthResult?.verification_result || (healthResult?.health_check_passed ? 'passed' : 'failed');
+  const line = `Remediation mode: ${mode}. Health verification: ${ver}.`;
+  return {
+    ...resolution,
+    resolution_summary: [line, resolution.resolution_summary].filter(Boolean).join(' '),
+  };
+}
+
+function buildDemoSandboxMeta(rawAlert, detection, actionComposite, healthResult) {
+  if (detection.service !== 'demo-api') return null;
+  const remediation_mode = actionComposite?.real_execution ? 'real-sandbox' : 'simulated';
+  const verification_result =
+    healthResult?.verification_result || (healthResult?.health_check_passed ? 'passed' : 'failed');
+  return {
+    webhook_received: Boolean(rawAlert.webhook_received),
+    remediation_mode,
+    verification_result,
+    demo_target: 'demo-api',
+    repair_endpoint_called: actionComposite?.repair_endpoint_called || null,
+    health_probe_url: healthResult?.demo_probe_url || null,
+  };
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Main pipeline
 // ─────────────────────────────────────────────────────────────────────────────
@@ -171,7 +206,7 @@ async function processAlert(rawAlert, io) {
     addTimelineEvent('Alert received, starting detection');
     setActivity({ agent: 'detection', status: 'running' });
     if (io) io.emit('agent:activity', { agent: 'detection', status: 'running' });
-    const detection = runAgent('detection', rawAlert);
+    let detection = runAgent('detection', rawAlert);
 
     if (detection.error || !detection.valid) {
       addTimelineEvent(`Detection failed or invalid alert: ${detection.message || 'invalid schema'}`);
@@ -190,6 +225,14 @@ async function processAlert(rawAlert, io) {
     if (detection.is_duplicate) {
       addTimelineEvent('Duplicate alert suppressed');
       return { success: false, reason: 'duplicate', detection };
+    }
+
+    if (rawAlert.webhook_received && rawAlert.service === 'demo-api') {
+      detection = {
+        ...detection,
+        service: 'demo-api',
+        alert_type: rawAlert.alert_type || detection.alert_type,
+      };
     }
 
     const mttdSec = Math.round((Date.now() - pipelineStart) / 1000);
@@ -211,6 +254,20 @@ async function processAlert(rawAlert, io) {
       processed: false,
     });
 
+    const initialOutputs =
+      detection.service === 'demo-api'
+        ? {
+            detection,
+            demo_sandbox: {
+              webhook_received: Boolean(rawAlert.webhook_received),
+              remediation_mode: 'pending',
+              verification_result: 'pending',
+              demo_target: 'demo-api',
+              repair_endpoint_called: null,
+            },
+          }
+        : { detection };
+
     const incident = await IncidentModel.create({
       incident_id: incidentId,
       alert_id: alertId,
@@ -221,7 +278,7 @@ async function processAlert(rawAlert, io) {
       started_at: new Date().toISOString(),
       retry_count: 0,
       escalated: false,
-      agent_outputs: { detection },
+      agent_outputs: initialOutputs,
     });
 
     await AlertModel.markProcessed(alertId);
@@ -248,14 +305,24 @@ async function processAlert(rawAlert, io) {
 
     // Look up the matched rule now (needed for fallback + resolution)
     const matchedRule = await workflowEngine.matchRule(detection.alert_type);
+    const effectiveRule = applyDemoApiRestartRule(matchedRule, detection.service, detection.alert_type);
 
     // AI-primary decision pipeline:
     // 1. Choose final action: AI first, workflow fallback only if AI returned nothing
-    decision = chooseFinalAction(decision, matchedRule);
+    decision = chooseFinalAction(decision, effectiveRule);
     // 2. Fill in missing metadata from workflow rule (priority, etc.)
-    decision = applyWorkflowFallback(decision, matchedRule);
+    decision = applyWorkflowFallback(decision, effectiveRule);
     // 3. Enforce safety flags: never override AI's unsafe/escalate judgment
     decision = handleUnsafeOrEscalate(decision);
+
+    if (
+      detection.service === 'demo-api' &&
+      detection.alert_type === 'api_failure' &&
+      !decision.escalate &&
+      decision.safe_to_execute === true
+    ) {
+      decision = { ...decision, action: 'restart_api_service' };
+    }
 
     addTimelineEvent(`Decision: action=${decision.action}, safe=${decision.safe_to_execute}, escalate=${decision.escalate}, priority=${decision.priority}`);
 
@@ -280,7 +347,7 @@ async function processAlert(rawAlert, io) {
       const safetyResult = runSafetyChecks(
         decision.action,
         detection.service,
-        matchedRule,
+        effectiveRule,
         env.app.nodeEnv === 'production' ? 'production' : 'development'
       );
       safetyCheck = buildSafetyCheckResult(safetyResult);
@@ -365,10 +432,16 @@ async function processAlert(rawAlert, io) {
       actionResult: executionResult || actionResult,
       postActionHealth: healthResult,
       retryCount: 0,
-      maxRetries: matchedRule.max_retries,
+      maxRetries: effectiveRule.max_retries,
     });
 
     resolution = ensureResolutionStatus(resolution, healthResult, executionResult);
+    resolution = augmentResolutionSummaryForDemo(
+      resolution,
+      executionResult,
+      healthResult,
+      detection.service
+    );
 
     addTimelineEvent(`Resolution: ${resolution.status} — ${resolution.resolution_summary || ''}`);
 
@@ -384,7 +457,7 @@ async function processAlert(rawAlert, io) {
 
     // Handle retry/escalation
     if (resolution.status === 'retry') {
-      return await handleRetry(incidentId, rawAlert, detection, decision, matchedRule, 1, timeline, io, safetyCheck);
+      return await handleRetry(incidentId, rawAlert, detection, decision, effectiveRule, 1, timeline, io, safetyCheck);
     }
 
     if (resolution.status === 'escalated' || decision.escalate) {
@@ -403,6 +476,8 @@ async function processAlert(rawAlert, io) {
 
       const agentOutputs = { detection, decision, action: actionResult, resolution, escalation };
       if (safetyCheck) agentOutputs.safety_check = safetyCheck;
+      const demoMeta = buildDemoSandboxMeta(rawAlert, detection, executionResult || actionResult, healthResult);
+      if (demoMeta) agentOutputs.demo_sandbox = demoMeta;
 
       await IncidentModel.update(incidentId, {
         status: 'escalated',
@@ -465,6 +540,13 @@ async function processAlert(rawAlert, io) {
         ? { detection, decision, action: actionResult, resolution, escalation: escalationHandoff }
         : { detection, decision, action: actionResult, resolution };
       if (safetyCheck) resolvedOutputs.safety_check = safetyCheck;
+      const demoMetaResolved = buildDemoSandboxMeta(
+        rawAlert,
+        detection,
+        executionResult || actionResult,
+        healthResult
+      );
+      if (demoMetaResolved) resolvedOutputs.demo_sandbox = demoMetaResolved;
 
       await IncidentModel.update(incidentId, {
         status: 'resolved',
@@ -496,6 +578,7 @@ async function processAlert(rawAlert, io) {
       timeline,
       mttdSec,
       mttrSec,
+      demo_sandbox: buildDemoSandboxMeta(rawAlert, detection, executionResult || actionResult, healthResult),
     });
 
     if (!report.error) {
@@ -607,6 +690,15 @@ async function handleRetry(incidentId, rawAlert, detection, prevDecision, matche
   decision = applyWorkflowFallback(decision, matchedRule);
   decision = handleUnsafeOrEscalate(decision);
 
+  if (
+    detection.service === 'demo-api' &&
+    detection.alert_type === 'api_failure' &&
+    !decision.escalate &&
+    decision.safe_to_execute === true
+  ) {
+    decision = { ...decision, action: 'restart_api_service' };
+  }
+
   if (decision.escalate) {
     addTimelineEvent('Decision agent recommends escalation on retry');
     await IncidentModel.update(incidentId, { status: 'escalated', escalated: true });
@@ -651,24 +743,58 @@ async function handleRetry(incidentId, rawAlert, detection, prevDecision, matche
   });
 
   resolution = ensureResolutionStatus(resolution, healthResult, executionResult);
+  resolution = augmentResolutionSummaryForDemo(
+    resolution,
+    executionResult,
+    healthResult,
+    detection.service
+  );
 
   if (resolution.status === 'retry') {
     return handleRetry(incidentId, rawAlert, detection, decision, matchedRule, retryCount + 1, timeline, io, safetyCheck);
   }
 
+  const actionComposite = { ...actionPlan, ...executionResult };
+
   if (resolution.status === 'resolved') {
     addTimelineEvent(`Resolved on retry ${retryCount}`);
-    await IncidentModel.update(incidentId, {
+    const resolvedUpdate = {
       status: 'resolved',
       resolved_at: new Date().toISOString(),
       action_taken: decision.action,
       retry_count: retryCount,
-    });
+    };
+    if (detection.service === 'demo-api') {
+      const prevRow = await IncidentModel.findByIncidentId(incidentId);
+      const prevOut = prevRow?.agent_outputs || {};
+      const dMeta = buildDemoSandboxMeta(rawAlert, detection, actionComposite, healthResult);
+      resolvedUpdate.agent_outputs = {
+        ...prevOut,
+        decision,
+        action: actionComposite,
+        resolution,
+        ...(dMeta ? { demo_sandbox: dMeta } : {}),
+      };
+    }
+    await IncidentModel.update(incidentId, resolvedUpdate);
     if (io) io.emit('incident:updated', { incident_id: incidentId, status: 'resolved' });
     return { success: true, incident_id: incidentId, status: 'resolved', retry_count: retryCount };
   }
 
-  await IncidentModel.update(incidentId, { status: 'escalated', escalated: true, retry_count: retryCount });
+  const escalatedUpdate = { status: 'escalated', escalated: true, retry_count: retryCount };
+  if (detection.service === 'demo-api') {
+    const prevRow = await IncidentModel.findByIncidentId(incidentId);
+    const prevOut = prevRow?.agent_outputs || {};
+    const dMeta = buildDemoSandboxMeta(rawAlert, detection, actionComposite, healthResult);
+    escalatedUpdate.agent_outputs = {
+      ...prevOut,
+      decision,
+      action: actionComposite,
+      resolution,
+      ...(dMeta ? { demo_sandbox: dMeta } : {}),
+    };
+  }
+  await IncidentModel.update(incidentId, escalatedUpdate);
   if (io) io.emit('incident:updated', { incident_id: incidentId, status: 'escalated' });
   return { success: false, incident_id: incidentId, status: 'escalated' };
 }
