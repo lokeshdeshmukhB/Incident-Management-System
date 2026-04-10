@@ -131,6 +131,279 @@ simple.md
 <files>
 This section contains the contents of the repository's files.
 
+<file path="demo-service/index.js">
+const express = require('express');
+
+const PORT = parseInt(process.env.DEMO_SERVICE_PORT || '5055', 10) || 5055;
+
+/** In-memory state — intentionally ephemeral for sandbox demos */
+let isBroken = false;
+
+const app = express();
+app.use(express.json());
+
+function healthBody() {
+  if (isBroken) {
+    return { ok: false, status: 'broken' };
+  }
+  return { ok: true, status: 'healthy' };
+}
+
+app.get('/health', (req, res) => {
+  const body = healthBody();
+  if (isBroken) {
+    return res.status(500).json(body);
+  }
+  res.status(200).json(body);
+});
+
+app.post('/break', (req, res) => {
+  isBroken = true;
+  console.log('[demo-service] State -> broken');
+  res.json({ ok: true, status: 'broken', message: 'Demo API marked broken' });
+});
+
+app.post('/repair', (req, res) => {
+  isBroken = false;
+  console.log('[demo-service] State -> healthy (repair)');
+  res.json({ ok: true, status: 'healthy', message: 'Demo API repaired' });
+});
+
+app.get('/state', (req, res) => {
+  res.json({ isBroken, status: isBroken ? 'broken' : 'healthy' });
+});
+
+app.listen(PORT, () => {
+  console.log(`[demo-service] Listening on http://127.0.0.1:${PORT}`);
+});
+</file>
+
+<file path="demo-service/package.json">
+{
+  "name": "aims-demo-service",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Sandbox API for AIMS autonomous remediation hackathon demo",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "node --watch index.js"
+  },
+  "dependencies": {
+    "express": "^4.21.0"
+  }
+}
+</file>
+
+<file path="server/demo/demoMonitor.js">
+/**
+ * Polls the sandbox demo API and POSTs to AIMS when health flips healthy -> unhealthy.
+ * Uses edge detection plus a cooldown so flaky health does not flood the pipeline.
+ */
+const path = require('path');
+const dotenv = require('dotenv');
+
+dotenv.config({ path: path.join(__dirname, '../.env') });
+dotenv.config({ path: path.join(__dirname, '../../.env') });
+
+const logger = (msg) => console.log(`[demo-monitor] ${msg}`);
+
+const DEMO_BASE = (process.env.DEMO_SERVICE_URL || 'http://127.0.0.1:5055').replace(/\/$/, '');
+const WEBHOOK_URL = process.env.DEMO_WEBHOOK_URL || 'http://127.0.0.1:5000/api/webhooks/demo';
+const INTERVAL_MS = parseInt(process.env.DEMO_MONITOR_INTERVAL_MS || '3000', 10) || 3000;
+const COOLDOWN_MS = parseInt(process.env.DEMO_MONITOR_COOLDOWN_MS || '60000', 10) || 60000;
+const WEBHOOK_SECRET = process.env.WEBHOOK_SHARED_SECRET || '';
+
+let wasHealthy = true;
+let lastWebhookAt = 0;
+
+async function fetchHealth() {
+  const res = await fetch(`${DEMO_BASE}/health`, { method: 'GET' });
+  let body = {};
+  try {
+    body = await res.json();
+  } catch {
+    body = {};
+  }
+  const ok = res.ok && body.ok === true && body.status === 'healthy';
+  return { ok, status: res.status, body };
+}
+
+async function sendWebhook() {
+  const now = new Date().toISOString();
+  const alertId = `ALT-DEMO-${Date.now()}`;
+  const payload = {
+    alert_id: alertId,
+    alert_type: 'api_failure',
+    severity: 'critical',
+    service: 'demo-api',
+    host: 'localhost',
+    metric_value: 500,
+    threshold: 200,
+    timestamp: now,
+  };
+
+  const headers = {
+    'Content-Type': 'application/json',
+  };
+  if (WEBHOOK_SECRET) {
+    headers['x-webhook-secret'] = WEBHOOK_SECRET;
+  }
+
+  const res = await fetch(WEBHOOK_URL, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify(payload),
+  });
+
+  const text = await res.text();
+  if (!res.ok) {
+    throw new Error(`Webhook HTTP ${res.status}: ${text.slice(0, 500)}`);
+  }
+  logger(`Webhook accepted (${alertId})`);
+}
+
+async function tick() {
+  try {
+    const { ok, status, body } = await fetchHealth();
+
+    if (ok) {
+      if (!wasHealthy) {
+        logger('Demo API recovered (healthy)');
+      }
+      wasHealthy = true;
+      return;
+    }
+
+    if (wasHealthy) {
+      wasHealthy = false;
+      const now = Date.now();
+      if (now - lastWebhookAt < COOLDOWN_MS) {
+        logger(`Unhealthy edge detected but cooldown active (${COOLDOWN_MS}ms) — skip webhook`);
+        return;
+      }
+      logger(`Unhealthy edge detected (HTTP ${status}) ${JSON.stringify(body)} — sending webhook`);
+      await sendWebhook();
+      lastWebhookAt = now;
+    }
+  } catch (err) {
+    logger(`Poll error: ${err.message}`);
+  }
+}
+
+async function main() {
+  if (!WEBHOOK_SECRET) {
+    logger('WARN: WEBHOOK_SHARED_SECRET is empty — demo webhook route will reject requests. Set it in .env');
+  }
+  logger(`Polling ${DEMO_BASE}/health every ${INTERVAL_MS}ms → ${WEBHOOK_URL}`);
+  await tick();
+  setInterval(tick, INTERVAL_MS);
+}
+
+main().catch((e) => {
+  console.error(e);
+  process.exit(1);
+});
+</file>
+
+<file path="server/demo/triggerBreak.js">
+/**
+ * Manual helper: mark the sandbox demo API as broken (for live demos).
+ */
+const path = require('path');
+const dotenv = require('dotenv');
+
+dotenv.config({ path: path.join(__dirname, '../.env') });
+dotenv.config({ path: path.join(__dirname, '../../.env') });
+
+const base = (process.env.DEMO_SERVICE_URL || 'http://127.0.0.1:5055').replace(/\/$/, '');
+
+fetch(`${base}/break`, { method: 'POST', headers: { 'Content-Type': 'application/json' } })
+  .then(async (res) => {
+    const text = await res.text();
+    console.log(res.status, text);
+    if (!res.ok) process.exit(1);
+  })
+  .catch((err) => {
+    console.error(err.message);
+    process.exit(1);
+  });
+</file>
+
+<file path="server/routes/webhooks.js">
+const express = require('express');
+const crypto = require('crypto');
+const AlertModel = require('../models/Alert');
+const { processAlert } = require('../engine/incidentPipeline');
+const logger = require('../services/logger');
+const env = require('../config/env');
+
+const router = express.Router();
+
+function timingSafeEqualString(a, b) {
+  if (typeof a !== 'string' || typeof b !== 'string') return false;
+  const bufA = Buffer.from(a, 'utf8');
+  const bufB = Buffer.from(b, 'utf8');
+  if (bufA.length !== bufB.length) return false;
+  return crypto.timingSafeEqual(bufA, bufB);
+}
+
+function normalizeDemoWebhookBody(body) {
+  const ts = body.timestamp ? new Date(body.timestamp).toISOString() : new Date().toISOString();
+  return {
+    alert_id: body.alert_id || `ALT-DEMO-${Date.now()}`,
+    alert_type: body.alert_type || 'api_failure',
+    severity: body.severity || 'critical',
+    service: body.service || 'demo-api',
+    host: body.host || 'localhost',
+    metric_value: body.metric_value != null ? Number(body.metric_value) : 500,
+    threshold: body.threshold != null ? Number(body.threshold) : 200,
+    timestamp: ts,
+    processed: false,
+    webhook_received: true,
+    demo_target: 'demo-api',
+  };
+}
+
+/**
+ * POST /api/webhooks/demo
+ * Shared secret via x-webhook-secret (must match WEBHOOK_SHARED_SECRET).
+ */
+router.post('/demo', async (req, res) => {
+  try {
+    const expected = env.demoSandbox.webhookSharedSecret;
+    if (!expected || !String(expected).trim()) {
+      logger.warn('[webhooks/demo] WEBHOOK_SHARED_SECRET is not configured');
+      return res.status(503).json({ error: 'Demo webhook is not configured (WEBHOOK_SHARED_SECRET)' });
+    }
+
+    const provided = req.get('x-webhook-secret') || '';
+    if (!timingSafeEqualString(provided, expected)) {
+      logger.warn('[webhooks/demo] Invalid or missing x-webhook-secret');
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    const rawAlert = normalizeDemoWebhookBody(req.body || {});
+
+    await AlertModel.create(rawAlert).catch(() => {});
+
+    const io = req.app.get('io');
+    const result = await processAlert(rawAlert, io);
+
+    return res.status(201).json({
+      message: 'Demo webhook ingested; pipeline triggered',
+      alert_id: rawAlert.alert_id,
+      pipeline_result: result,
+    });
+  } catch (err) {
+    logger.error(`POST /api/webhooks/demo error: ${err.message}`);
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+module.exports = router;
+</file>
+
 <file path=".cursor/commands/implement.md">
 
 </file>
@@ -3505,6 +3778,39 @@ langchain-groq>=0.1.0
 python-dotenv>=1.0.0
 </file>
 
+<file path="server/.env.example">
+# Copy to `server/.env` (or repo root `.env`) and fill in values.
+# See README for Supabase and Groq setup.
+
+SUPABASE_URL=
+SUPABASE_ANON_KEY=
+GROQ_API_KEY_1=
+
+# Optional notifications
+# SLACK_WEBHOOK_URL=
+# PAGERDUTY_API_KEY=
+
+# Email escalation (Nodemailer)
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_SECURE=false
+SMTP_USER=your_email@gmail.com
+SMTP_PASS=your_app_password
+ESCALATION_EMAILS=devops@company.com,oncall@company.com
+SERVICE_ESCALATION_EMAILS_JSON={"checkout":["checkout-team@company.com"],"payments":["payments-team@company.com"],"auth":["security-team@company.com"],"orders":["orders-team@company.com"]}
+
+# --- Sandbox autonomous remediation demo (optional) ---
+WEBHOOK_SHARED_SECRET=
+ENABLE_REAL_SANDBOX_FIXES=false
+DEMO_SERVICE_URL=http://127.0.0.1:5055
+DEMO_SERVICE_PORT=5055
+DEMO_MONITOR_INTERVAL_MS=3000
+# Where the monitor POSTs alerts (dedicated webhook route)
+DEMO_WEBHOOK_URL=http://127.0.0.1:5000/api/webhooks/demo
+# Min time between webhook sends when the edge fires (safety against flapping)
+DEMO_MONITOR_COOLDOWN_MS=60000
+</file>
+
 <file path="server/config/db.js">
 const { createClient } = require('@supabase/supabase-js');
 const env = require('./env');
@@ -3528,141 +3834,6 @@ async function testConnection() {
 }
 
 module.exports = { supabase, testConnection };
-</file>
-
-<file path="server/demo/demoMonitor.js">
-/**
- * Polls the sandbox demo API and POSTs to AIMS when health flips healthy -> unhealthy.
- * Uses edge detection plus a cooldown so flaky health does not flood the pipeline.
- */
-const path = require('path');
-const dotenv = require('dotenv');
-
-dotenv.config({ path: path.join(__dirname, '../.env') });
-dotenv.config({ path: path.join(__dirname, '../../.env') });
-
-const logger = (msg) => console.log(`[demo-monitor] ${msg}`);
-
-const DEMO_BASE = (process.env.DEMO_SERVICE_URL || 'http://127.0.0.1:5055').replace(/\/$/, '');
-const WEBHOOK_URL = process.env.DEMO_WEBHOOK_URL || 'http://127.0.0.1:5000/api/webhooks/demo';
-const INTERVAL_MS = parseInt(process.env.DEMO_MONITOR_INTERVAL_MS || '3000', 10) || 3000;
-const COOLDOWN_MS = parseInt(process.env.DEMO_MONITOR_COOLDOWN_MS || '60000', 10) || 60000;
-const WEBHOOK_SECRET = process.env.WEBHOOK_SHARED_SECRET || '';
-
-let wasHealthy = true;
-let lastWebhookAt = 0;
-
-async function fetchHealth() {
-  const res = await fetch(`${DEMO_BASE}/health`, { method: 'GET' });
-  let body = {};
-  try {
-    body = await res.json();
-  } catch {
-    body = {};
-  }
-  const ok = res.ok && body.ok === true && body.status === 'healthy';
-  return { ok, status: res.status, body };
-}
-
-async function sendWebhook() {
-  const now = new Date().toISOString();
-  const alertId = `ALT-DEMO-${Date.now()}`;
-  const payload = {
-    alert_id: alertId,
-    alert_type: 'api_failure',
-    severity: 'critical',
-    service: 'demo-api',
-    host: 'localhost',
-    metric_value: 500,
-    threshold: 200,
-    timestamp: now,
-  };
-
-  const headers = {
-    'Content-Type': 'application/json',
-  };
-  if (WEBHOOK_SECRET) {
-    headers['x-webhook-secret'] = WEBHOOK_SECRET;
-  }
-
-  const res = await fetch(WEBHOOK_URL, {
-    method: 'POST',
-    headers,
-    body: JSON.stringify(payload),
-  });
-
-  const text = await res.text();
-  if (!res.ok) {
-    throw new Error(`Webhook HTTP ${res.status}: ${text.slice(0, 500)}`);
-  }
-  logger(`Webhook accepted (${alertId})`);
-}
-
-async function tick() {
-  try {
-    const { ok, status, body } = await fetchHealth();
-
-    if (ok) {
-      if (!wasHealthy) {
-        logger('Demo API recovered (healthy)');
-      }
-      wasHealthy = true;
-      return;
-    }
-
-    if (wasHealthy) {
-      wasHealthy = false;
-      const now = Date.now();
-      if (now - lastWebhookAt < COOLDOWN_MS) {
-        logger(`Unhealthy edge detected but cooldown active (${COOLDOWN_MS}ms) — skip webhook`);
-        return;
-      }
-      logger(`Unhealthy edge detected (HTTP ${status}) ${JSON.stringify(body)} — sending webhook`);
-      await sendWebhook();
-      lastWebhookAt = now;
-    }
-  } catch (err) {
-    logger(`Poll error: ${err.message}`);
-  }
-}
-
-async function main() {
-  if (!WEBHOOK_SECRET) {
-    logger('WARN: WEBHOOK_SHARED_SECRET is empty — demo webhook route will reject requests. Set it in .env');
-  }
-  logger(`Polling ${DEMO_BASE}/health every ${INTERVAL_MS}ms → ${WEBHOOK_URL}`);
-  await tick();
-  setInterval(tick, INTERVAL_MS);
-}
-
-main().catch((e) => {
-  console.error(e);
-  process.exit(1);
-});
-</file>
-
-<file path="server/demo/triggerBreak.js">
-/**
- * Manual helper: mark the sandbox demo API as broken (for live demos).
- */
-const path = require('path');
-const dotenv = require('dotenv');
-
-dotenv.config({ path: path.join(__dirname, '../.env') });
-dotenv.config({ path: path.join(__dirname, '../../.env') });
-
-const base = (process.env.DEMO_SERVICE_URL || 'http://127.0.0.1:5055').replace(/\/$/, '');
-
-fetch(`${base}/break`, { method: 'POST', headers: { 'Content-Type': 'application/json' } })
-  .then(async (res) => {
-    const text = await res.text();
-    console.log(res.status, text);
-    if (!res.ok) process.exit(1);
-  })
-  .catch((err) => {
-    console.error(err.message);
-    process.exit(1);
-  });
 </file>
 
 <file path="server/middleware/auth.js">
@@ -5540,40 +5711,281 @@ class EscalationAgent(BaseAgent):
 escalation_agent = EscalationAgent()
 </file>
 
-<file path="server/.env.example">
-# Copy to `server/.env` (or repo root `.env`) and fill in values.
-# See README for Supabase and Groq setup.
+<file path="README.md">
+# AIMS - Automated Incident Management System
 
-SUPABASE_URL=
-SUPABASE_ANON_KEY=
-GROQ_API_KEY_1=
+AI-powered multi-agent platform that automates the full incident lifecycle:
+**Detection -> Alert -> Decision -> Action -> Resolution -> Reporting**
 
-# Optional notifications
-# SLACK_WEBHOOK_URL=
-# PAGERDUTY_API_KEY=
+## Architecture
 
-# Email escalation (Nodemailer)
-SMTP_HOST=smtp.gmail.com
-SMTP_PORT=587
-SMTP_SECURE=false
-SMTP_USER=your_email@gmail.com
-SMTP_PASS=your_app_password
-ESCALATION_EMAILS=devops@company.com,oncall@company.com
-SERVICE_ESCALATION_EMAILS_JSON={"checkout":["checkout-team@company.com"],"payments":["payments-team@company.com"],"auth":["security-team@company.com"],"orders":["orders-team@company.com"]}
+- **Backend**: Node.js + Express with 6 AI agents powered by Groq
+- **Database**: Supabase (PostgreSQL) with real-time subscriptions
+- **Frontend**: React 18 + Vite + TailwindCSS + Recharts
+- **Real-time**: Socket.io for live incident updates
+- **AI Agents (Python)**: LangChain + LangGraph; Node invokes agents via `python -m incident_management.bridge` (see `incident_management/`)
 
-# Default: CSV polling on. Set to false for webhook-only demos (no data/alerts.csv ingestion).
-# ENABLE_CSV_POLLING=false
+## Quick Start
 
-# --- Sandbox autonomous remediation demo (optional) ---
-WEBHOOK_SHARED_SECRET=
-ENABLE_REAL_SANDBOX_FIXES=false
-DEMO_SERVICE_URL=http://127.0.0.1:5055
-DEMO_SERVICE_PORT=5055
-DEMO_MONITOR_INTERVAL_MS=3000
-# Where the monitor POSTs alerts (dedicated webhook route)
-DEMO_WEBHOOK_URL=http://127.0.0.1:5000/api/webhooks/demo
-# Min time between webhook sends when the edge fires (safety against flapping)
-DEMO_MONITOR_COOLDOWN_MS=60000
+### 1. Set up Supabase
+
+1. Create a project at [supabase.com](https://supabase.com)
+2. Go to SQL Editor and run the migration:
+
+```sql
+-- Copy and paste the contents of data/migration.sql
+```
+
+### 2. Configure Environment
+
+```bash
+cp .env.example .env
+# Fill in:
+# - SUPABASE_URL and SUPABASE_ANON_KEY (from Supabase project settings)
+# - GROQ_API_KEY_1 (minimum 1 key, up to 3 for load distribution)
+```
+
+### 3. Install Dependencies
+
+```bash
+# Python agents (required for the incident pipeline)
+python -m pip install -r incident_management/requirements.txt
+
+# Node + frontend
+cd server && npm install
+cd ../client && npm install
+```
+
+### 4. Seed Sample Data
+
+```bash
+cd server && node seed.js
+```
+
+### 5. Start the Application
+
+**Recommended:** from the repo root run **`npm run dev`** — it starts the API first, waits until `.aims-backend-port` is written (actual listen port), then starts Vite so `/api` proxy and Socket.io stay in sync even when port 5000 is busy.
+
+Optional overrides: `client/.env.development` with `VITE_DEV_API_TARGET` (wins over the port file), or copy `client/.env.development.example`.
+
+```bash
+# One command (repo root — install root deps once: npm install)
+npm run dev
+
+# Or two terminals
+cd server && npm run dev
+cd client && npm run dev   # restart after API is listening so Vite picks up .aims-backend-port
+```
+
+- Frontend: http://localhost:5173
+- Backend API: http://localhost:5000
+- Health check: http://localhost:5000/api/health
+
+## API Endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | /api/alerts | Ingest new alert (triggers full pipeline) |
+| GET | /api/alerts | List all alerts |
+| GET | /api/incidents | List incidents (filter by status/severity/service) |
+| GET | /api/incidents/:id | Get incident detail with agent outputs |
+| PATCH | /api/incidents/:id | Manual status override |
+| GET | /api/reports/:incident_id | Get AI-generated report |
+| POST | /api/reports/:incident_id/regenerate | Regenerate report |
+| GET | /api/dashboard/kpis | MTTD, MTTR, automation rate |
+| GET | /api/dashboard/timeline | Incidents over time |
+| GET | /api/workflows | List workflow rules |
+| POST | /api/workflows | Create workflow rule |
+| POST | /api/webhooks/demo | Secured demo monitor webhook → same `processAlert` pipeline |
+
+## Sandbox autonomous remediation demo
+
+Optional hackathon flow: a tiny local **demo API** goes unhealthy, a **monitor** calls AIMS through a **shared-secret webhook**, the normal incident pipeline runs, and the action step can perform a **real** `POST /repair` on that API **only** when `ENABLE_REAL_SANDBOX_FIXES=true`. Resolution uses a real `GET /health` probe for `demo-api` in that mode; otherwise behavior stays simulated and matches the legacy health check.
+
+**Architecture (high level)**
+
+```mermaid
+flowchart LR
+  DemoAPI[demo-service /health]
+  Monitor[demoMonitor.js]
+  Webhook[POST /api/webhooks/demo]
+  Pipeline[processAlert pipeline]
+  Repair[POST /repair]
+  DemoAPI --> Monitor
+  Monitor --> Webhook
+  Webhook --> Pipeline
+  Pipeline --> Repair
+  Repair --> DemoAPI
+```
+
+**Configure** (see `server/.env.example`): set `WEBHOOK_SHARED_SECRET` (required for the webhook route), optionally `ENABLE_REAL_SANDBOX_FIXES=true`, `DEMO_SERVICE_URL`, `DEMO_WEBHOOK_URL`, `DEMO_MONITOR_INTERVAL_MS`.
+
+**Run (four processes)**
+
+1. Backend: `npm run dev` from repo root (or `cd server && npm run dev`).
+2. Frontend: included in root `npm run dev`, or `cd client && npm run dev`.
+3. Demo API: `npm run demo:service` (from repo root) — listens on `DEMO_SERVICE_PORT` (default `5055`).
+4. Monitor: `npm run demo:monitor` — polls `GET /health` and posts to `/api/webhooks/demo` on healthy→unhealthy transitions (with cooldown).
+
+**Break the service during a presentation**
+
+- `npm run demo:break`, or `curl -X POST http://127.0.0.1:5055/break`
+
+**Expected dashboard behavior**
+
+- After `/break`, the monitor sends one webhook per transition (cooldown prevents floods). A new incident appears for `demo-api` / `api_failure`. Agent activity progresses through decision → action → resolution. With **real fixes enabled**, the action agent hits the sandbox repair URL; resolution confirms via HTTP `200` on `/health`. With **real fixes off**, remediation stays simulated and the existing simulated health path applies so CSV/demo flows are unchanged.
+
+**Safety defaults**
+
+- Real HTTP repair is allowlisted to `service === "demo-api"` and actions `restart_api_service` / `restart_service` only, gated by `ENABLE_REAL_SANDBOX_FIXES=true`. No arbitrary shell execution. The dedicated webhook route rejects requests if `WEBHOOK_SHARED_SECRET` is unset or the `x-webhook-secret` header does not match.
+
+## Pipeline Flow
+
+```
+Raw Alert -> Detection Agent (classify, enrich, deduplicate)
+          -> Decision Agent (match rules, safety checks)
+          -> Action Agent (generate commands, execute)
+          -> Resolution Agent (health check, retry/escalate)
+          -> Reporting Agent (RCA, timeline, recommendations)
+```
+
+Each agent uses Groq AI with structured JSON output. Three API keys are distributed across agents to avoid rate limits.
+
+## Project Structure
+
+```
+aims/
+  demo-service/         - Sandbox Express API (/health, /break, /repair) for live demos
+  incident_management/  - Python agents, LangGraph graph, bridge (Groq via LangChain)
+  server/
+    demo/               - Health monitor + triggerBreak helper
+    config/       - Supabase, environment config
+    engine/       - Orchestration pipeline, workflow engine, safety guards
+    models/       - Supabase data access layer
+    routes/       - Express API routes
+    services/     - CSV parser, action executor, notifier, logger
+    sockets/      - Socket.io event handlers
+    jobs/         - CSV alert polling
+  client/
+    src/
+      components/ - Dashboard, Incidents, Reports UI components
+      hooks/      - useSocket, useIncidents (React Query)
+      store/      - Zustand state management
+      pages/      - Dashboard, Incidents, Reports, Escalation pages
+  data/
+    alerts.csv    - Sample alert data
+    workflows.csv - Remediation rules
+    migration.sql - Supabase schema
+```
+</file>
+
+<file path="server/engine/healthChecker.js">
+const axios = require('axios');
+const logger = require('../services/logger');
+const env = require('../config/env');
+
+const SERVICE_METRICS = {
+  high_cpu: { metric: 'cpu_percent', healthyBelow: 70 },
+  disk_full: { metric: 'disk_percent', healthyBelow: 80 },
+  api_failure: { metric: 'error_rate', healthyBelow: 1 },
+  service_down: { metric: 'health_check', healthyAbove: 1 },
+  memory_leak: { metric: 'memory_percent', healthyBelow: 80 },
+  network_timeout: { metric: 'latency_ms', healthyBelow: 200 },
+};
+
+async function probeDemoServiceHealth() {
+  const base = env.demoSandbox.serviceUrl.replace(/\/$/, '');
+  const url = `${base}/health`;
+  try {
+    const res = await axios.get(url, { timeout: 10000, validateStatus: () => true });
+    const body = res.data || {};
+    const httpOk = res.status === 200 && body.ok === true && body.status === 'healthy';
+    return {
+      health_check_passed: httpOk,
+      verification_result: httpOk ? 'passed' : 'failed',
+      demo_probe_url: url,
+      metric_current_value: httpOk ? 0 : res.status,
+      detail: body,
+    };
+  } catch (err) {
+    logger.warn(`[HealthChecker] demo-api GET /health failed: ${err.message}`);
+    return {
+      health_check_passed: false,
+      verification_result: 'failed',
+      demo_probe_url: url,
+      metric_current_value: null,
+      error: err.message,
+    };
+  }
+}
+
+async function runHealthCheck(alert, actionSuccess) {
+  const alertType = alert.alert_type;
+  const config = SERVICE_METRICS[alertType] || { metric: 'generic', healthyBelow: 50 };
+
+  const isDev = env.app.nodeEnv === 'development';
+  const minD = Number.isFinite(env.healthCheck.delayMsMin) ? env.healthCheck.delayMsMin : isDev ? 30 : 1000;
+  const maxD = Number.isFinite(env.healthCheck.delayMsMax) ? env.healthCheck.delayMsMax : isDev ? 120 : 3000;
+  const delay = minD + Math.random() * Math.max(0, maxD - minD);
+  await new Promise((resolve) => setTimeout(resolve, delay));
+
+  const isDemoApi = alert.service === 'demo-api';
+
+  if (isDemoApi && env.demoSandbox.enableRealFixes) {
+    const probe = await probeDemoServiceHealth();
+    const result = {
+      service_responsive: probe.health_check_passed,
+      metric_current_value: probe.metric_current_value,
+      metric_threshold: alert.threshold,
+      health_check_passed: probe.health_check_passed,
+      checked_at: new Date().toISOString(),
+      demo_verification: true,
+      verification_result: probe.verification_result,
+      demo_probe_url: probe.demo_probe_url,
+    };
+    logger.info(
+      `[HealthChecker] demo-api real probe: ${probe.health_check_passed ? 'PASSED' : 'FAILED'} (${probe.demo_probe_url})`
+    );
+    return result;
+  }
+
+  // Simulated path (all non–real-sandbox services, or demo-api with real fixes off)
+  const passed = Boolean(actionSuccess);
+
+  let currentValue;
+  if (passed) {
+    if (config.healthyBelow) {
+      currentValue = Math.random() * config.healthyBelow * 0.8;
+    } else {
+      currentValue = 1;
+    }
+  } else {
+    currentValue = alert.metric_value * (0.85 + Math.random() * 0.2);
+  }
+
+  const result = {
+    service_responsive: passed,
+    metric_current_value: Math.round(currentValue * 10) / 10,
+    metric_threshold: alert.threshold,
+    health_check_passed: passed,
+    checked_at: new Date().toISOString(),
+  };
+
+  if (isDemoApi) {
+    result.demo_verification = false;
+    result.verification_result = passed ? 'passed' : 'failed';
+    result.remediation_note = 'Simulated health signal (ENABLE_REAL_SANDBOX_FIXES=false); not querying demo /health';
+  }
+
+  logger.info(
+    `[HealthChecker] ${alert.service}: ${passed ? 'PASSED' : 'FAILED'} ` +
+      `(${config.metric}: ${result.metric_current_value}, threshold: ${alert.threshold})`
+  );
+
+  return result;
+}
+
+module.exports = { runHealthCheck };
 </file>
 
 <file path="server/engine/workflowEngine.js">
@@ -5724,6 +6136,40 @@ const AlertModel = {
 module.exports = AlertModel;
 </file>
 
+<file path="server/package.json">
+{
+  "name": "aims-server",
+  "version": "1.0.0",
+  "description": "AIMS Backend - Express + Groq AI Agents",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "seed": "node seed.js",
+    "demo:monitor": "node demo/demoMonitor.js",
+    "demo:break": "node demo/triggerBreak.js"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.103.0",
+    "axios": "^1.7.0",
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "csv-parser": "^3.0.0",
+    "csv-writer": "^1.6.0",
+    "dotenv": "^16.4.0",
+    "express": "^4.21.0",
+    "groq-sdk": "^0.7.0",
+    "jsonwebtoken": "^9.0.2",
+    "node-cron": "^3.0.3",
+    "nodemailer": "^6.10.1",
+    "p-queue": "^8.0.0",
+    "socket.io": "^4.7.0",
+    "uuid": "^9.0.1",
+    "winston": "^3.14.0"
+  }
+}
+</file>
+
 <file path="server/routes/reports.js">
 const express = require('express');
 const router = express.Router();
@@ -5866,6 +6312,213 @@ async function seed() {
 }
 
 seed();
+</file>
+
+<file path="server/services/actionExecutor.js">
+const axios = require('axios');
+const logger = require('./logger');
+const env = require('../config/env');
+
+// In development, use much shorter simulated delays so the pipeline runs quickly.
+const isDev = (process.env.NODE_ENV || 'development') === 'development';
+
+const DELAY_SCALE = isDev ? 0.05 : 1; // 5% of original delays in dev
+
+const DEMO_REPAIR_PATH = '/repair';
+/** Only these actions may trigger a real sandbox HTTP repair for demo-api. */
+const ALLOWED_REAL_SANDBOX_ACTIONS = new Set(['restart_api_service', 'restart_service']);
+
+async function executeRealDemoRepair(service) {
+  const base = env.demoSandbox.serviceUrl.replace(/\/$/, '');
+  const url = `${base}${DEMO_REPAIR_PATH}`;
+  const started = Date.now();
+  logger.info(`[ActionExecutor] Real sandbox repair POST ${url} (service=${service})`);
+  try {
+    const res = await axios.post(url, {}, { timeout: 10000, validateStatus: () => true });
+    const ok = res.status >= 200 && res.status < 300;
+    return {
+      executed: true,
+      success: ok,
+      output_log: ok
+        ? `Sandbox repair OK: POST ${url} → ${res.status}`
+        : `Sandbox repair HTTP ${res.status} from ${url}`,
+      duration_ms: Date.now() - started,
+      real_execution: true,
+      repair_endpoint_called: url,
+    };
+  } catch (err) {
+    return {
+      executed: true,
+      success: false,
+      output_log: `Sandbox repair failed: ${err.message}`,
+      duration_ms: Date.now() - started,
+      real_execution: true,
+      repair_endpoint_called: url,
+      error: err.message,
+    };
+  }
+}
+
+const ACTION_SIMULATORS = {
+  async restart_service(service, command) {
+    logger.info(`[ActionExecutor] Simulating restart of ${service}: ${command}`);
+    await simulateDelay(2000 * DELAY_SCALE, 5000 * DELAY_SCALE);
+    return {
+      executed: true,
+      success: true,
+      output_log: `Service ${service} restarted successfully. New PID assigned.`,
+      duration_ms: randomBetween(150, 400),
+      real_execution: false,
+    };
+  },
+
+  async restart_api_service(service, command) {
+    logger.info(`[ActionExecutor] Simulating API service restart of ${service}: ${command}`);
+    await simulateDelay(1500 * DELAY_SCALE, 4000 * DELAY_SCALE);
+    return {
+      executed: true,
+      success: true,
+      output_log: `API service ${service} restarted. Error rate normalized. All health probes passing.`,
+      duration_ms: randomBetween(150, 350),
+      real_execution: false,
+    };
+  },
+
+  async cleanup_disk_space(service, command) {
+    logger.info(`[ActionExecutor] Simulating disk cleanup for ${service}: ${command}`);
+    await simulateDelay(2000 * DELAY_SCALE, 5000 * DELAY_SCALE);
+    const gbReclaimed = (Math.random() * 30 + 5).toFixed(1);
+    return {
+      executed: true,
+      success: true,
+      output_log: `Disk cleanup completed on ${service}. Reclaimed ${gbReclaimed}GB. Disk usage now below threshold.`,
+      duration_ms: randomBetween(200, 500),
+      real_execution: false,
+    };
+  },
+
+  async cleanup_logs(service, command) {
+    logger.info(`[ActionExecutor] Simulating log cleanup for ${service}: ${command}`);
+    await simulateDelay(3000 * DELAY_SCALE, 8000 * DELAY_SCALE);
+    const filesDeleted = randomBetween(15, 200);
+    const gbReclaimed = (Math.random() * 5 + 0.5).toFixed(1);
+    return {
+      executed: true,
+      success: true,
+      output_log: `Cleaned ${filesDeleted} log files, reclaimed ${gbReclaimed}GB on ${service}.`,
+      duration_ms: randomBetween(150, 400),
+      real_execution: false,
+    };
+  },
+
+  async switch_to_fallback(service, command) {
+    logger.info(`[ActionExecutor] Simulating fallback switch for ${service}: ${command}`);
+    await simulateDelay(1000 * DELAY_SCALE, 3000 * DELAY_SCALE);
+    return {
+      executed: true,
+      success: true,
+      output_log: `Traffic for ${service} rerouted to fallback endpoint.`,
+      duration_ms: randomBetween(80, 250),
+      real_execution: false,
+    };
+  },
+
+  async retry_connections(service, command) {
+    logger.info(`[ActionExecutor] Simulating connection retry for ${service}: ${command}`);
+    await simulateDelay(1000 * DELAY_SCALE, 4000 * DELAY_SCALE);
+    return {
+      executed: true,
+      success: true,
+      output_log: `Network connections for ${service} re-established. 3/3 endpoints healthy.`,
+      duration_ms: randomBetween(80, 250),
+      real_execution: false,
+    };
+  },
+
+  async scale_up_instances(service, command) {
+    logger.info(`[ActionExecutor] Simulating scale-up for ${service}: ${command}`);
+    await simulateDelay(1000 * DELAY_SCALE, 3000 * DELAY_SCALE);
+    return {
+      executed: true,
+      success: true,
+      output_log: `Scaled ${service} from 2 to 4 instances. Load distributed.`,
+      duration_ms: randomBetween(100, 300),
+      real_execution: false,
+    };
+  },
+
+  async escalate_to_human(service) {
+    logger.info(`[ActionExecutor] Escalation triggered for ${service}`);
+    return {
+      executed: true,
+      success: true,
+      output_log: `Escalation notification sent for ${service}. Awaiting human response.`,
+      duration_ms: 50,
+      real_execution: false,
+    };
+  },
+
+  async notify_admin(service, command) {
+    logger.info(`[ActionExecutor] Notify admin for ${service}: ${command || 'certificate / policy follow-up'}`);
+    await simulateDelay(200 * DELAY_SCALE, 800 * DELAY_SCALE);
+    return {
+      executed: true,
+      success: true,
+      output_log: `Ops notification queued for ${service}.`,
+      duration_ms: randomBetween(80, 200),
+      real_execution: false,
+    };
+  },
+};
+
+async function executeAction(actionName, service, command) {
+  const allowReal =
+    env.demoSandbox.enableRealFixes &&
+    service === 'demo-api' &&
+    ALLOWED_REAL_SANDBOX_ACTIONS.has(actionName);
+
+  if (allowReal) {
+    return executeRealDemoRepair(service);
+  }
+
+  const executor = ACTION_SIMULATORS[actionName];
+  if (!executor) {
+    logger.warn(`[ActionExecutor] No simulator for action: ${actionName}, using generic`);
+    await simulateDelay(500 * DELAY_SCALE, 1500 * DELAY_SCALE);
+    return {
+      executed: true,
+      success: true,
+      output_log: `Action ${actionName} executed on ${service}`,
+      duration_ms: randomBetween(100, 300),
+      real_execution: false,
+    };
+  }
+
+  try {
+    return await executor(service, command);
+  } catch (err) {
+    logger.error(`[ActionExecutor] Failed: ${err.message}`);
+    return {
+      executed: true,
+      success: false,
+      output_log: `Action ${actionName} failed on ${service}`,
+      duration_ms: 0,
+      real_execution: false,
+      error: err.message,
+    };
+  }
+}
+
+function simulateDelay(min, max) {
+  const delay = randomBetween(min, max);
+  return new Promise((resolve) => setTimeout(resolve, delay));
+}
+
+function randomBetween(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+module.exports = { executeAction };
 </file>
 
 <file path="server/services/csvParser.js">
@@ -6230,174 +6883,6 @@ function setupIncidentSocket(io) {
 module.exports = { setupIncidentSocket };
 </file>
 
-<file path="README.md">
-# AIMS - Automated Incident Management System
-
-AI-powered multi-agent platform that automates the full incident lifecycle:
-**Detection -> Alert -> Decision -> Action -> Resolution -> Reporting**
-
-## Architecture
-
-- **Backend**: Node.js + Express with 6 AI agents powered by Groq
-- **Database**: Supabase (PostgreSQL) with real-time subscriptions
-- **Frontend**: React 18 + Vite + TailwindCSS + Recharts
-- **Real-time**: Socket.io for live incident updates
-- **AI Agents (Python)**: LangChain + LangGraph; Node invokes agents via `python -m incident_management.bridge` (see `incident_management/`)
-
-## Quick Start
-
-### 1. Set up Supabase
-
-1. Create a project at [supabase.com](https://supabase.com)
-2. Go to SQL Editor and run the migration:
-
-```sql
--- Copy and paste the contents of data/migration.sql
-```
-
-### 2. Configure Environment
-
-```bash
-cp .env.example .env
-# Fill in:
-# - SUPABASE_URL and SUPABASE_ANON_KEY (from Supabase project settings)
-# - GROQ_API_KEY_1 (minimum 1 key, up to 3 for load distribution)
-```
-
-### 3. Install Dependencies
-
-```bash
-# Python agents (required for the incident pipeline)
-python -m pip install -r incident_management/requirements.txt
-
-# Node + frontend
-cd server && npm install
-cd ../client && npm install
-```
-
-### 4. Seed Sample Data
-
-```bash
-cd server && node seed.js
-```
-
-### 5. Start the Application
-
-**Recommended:** from the repo root run **`npm run dev`** — it starts the API first, waits until `.aims-backend-port` is written (actual listen port), then starts Vite so `/api` proxy and Socket.io stay in sync even when port 5000 is busy.
-
-Optional overrides: `client/.env.development` with `VITE_DEV_API_TARGET` (wins over the port file), or copy `client/.env.development.example`.
-
-```bash
-# One command (repo root — install root deps once: npm install)
-npm run dev
-
-# Or two terminals
-cd server && npm run dev
-cd client && npm run dev   # restart after API is listening so Vite picks up .aims-backend-port
-```
-
-- Frontend: http://localhost:5173
-- Backend API: http://localhost:5000
-- Health check: http://localhost:5000/api/health
-
-## API Endpoints
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | /api/alerts | Ingest new alert (triggers full pipeline) |
-| GET | /api/alerts | List all alerts |
-| GET | /api/incidents | List incidents (filter by status/severity/service) |
-| GET | /api/incidents/:id | Get incident detail with agent outputs |
-| PATCH | /api/incidents/:id | Manual status override |
-| GET | /api/reports/:incident_id | Get AI-generated report |
-| POST | /api/reports/:incident_id/regenerate | Regenerate report |
-| GET | /api/dashboard/kpis | MTTD, MTTR, automation rate |
-| GET | /api/dashboard/timeline | Incidents over time |
-| GET | /api/workflows | List workflow rules |
-| POST | /api/workflows | Create workflow rule |
-| POST | /api/webhooks/demo | Secured demo monitor webhook → same `processAlert` pipeline |
-
-## Sandbox autonomous remediation demo
-
-Optional hackathon flow: a tiny local **demo API** goes unhealthy, a **monitor** calls AIMS through a **shared-secret webhook**, the normal incident pipeline runs, and the action step can perform a **real** `POST /repair` on that API **only** when `ENABLE_REAL_SANDBOX_FIXES=true`. Resolution uses a real `GET /health` probe for `demo-api` in that mode; otherwise behavior stays simulated and matches the legacy health check.
-
-**Architecture (high level)**
-
-```mermaid
-flowchart LR
-  DemoAPI[demo-service /health]
-  Monitor[demoMonitor.js]
-  Webhook[POST /api/webhooks/demo]
-  Pipeline[processAlert pipeline]
-  Repair[POST /repair]
-  DemoAPI --> Monitor
-  Monitor --> Webhook
-  Webhook --> Pipeline
-  Pipeline --> Repair
-  Repair --> DemoAPI
-```
-
-**Configure** (see `server/.env.example`): set `WEBHOOK_SHARED_SECRET` (required for the webhook route), optionally `ENABLE_REAL_SANDBOX_FIXES=true`, `DEMO_SERVICE_URL`, `DEMO_WEBHOOK_URL`, `DEMO_MONITOR_INTERVAL_MS`. For webhook-only demos without CSV noise, set **`ENABLE_CSV_POLLING=false`** (skips `startAlertPolling` / `data/alerts.csv` ingestion).
-
-**Run (four processes)**
-
-1. Backend: `npm run dev` from repo root (or `cd server && npm run dev`).
-2. Frontend: included in root `npm run dev`, or `cd client && npm run dev`.
-3. Demo API: `npm run demo:service` (from repo root) — listens on `DEMO_SERVICE_PORT` (default `5055`).
-4. Monitor: `npm run demo:monitor` — polls `GET /health` and posts to `/api/webhooks/demo` on healthy→unhealthy transitions (with cooldown).
-
-**Break the service during a presentation**
-
-- `npm run demo:break`, or `curl -X POST http://127.0.0.1:5055/break`
-
-**Expected dashboard behavior**
-
-- After `/break`, the monitor sends one webhook per transition (cooldown prevents floods). A new incident appears for `demo-api` / `api_failure`. Agent activity progresses through decision → action → resolution. With **real fixes enabled**, the action agent hits the sandbox repair URL; resolution confirms via HTTP `200` on `/health`. With **real fixes off**, remediation stays simulated and the existing simulated health path applies so CSV/demo flows are unchanged.
-
-**Safety defaults**
-
-- Real HTTP repair is allowlisted to `service === "demo-api"` and actions `restart_api_service` / `restart_service` only, gated by `ENABLE_REAL_SANDBOX_FIXES=true`. No arbitrary shell execution. The dedicated webhook route rejects requests if `WEBHOOK_SHARED_SECRET` is unset or the `x-webhook-secret` header does not match.
-
-## Pipeline Flow
-
-```
-Raw Alert -> Detection Agent (classify, enrich, deduplicate)
-          -> Decision Agent (match rules, safety checks)
-          -> Action Agent (generate commands, execute)
-          -> Resolution Agent (health check, retry/escalate)
-          -> Reporting Agent (RCA, timeline, recommendations)
-```
-
-Each agent uses Groq AI with structured JSON output. Three API keys are distributed across agents to avoid rate limits.
-
-## Project Structure
-
-```
-aims/
-  demo-service/         - Sandbox Express API (/health, /break, /repair) for live demos
-  incident_management/  - Python agents, LangGraph graph, bridge (Groq via LangChain)
-  server/
-    demo/               - Health monitor + triggerBreak helper
-    config/       - Supabase, environment config
-    engine/       - Orchestration pipeline, workflow engine, safety guards
-    models/       - Supabase data access layer
-    routes/       - Express API routes
-    services/     - CSV parser, action executor, notifier, logger
-    sockets/      - Socket.io event handlers
-    jobs/         - CSV alert polling
-  client/
-    src/
-      components/ - Dashboard, Incidents, Reports UI components
-      hooks/      - useSocket, useIncidents (React Query)
-      store/      - Zustand state management
-      pages/      - Dashboard, Incidents, Reports, Escalation pages
-  data/
-    alerts.csv    - Sample alert data
-    workflows.csv - Remediation rules
-    migration.sql - Supabase schema
-```
-</file>
-
 <file path="server/engine/healthChecker.js">
 const axios = require('axios');
 const logger = require('../services/logger');
@@ -6715,11 +7200,18 @@ module.exports = {
   "description": "AIMS Backend - Express + Groq AI Agents",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js",
-    "dev": "node --watch server.js",
-    "seed": "node seed.js",
-    "demo:monitor": "node demo/demoMonitor.js",
-    "demo:break": "node demo/triggerBreak.js"
+    "dev": "concurrently -k -n server,client -c blue,green \"npm run dev:server\" \"wait-on file:.aims-backend-port && npm run dev:client\"",
+    "dev:server": "cd server && npm run dev",
+    "dev:client": "cd client && npm run dev",
+    "install:all": "npm install && cd server && npm install && cd ../client && npm install && cd demo-service && npm install",
+    "seed": "cd server && node seed.js",
+    "demo:service": "cd demo-service && npm start",
+    "demo:monitor": "cd server && node demo/demoMonitor.js",
+    "demo:break": "cd server && node demo/triggerBreak.js"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.0",
+    "wait-on": "^8.0.1"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.103.0",
@@ -6742,208 +7234,303 @@ module.exports = {
 }
 </file>
 
-<file path="server/services/actionExecutor.js">
-const axios = require('axios');
-const logger = require('./logger');
-const env = require('../config/env');
+<file path="server/engine/safetyGuards.js">
+const logger = require('../services/logger');
 
-// In development, use much shorter simulated delays so the pipeline runs quickly.
-const isDev = (process.env.NODE_ENV || 'development') === 'development';
+const recentActions = new Map();
+const failureTracker = new Map();
 
-const DELAY_SCALE = isDev ? 0.05 : 1; // 5% of original delays in dev
+const UNSAFE_ACTIONS = new Set([
+  'drop_database',
+  'delete_all_logs',
+  'delete_all_files',
+  'stop_all_services',
+  'modify_firewall_rules',
+  'rotate_secrets',
+  'rm_rf',
+]);
 
-const DEMO_REPAIR_PATH = '/repair';
-/** Only these actions may trigger a real sandbox HTTP repair for demo-api. */
-const ALLOWED_REAL_SANDBOX_ACTIONS = new Set(['restart_api_service', 'restart_service']);
+const SAFE_ACTIONS = new Set([
+  'restart_service',
+  'restart_api_service',
+  'cleanup_logs',
+  'cleanup_disk_space',
+  'switch_to_fallback',
+  'retry_connections',
+  'scale_up_instances',
+  'escalate_to_human',
+  'notify_admin',
+]);
 
-async function executeRealDemoRepair(service) {
-  const base = env.demoSandbox.serviceUrl.replace(/\/$/, '');
-  const url = `${base}${DEMO_REPAIR_PATH}`;
-  const started = Date.now();
-  logger.info(`[ActionExecutor] Real sandbox repair POST ${url} (service=${service})`);
-  try {
-    const res = await axios.post(url, {}, { timeout: 10000, validateStatus: () => true });
-    const ok = res.status >= 200 && res.status < 300;
-    return {
-      executed: true,
-      success: ok,
-      output_log: ok
-        ? `Sandbox repair OK: POST ${url} → ${res.status}`
-        : `Sandbox repair HTTP ${res.status} from ${url}`,
-      duration_ms: Date.now() - started,
-      real_execution: true,
-      repair_endpoint_called: url,
-    };
-  } catch (err) {
-    return {
-      executed: true,
-      success: false,
-      output_log: `Sandbox repair failed: ${err.message}`,
-      duration_ms: Date.now() - started,
-      real_execution: true,
-      repair_endpoint_called: url,
-      error: err.message,
-    };
+function isDryRunRequired(rule) {
+  if (!rule || typeof rule !== 'object') return false;
+  return rule.dry_run === true;
+}
+
+function isUnsafeAction(action) {
+  if (!action) return false;
+  return UNSAFE_ACTIONS.has(action);
+}
+
+function isKnownSafeAction(action) {
+  if (!action) return false;
+  return SAFE_ACTIONS.has(action);
+}
+
+function isDuplicateAction(action, service, windowMs = 30000) {
+  if (!action || !service) return false;
+  const key = `${action}:${service}`;
+  const lastExec = recentActions.get(key);
+  const now = Date.now();
+
+  if (lastExec && now - lastExec < windowMs) {
+    logger.warn(`[SafetyGuard] Duplicate suppressed: ${action} on ${service} (within ${windowMs / 1000}s)`);
+    return true;
+  }
+
+  recentActions.set(key, now);
+  return false;
+}
+
+function checkCircuitBreaker(windowMs = 600000, maxFailures = 5) {
+  const now = Date.now();
+  let recentFailures = 0;
+
+  for (const [, { timestamp }] of failureTracker) {
+    if (now - timestamp < windowMs) recentFailures++;
+  }
+
+  if (recentFailures >= maxFailures) {
+    logger.error(`[SafetyGuard] CIRCUIT BREAKER: ${recentFailures} failures in ${windowMs / 60000} min. Pausing automation.`);
+    return true;
+  }
+  return false;
+}
+
+function recordFailure(incidentId) {
+  failureTracker.set(incidentId, { timestamp: Date.now() });
+  if (failureTracker.size > 100) {
+    const oldest = [...failureTracker.entries()].sort((a, b) => a[1].timestamp - b[1].timestamp);
+    failureTracker.delete(oldest[0][0]);
   }
 }
 
-const ACTION_SIMULATORS = {
-  async restart_service(service, command) {
-    logger.info(`[ActionExecutor] Simulating restart of ${service}: ${command}`);
-    await simulateDelay(2000 * DELAY_SCALE, 5000 * DELAY_SCALE);
-    return {
-      executed: true,
-      success: true,
-      output_log: `Service ${service} restarted successfully. New PID assigned.`,
-      duration_ms: randomBetween(150, 400),
-      real_execution: false,
-    };
-  },
+/**
+ * Run all safety checks for a proposed action.
+ * Hardened: handles null/undefined action, service, and rule gracefully.
+ */
+function runSafetyChecks(action, service, rule, environment = 'production') {
+  const safeRule = rule && typeof rule === 'object' ? rule : {};
+  const checks = [];
 
-  async restart_api_service(service, command) {
-    logger.info(`[ActionExecutor] Simulating API service restart of ${service}: ${command}`);
-    await simulateDelay(1500 * DELAY_SCALE, 4000 * DELAY_SCALE);
-    return {
-      executed: true,
-      success: true,
-      output_log: `API service ${service} restarted. Error rate normalized. All health probes passing.`,
-      duration_ms: randomBetween(150, 350),
-      real_execution: false,
-    };
-  },
+  // ── Guard: missing action ──
+  if (!action || typeof action !== 'string' || action.trim() === '') {
+    checks.push({
+      check: 'missing_action',
+      passed: false,
+      message: 'No action specified — cannot validate safety',
+    });
+    return { safe: false, checks, action: action || null, service: service || null };
+  }
 
-  async cleanup_disk_space(service, command) {
-    logger.info(`[ActionExecutor] Simulating disk cleanup for ${service}: ${command}`);
-    await simulateDelay(2000 * DELAY_SCALE, 5000 * DELAY_SCALE);
-    const gbReclaimed = (Math.random() * 30 + 5).toFixed(1);
-    return {
-      executed: true,
-      success: true,
-      output_log: `Disk cleanup completed on ${service}. Reclaimed ${gbReclaimed}GB. Disk usage now below threshold.`,
-      duration_ms: randomBetween(200, 500),
-      real_execution: false,
-    };
-  },
+  // ── Guard: missing service context ──
+  if (!service || typeof service !== 'string' || service.trim() === '') {
+    checks.push({
+      check: 'missing_context',
+      passed: false,
+      message: 'No service context provided — cannot validate safety',
+    });
+    return { safe: false, checks, action, service: service || null };
+  }
 
-  async cleanup_logs(service, command) {
-    logger.info(`[ActionExecutor] Simulating log cleanup for ${service}: ${command}`);
-    await simulateDelay(3000 * DELAY_SCALE, 8000 * DELAY_SCALE);
-    const filesDeleted = randomBetween(15, 200);
-    const gbReclaimed = (Math.random() * 5 + 0.5).toFixed(1);
-    return {
-      executed: true,
-      success: true,
-      output_log: `Cleaned ${filesDeleted} log files, reclaimed ${gbReclaimed}GB on ${service}.`,
-      duration_ms: randomBetween(150, 400),
-      real_execution: false,
-    };
-  },
+  // ── Guard: unknown action (not in safe OR unsafe list) ──
+  if (!isKnownSafeAction(action) && !isUnsafeAction(action)) {
+    checks.push({
+      check: 'unknown_action',
+      passed: false,
+      message: `Action "${action}" is not in the known safe or unsafe list — requires review`,
+    });
+  }
 
-  async switch_to_fallback(service, command) {
-    logger.info(`[ActionExecutor] Simulating fallback switch for ${service}: ${command}`);
-    await simulateDelay(1000 * DELAY_SCALE, 3000 * DELAY_SCALE);
-    return {
-      executed: true,
-      success: true,
-      output_log: `Traffic for ${service} rerouted to fallback endpoint.`,
-      duration_ms: randomBetween(80, 250),
-      real_execution: false,
-    };
-  },
+  if (isUnsafeAction(action)) {
+    checks.push({
+      check: 'unsafe_action',
+      passed: false,
+      message: `Action "${action}" is in the unsafe list and requires human approval`,
+    });
+  }
 
-  async retry_connections(service, command) {
-    logger.info(`[ActionExecutor] Simulating connection retry for ${service}: ${command}`);
-    await simulateDelay(1000 * DELAY_SCALE, 4000 * DELAY_SCALE);
-    return {
-      executed: true,
-      success: true,
-      output_log: `Network connections for ${service} re-established. 3/3 endpoints healthy.`,
-      duration_ms: randomBetween(80, 250),
-      real_execution: false,
-    };
-  },
+  if (isDryRunRequired(safeRule)) {
+    checks.push({
+      check: 'dry_run',
+      passed: false,
+      message: `Workflow rule requires dry-run first for ${action}`,
+    });
+  }
 
-  async scale_up_instances(service, command) {
-    logger.info(`[ActionExecutor] Simulating scale-up for ${service}: ${command}`);
-    await simulateDelay(1000 * DELAY_SCALE, 3000 * DELAY_SCALE);
-    return {
-      executed: true,
-      success: true,
-      output_log: `Scaled ${service} from 2 to 4 instances. Load distributed.`,
-      duration_ms: randomBetween(100, 300),
-      real_execution: false,
-    };
-  },
+  if (isDuplicateAction(action, service)) {
+    checks.push({
+      check: 'duplicate_guard',
+      passed: false,
+      message: `Same action (${action}) on ${service} was executed within last 30s`,
+    });
+  }
 
-  async escalate_to_human(service) {
-    logger.info(`[ActionExecutor] Escalation triggered for ${service}`);
-    return {
-      executed: true,
-      success: true,
-      output_log: `Escalation notification sent for ${service}. Awaiting human response.`,
-      duration_ms: 50,
-      real_execution: false,
-    };
-  },
+  if (checkCircuitBreaker()) {
+    checks.push({
+      check: 'circuit_breaker',
+      passed: false,
+      message: '5+ action failures in last 10 minutes. Automation paused.',
+    });
+  }
 
-  async notify_admin(service, command) {
-    logger.info(`[ActionExecutor] Notify admin for ${service}: ${command || 'certificate / policy follow-up'}`);
-    await simulateDelay(200 * DELAY_SCALE, 800 * DELAY_SCALE);
-    return {
-      executed: true,
-      success: true,
-      output_log: `Ops notification queued for ${service}.`,
-      duration_ms: randomBetween(80, 200),
-      real_execution: false,
-    };
-  },
+  if (environment === 'production' && isUnsafeAction(action)) {
+    checks.push({
+      check: 'production_lock',
+      passed: false,
+      message: `Action "${action}" blocked in production without approval token`,
+    });
+  }
+
+  const allPassed = checks.length === 0 || checks.every((c) => c.passed);
+
+  if (!allPassed) {
+    logger.warn(`[SafetyGuard] Blocked: ${action} on ${service} — ${checks.filter((c) => !c.passed).map((c) => c.check).join(', ')}`);
+  }
+
+  return {
+    safe: allPassed,
+    checks,
+    action,
+    service,
+  };
+}
+
+/**
+ * Build the structured safety_check object for pipeline agent_outputs.
+ */
+function buildSafetyCheckResult(safetyResult) {
+  const failedChecks = (safetyResult.checks || []).filter((c) => !c.passed);
+  return {
+    safe: safetyResult.safe,
+    reason: safetyResult.safe
+      ? 'All safety checks passed'
+      : failedChecks.map((c) => c.message).join('; '),
+    checks: safetyResult.checks || [],
+    checked_at: new Date().toISOString(),
+  };
+}
+
+module.exports = {
+  runSafetyChecks,
+  buildSafetyCheckResult,
+  isDryRunRequired,
+  isUnsafeAction,
+  isKnownSafeAction,
+  isDuplicateAction,
+  checkCircuitBreaker,
+  recordFailure,
+  SAFE_ACTIONS,
+  UNSAFE_ACTIONS,
 };
+</file>
 
-async function executeAction(actionName, service, command) {
-  const allowReal =
-    env.demoSandbox.enableRealFixes &&
-    service === 'demo-api' &&
-    ALLOWED_REAL_SANDBOX_ACTIONS.has(actionName);
+<file path="server/server.js">
+const express = require('express');
+const http = require('http');
+const cors = require('cors');
+const { Server } = require('socket.io');
+const env = require('./config/env');
+const { testConnection } = require('./config/db');
+const { setupIncidentSocket } = require('./sockets/incidentSocket');
+const { startAlertPolling } = require('./jobs/alertIngestionJob');
+const { warmupPythonAgentBridge } = require('./services/pythonAgentBridge');
+const logger = require('./services/logger');
+const { writeListeningPort, registerExitCleanup } = require('./utils/devPortFile');
 
-  if (allowReal) {
-    return executeRealDemoRepair(service);
+const alertRoutes = require('./routes/alerts');
+const webhookRoutes = require('./routes/webhooks');
+const incidentRoutes = require('./routes/incidents');
+const reportRoutes = require('./routes/reports');
+const dashboardRoutes = require('./routes/dashboard');
+const workflowRoutes = require('./routes/workflows');
+
+const app = express();
+const server = http.createServer(app);
+const io = new Server(server, {
+  cors: { origin: '*', methods: ['GET', 'POST', 'PATCH', 'DELETE'] },
+});
+
+app.use(cors());
+app.use(express.json());
+
+app.set('io', io);
+
+app.use('/api/alerts', alertRoutes);
+app.use('/api/webhooks', webhookRoutes);
+app.use('/api/incidents', incidentRoutes);
+app.use('/api/reports', reportRoutes);
+app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/workflows', workflowRoutes);
+
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
+setupIncidentSocket(io);
+
+async function start() {
+  const dbOk = await testConnection();
+  if (!dbOk) {
+    logger.warn('Starting without confirmed DB connection. Ensure Supabase tables are created.');
   }
 
-  const executor = ACTION_SIMULATORS[actionName];
-  if (!executor) {
-    logger.warn(`[ActionExecutor] No simulator for action: ${actionName}, using generic`);
-    await simulateDelay(500 * DELAY_SCALE, 1500 * DELAY_SCALE);
-    return {
-      executed: true,
-      success: true,
-      output_log: `Action ${actionName} executed on ${service}`,
-      duration_ms: randomBetween(100, 300),
-      real_execution: false,
-    };
+  if (env.app.nodeEnv === 'development') {
+    warmupPythonAgentBridge();
   }
 
-  try {
-    return await executor(service, command);
-  } catch (err) {
-    logger.error(`[ActionExecutor] Failed: ${err.message}`);
-    return {
-      executed: true,
-      success: false,
-      output_log: `Action ${actionName} failed on ${service}`,
-      duration_ms: 0,
-      real_execution: false,
-      error: err.message,
-    };
-  }
-}
+  startAlertPolling(io);
 
-function simulateDelay(min, max) {
-  const delay = randomBetween(min, max);
-  return new Promise((resolve) => setTimeout(resolve, delay));
-}
+  const isProd = env.app.nodeEnv === 'production';
+  if (!isProd) registerExitCleanup();
+  let port = env.app.port;
+  let attempts = 0;
+  let listening = false;
 
-function randomBetween(min, max) {
-  return Math.floor(Math.random() * (max - min + 1)) + min;
+  const listen = () => {
+    attempts += 1;
+    server.listen(port);
+  };
+
+  const configuredPort = env.app.port;
+
+  server.once('listening', () => {
+    listening = true;
+    logger.info(`AIMS server running on port ${port}`);
+    logger.info(`Environment: ${env.app.nodeEnv}`);
+    if (!isProd) {
+      writeListeningPort(port);
+      if (port !== configuredPort) {
+        logger.info(
+          `Wrote ${port} to repo .aims-backend-port — restart Vite (or use npm run dev from repo root) so the client proxy and Socket.io match this port.`
+        );
+      }
+    }
+  });
+
+  server.on('error', (err) => {
+    if (!isProd && !listening && err && err.code === 'EADDRINUSE' && attempts < 20) {
+      logger.warn(`Port ${port} is in use; trying ${port + 1}...`);
+      port += 1;
+      setTimeout(listen, 200);
+      return;
+    }
+
+    logger.error(`Server failed to start: ${err?.message || err}`);
+    process.exit(1);
+  });
+
+  listen();
 }
 
 module.exports = { executeAction };
@@ -7139,30 +7726,123 @@ function runAgent(agentName, args) {
 module.exports = { runAgent, warmupPythonAgentBridge };
 </file>
 
-<file path="package.json">
-{
-  "name": "aims",
-  "version": "1.0.0",
-  "description": "Automated Incident Management System - AI-powered multi-agent incident handling",
-  "private": true,
-  "scripts": {
-    "dev": "concurrently -k -n server,client -c blue,green \"npm run dev:server\" \"wait-on file:.aims-backend-port && npm run dev:client\"",
-    "dev:server": "cd server && npm run dev",
-    "dev:client": "cd client && npm run dev",
-    "install:all": "npm install && cd server && npm install && cd ../client && npm install && cd demo-service && npm install",
-    "seed": "cd server && node seed.js",
-    "demo:service": "cd demo-service && npm start",
-    "demo:monitor": "cd server && node demo/demoMonitor.js",
-    "demo:break": "cd server && node demo/triggerBreak.js"
-  },
-  "devDependencies": {
-    "concurrently": "^9.1.0",
-    "wait-on": "^8.0.1"
-  },
-  "dependencies": {
-    "repomix": "^1.13.1"
+<file path="data/alerts.csv">
+timestamp,alert_id,alert_type,severity,service,host,metric_value,threshold
+</file>
+
+<file path="server/config/env.js">
+const dotenv = require('dotenv');
+const path = require('path');
+
+// Prefer backend-local `.env`, then repo-root `.env`, then `.env.example`.
+// This supports both setups:
+// - env stored at `server/.env`
+// - env stored at repo root `.env`
+let loaded = dotenv.config({ path: path.resolve(__dirname, '../.env') });
+if (loaded.error) loaded = dotenv.config({ path: path.resolve(__dirname, '../../.env') });
+if (loaded.error) loaded = dotenv.config({ path: path.resolve(__dirname, '../.env.example') });
+if (loaded.error) loaded = dotenv.config({ path: path.resolve(__dirname, '../../.env.example') });
+
+const required = [
+  'SUPABASE_URL',
+  'SUPABASE_ANON_KEY',
+  'GROQ_API_KEY_1',
+];
+
+const missing = required.filter((key) => !process.env[key]);
+if (missing.length > 0) {
+  const msg = `Missing required environment variables: ${missing.join(', ')}`;
+  const hint = 'Copy .env.example to .env and fill in the values.';
+
+  // Only hard-fail when explicitly running in production.
+  if ((process.env.NODE_ENV || 'development') === 'production') {
+    console.error(msg);
+    console.error(hint);
+    process.exit(1);
+  } else {
+    console.warn(msg);
+    console.warn(hint);
+    console.warn('Continuing in development mode with limited functionality.');
   }
 }
+
+function parseServiceEscalationEmails(raw) {
+  if (!raw || typeof raw !== 'string' || !raw.trim()) {
+    return {};
+  }
+  try {
+    const parsed = JSON.parse(raw);
+    if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+      return parsed;
+    }
+    console.warn('[env] SERVICE_ESCALATION_EMAILS_JSON must be a JSON object, using {}');
+    return {};
+  } catch (e) {
+    console.warn(`[env] Failed to parse SERVICE_ESCALATION_EMAILS_JSON: ${e.message}`);
+    return {};
+  }
+}
+
+module.exports = {
+  supabase: {
+    url: process.env.SUPABASE_URL,
+    anonKey: process.env.SUPABASE_ANON_KEY,
+    serviceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY,
+  },
+  groq: {
+    keys: [
+      process.env.GROQ_API_KEY_1,
+      process.env.GROQ_API_KEY_2 || process.env.GROQ_API_KEY_1,
+      process.env.GROQ_API_KEY_3 || process.env.GROQ_API_KEY_1,
+    ],
+    model: process.env.GROQ_MODEL || 'llama-3.3-70b-versatile',
+  },
+  app: {
+    port: parseInt(process.env.PORT, 10) || 5000,
+    nodeEnv: process.env.NODE_ENV || 'development',
+    jwtSecret: process.env.JWT_SECRET || 'aims-dev-secret',
+  },
+  notifications: {
+    slackWebhookUrl: process.env.SLACK_WEBHOOK_URL,
+    pagerdutyApiKey: process.env.PAGERDUTY_API_KEY,
+  },
+  email: {
+    host: process.env.SMTP_HOST || '',
+    port: (() => {
+      const p = parseInt(process.env.SMTP_PORT || '587', 10);
+      return Number.isNaN(p) ? 587 : p;
+    })(),
+    secure: process.env.SMTP_SECURE === 'true',
+    user: process.env.SMTP_USER || '',
+    // Gmail app passwords are often copied with spaces between groups; SMTP expects 16 chars without spaces.
+    pass: (process.env.SMTP_PASS || '').replace(/\s+/g, ''),
+    escalationEmails: (process.env.ESCALATION_EMAILS || '')
+      .split(',')
+      .map((v) => v.trim())
+      .filter(Boolean),
+    serviceEscalationEmails: parseServiceEscalationEmails(process.env.SERVICE_ESCALATION_EMAILS_JSON),
+  },
+  polling: {
+    alertPollIntervalMs: parseInt(process.env.ALERT_POLL_INTERVAL_MS, 10) || 10000,
+  },
+  /** When true (default in development), align decision with workflows.csv / DB rule so demo actions run and incidents can resolve. */
+  pipeline: {
+    devAutoApproveWorkflowActions:
+      process.env.DEV_AUTO_APPROVE_WORKFLOW_ACTIONS !== 'false' &&
+      (process.env.NODE_ENV || 'development') !== 'production',
+  },
+  /** Mock health check timing; in development keeps pipelines snappy. */
+  healthCheck: {
+    delayMsMin: parseInt(process.env.HEALTH_CHECK_DELAY_MS_MIN, 10),
+    delayMsMax: parseInt(process.env.HEALTH_CHECK_DELAY_MS_MAX, 10),
+  },
+  /** Sandbox demo: local demo API + webhook monitor + optional real POST /repair. */
+  demoSandbox: {
+    serviceUrl: (process.env.DEMO_SERVICE_URL || 'http://127.0.0.1:5055').replace(/\/$/, ''),
+    enableRealFixes: process.env.ENABLE_REAL_SANDBOX_FIXES === 'true',
+    webhookSharedSecret: process.env.WEBHOOK_SHARED_SECRET || '',
+  },
+};
 </file>
 
 <file path="server/jobs/alertIngestionJob.js">
