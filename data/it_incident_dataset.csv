@@ -1,0 +1,1201 @@
+Incident_ID,Incident_Type,Priority,Assigned_Department,Location,Reported_Time,Resolved_Time,Resolution_Time_Hours,Status,Resolution_Type
+INC100000,Network Outage,Low,Security Team,Data Center B,2024-03-17 04:00:00,2024-03-17 22:00:00,18.0,Resolved,Reboot
+INC100001,Database Failure,Low,Database Admin,Remote Site 1,2024-01-11 20:00:00,2024-01-12 00:00:00,4.0,Resolved,Reboot
+INC100002,Server Crash,Medium,Database Admin,Remote Site 2,2024-01-10 01:00:00,2024-01-13 01:00:00,72.0,Closed,Patch Applied
+INC100003,Database Failure,Critical,Network Team,Remote Site 1,2024-07-20 03:00:00,2024-07-21 15:00:00,36.0,Resolved,Reboot
+INC100004,Server Crash,Critical,Security Team,Head Office,2024-02-23 01:00:00,2024-02-24 05:00:00,28.0,Resolved,Configuration Fix
+INC100005,Network Outage,Low,DevOps,Data Center A,2024-05-02 12:00:00,2024-05-04 09:00:00,45.0,Resolved,Security Mitigation
+INC100006,Security Breach,Low,DevOps,Remote Site 2,2024-02-12 14:00:00,2024-02-14 15:00:00,49.0,Resolved,Reboot
+INC100007,Database Failure,High,Database Admin,Head Office,2024-07-16 01:00:00,2024-07-17 02:00:00,25.0,Resolved,Reboot
+INC100008,Network Outage,Medium,Security Team,Data Center A,2024-10-18 22:00:00,2024-10-20 04:00:00,30.0,Resolved,Reboot
+INC100009,Application Bug,High,DevOps,Head Office,2024-02-25 12:00:00,2024-02-27 12:00:00,48.0,Resolved,Configuration Fix
+INC100010,Server Crash,High,IT Support,Remote Site 2,2024-08-04 17:00:00,2024-08-05 15:00:00,22.0,Resolved,Security Mitigation
+INC100011,Server Crash,Medium,DevOps,Remote Site 1,2024-04-02 03:00:00,2024-04-05 03:00:00,72.0,Closed,Patch Applied
+INC100012,Security Breach,Low,Network Team,Data Center A,2024-10-01 18:00:00,2024-10-03 11:00:00,41.0,Resolved,Hardware Replacement
+INC100013,Security Breach,Low,Network Team,Remote Site 2,2024-10-26 03:00:00,2024-10-27 20:00:00,41.0,Resolved,Patch Applied
+INC100014,Application Bug,Critical,DevOps,Data Center B,2024-03-31 09:00:00,2024-04-01 03:00:00,18.0,Resolved,Patch Applied
+INC100015,Database Failure,High,Database Admin,Remote Site 1,2024-11-02 10:00:00,2024-11-04 14:00:00,52.0,Resolved,Configuration Fix
+INC100016,Server Crash,Medium,Database Admin,Remote Site 1,2024-02-01 00:00:00,2024-02-01 07:00:00,7.0,Resolved,Reboot
+INC100017,Server Crash,Medium,DevOps,Remote Site 2,2024-01-22 16:00:00,2024-01-24 18:00:00,50.0,Resolved,Hardware Replacement
+INC100018,Database Failure,Critical,Database Admin,Head Office,2024-11-27 11:00:00,2024-11-30 10:00:00,71.0,Closed,Reboot
+INC100019,Network Outage,High,Security Team,Data Center A,2024-04-10 04:00:00,2024-04-12 12:00:00,56.0,Resolved,Patch Applied
+INC100020,Application Bug,Low,Security Team,Remote Site 2,2024-09-17 01:00:00,2024-09-18 00:00:00,23.0,Resolved,Security Mitigation
+INC100021,Network Outage,High,Database Admin,Remote Site 2,2024-03-08 21:00:00,2024-03-09 17:00:00,20.0,Resolved,Configuration Fix
+INC100022,Server Crash,Low,Database Admin,Head Office,2024-06-15 18:00:00,2024-06-15 21:00:00,3.0,Resolved,Reboot
+INC100023,Security Breach,High,Network Team,Data Center A,2024-03-23 05:00:00,2024-03-23 16:00:00,11.0,Resolved,Reboot
+INC100024,Application Bug,Low,Database Admin,Data Center B,2024-02-13 19:00:00,2024-02-16 08:00:00,61.0,Closed,Security Mitigation
+INC100025,Server Crash,High,Database Admin,Remote Site 2,2024-05-24 10:00:00,2024-05-25 14:00:00,28.0,Resolved,Security Mitigation
+INC100026,Server Crash,High,DevOps,Head Office,2024-05-29 12:00:00,2024-06-01 07:00:00,67.0,Closed,Hardware Replacement
+INC100027,Network Outage,Medium,Network Team,Data Center A,2024-04-25 09:00:00,2024-04-25 12:00:00,3.0,Resolved,Security Mitigation
+INC100028,Database Failure,Medium,Database Admin,Data Center B,2024-01-03 10:00:00,2024-01-03 20:00:00,10.0,Resolved,Reboot
+INC100029,Server Crash,Low,IT Support,Head Office,2024-01-25 04:00:00,2024-01-27 22:00:00,66.0,Closed,Patch Applied
+INC100030,Security Breach,Critical,Network Team,Remote Site 2,2024-02-15 03:00:00,2024-02-17 16:00:00,61.0,Closed,Patch Applied
+INC100031,Application Bug,Critical,Network Team,Data Center A,2024-02-03 02:00:00,2024-02-05 10:00:00,56.0,Resolved,Configuration Fix
+INC100032,Application Bug,Critical,DevOps,Data Center A,2024-08-17 20:00:00,2024-08-18 09:00:00,13.0,Resolved,Reboot
+INC100033,Application Bug,High,IT Support,Data Center B,2024-03-06 09:00:00,2024-03-07 10:00:00,25.0,Resolved,Security Mitigation
+INC100034,Application Bug,Medium,DevOps,Data Center B,2024-04-05 01:00:00,2024-04-07 13:00:00,60.0,Closed,Patch Applied
+INC100035,Network Outage,Critical,Database Admin,Data Center A,2024-01-18 06:00:00,2024-01-21 04:00:00,70.0,Closed,Reboot
+INC100036,Network Outage,Medium,Network Team,Remote Site 1,2024-06-14 18:00:00,2024-06-17 08:00:00,62.0,Closed,Patch Applied
+INC100037,Application Bug,Low,Network Team,Remote Site 1,2024-01-01 17:00:00,2024-01-03 19:00:00,50.0,Resolved,Configuration Fix
+INC100038,Application Bug,High,DevOps,Remote Site 2,2024-08-13 22:00:00,2024-08-16 13:00:00,63.0,Closed,Patch Applied
+INC100039,Server Crash,High,Network Team,Data Center A,2024-07-16 16:00:00,2024-07-19 14:00:00,70.0,Closed,Reboot
+INC100040,Security Breach,Low,IT Support,Remote Site 2,2024-06-11 17:00:00,2024-06-14 10:00:00,65.0,Closed,Security Mitigation
+INC100041,Server Crash,Low,Database Admin,Data Center A,2024-10-17 14:00:00,2024-10-18 14:00:00,24.0,Resolved,Reboot
+INC100042,Database Failure,Low,Network Team,Remote Site 1,2024-02-10 22:00:00,2024-02-12 06:00:00,32.0,Resolved,Security Mitigation
+INC100043,Database Failure,Low,Database Admin,Data Center A,2024-05-23 02:00:00,2024-05-25 21:00:00,67.0,Closed,Configuration Fix
+INC100044,Security Breach,Medium,Security Team,Data Center B,2024-03-31 15:00:00,2024-04-02 18:00:00,51.0,Resolved,Patch Applied
+INC100045,Security Breach,Critical,Security Team,Data Center A,2024-01-04 04:00:00,2024-01-06 15:00:00,59.0,Resolved,Security Mitigation
+INC100046,Database Failure,Low,IT Support,Remote Site 2,2024-03-13 18:00:00,2024-03-16 11:00:00,65.0,Closed,Configuration Fix
+INC100047,Server Crash,High,IT Support,Data Center B,2024-05-06 03:00:00,2024-05-07 16:00:00,37.0,Resolved,Patch Applied
+INC100048,Application Bug,High,Database Admin,Remote Site 2,2024-01-03 16:00:00,2024-01-06 15:00:00,71.0,Closed,Configuration Fix
+INC100049,Network Outage,Medium,Security Team,Data Center A,2024-10-30 16:00:00,2024-10-31 06:00:00,14.0,Resolved,Security Mitigation
+INC100050,Server Crash,High,Security Team,Remote Site 2,2024-03-12 21:00:00,2024-03-14 17:00:00,44.0,Resolved,Patch Applied
+INC100051,Security Breach,Critical,Security Team,Data Center A,2024-02-01 12:00:00,2024-02-03 19:00:00,55.0,Resolved,Configuration Fix
+INC100052,Network Outage,Low,Security Team,Data Center B,2024-08-05 11:00:00,2024-08-06 21:00:00,34.0,Resolved,Patch Applied
+INC100053,Application Bug,Critical,Database Admin,Data Center A,2024-02-08 04:00:00,2024-02-08 14:00:00,10.0,Resolved,Patch Applied
+INC100054,Database Failure,Low,Security Team,Remote Site 2,2024-07-07 14:00:00,2024-07-08 09:00:00,19.0,Resolved,Hardware Replacement
+INC100055,Server Crash,Low,Security Team,Head Office,2024-11-02 20:00:00,2024-11-03 02:00:00,6.0,Resolved,Configuration Fix
+INC100056,Server Crash,Medium,IT Support,Head Office,2024-09-23 06:00:00,2024-09-26 06:00:00,72.0,Closed,Hardware Replacement
+INC100057,Database Failure,Medium,Network Team,Data Center B,2024-11-29 05:00:00,2024-11-30 04:00:00,23.0,Resolved,Hardware Replacement
+INC100058,Network Outage,Medium,Security Team,Remote Site 1,2024-09-30 19:00:00,2024-10-02 03:00:00,32.0,Resolved,Configuration Fix
+INC100059,Server Crash,Low,DevOps,Data Center A,2024-10-20 01:00:00,2024-10-22 14:00:00,61.0,Closed,Patch Applied
+INC100060,Server Crash,Critical,Security Team,Head Office,2024-10-07 01:00:00,2024-10-08 07:00:00,30.0,Resolved,Patch Applied
+INC100061,Network Outage,Medium,DevOps,Head Office,2024-04-05 02:00:00,2024-04-05 11:00:00,9.0,Resolved,Configuration Fix
+INC100062,Security Breach,Critical,Database Admin,Head Office,2024-11-16 14:00:00,2024-11-16 18:00:00,4.0,Resolved,Reboot
+INC100063,Security Breach,Medium,Database Admin,Head Office,2024-01-14 01:00:00,2024-01-14 15:00:00,14.0,Resolved,Security Mitigation
+INC100064,Application Bug,High,Security Team,Remote Site 1,2024-07-25 22:00:00,2024-07-28 16:00:00,66.0,Closed,Reboot
+INC100065,Application Bug,Medium,Security Team,Data Center A,2024-08-29 22:00:00,2024-09-01 06:00:00,56.0,Resolved,Reboot
+INC100066,Database Failure,Medium,Security Team,Remote Site 1,2024-01-24 21:00:00,2024-01-26 16:00:00,43.0,Resolved,Security Mitigation
+INC100067,Security Breach,Low,Security Team,Remote Site 2,2024-04-15 13:00:00,2024-04-17 18:00:00,53.0,Resolved,Configuration Fix
+INC100068,Application Bug,High,Database Admin,Data Center B,2024-03-06 11:00:00,2024-03-08 17:00:00,54.0,Resolved,Hardware Replacement
+INC100069,Server Crash,High,DevOps,Remote Site 2,2024-10-11 13:00:00,2024-10-11 14:00:00,1.0,Resolved,Configuration Fix
+INC100070,Security Breach,Medium,DevOps,Remote Site 2,2024-07-26 01:00:00,2024-07-27 19:00:00,42.0,Resolved,Hardware Replacement
+INC100071,Application Bug,Critical,Network Team,Remote Site 2,2024-06-10 12:00:00,2024-06-11 10:00:00,22.0,Resolved,Reboot
+INC100072,Security Breach,High,IT Support,Data Center B,2024-08-17 15:00:00,2024-08-19 07:00:00,40.0,Resolved,Patch Applied
+INC100073,Server Crash,Medium,IT Support,Data Center A,2024-03-24 13:00:00,2024-03-27 02:00:00,61.0,Closed,Security Mitigation
+INC100074,Network Outage,Critical,DevOps,Remote Site 2,2024-03-07 08:00:00,2024-03-09 10:00:00,50.0,Resolved,Hardware Replacement
+INC100075,Application Bug,Medium,Network Team,Data Center A,2024-10-31 16:00:00,2024-11-01 06:00:00,14.0,Resolved,Hardware Replacement
+INC100076,Server Crash,Medium,Database Admin,Remote Site 1,2024-01-18 03:00:00,2024-01-21 03:00:00,72.0,Closed,Patch Applied
+INC100077,Network Outage,Critical,Network Team,Remote Site 1,2024-08-15 20:00:00,2024-08-18 16:00:00,68.0,Closed,Security Mitigation
+INC100078,Database Failure,High,DevOps,Remote Site 2,2024-10-05 04:00:00,2024-10-07 21:00:00,65.0,Closed,Hardware Replacement
+INC100079,Database Failure,Critical,Network Team,Remote Site 1,2024-06-02 14:00:00,2024-06-04 00:00:00,34.0,Resolved,Patch Applied
+INC100080,Security Breach,Critical,Network Team,Head Office,2024-05-30 03:00:00,2024-05-30 13:00:00,10.0,Resolved,Configuration Fix
+INC100081,Server Crash,High,Security Team,Head Office,2024-10-31 19:00:00,2024-11-03 17:00:00,70.0,Closed,Reboot
+INC100082,Server Crash,Medium,Network Team,Remote Site 1,2024-08-24 20:00:00,2024-08-25 16:00:00,20.0,Resolved,Patch Applied
+INC100083,Network Outage,Critical,DevOps,Head Office,2024-07-04 05:00:00,2024-07-06 17:00:00,60.0,Closed,Hardware Replacement
+INC100084,Network Outage,Medium,DevOps,Remote Site 1,2024-11-04 20:00:00,2024-11-04 23:00:00,3.0,Resolved,Security Mitigation
+INC100085,Application Bug,Critical,IT Support,Head Office,2024-04-11 22:00:00,2024-04-14 00:00:00,50.0,Resolved,Hardware Replacement
+INC100086,Database Failure,Medium,DevOps,Data Center B,2024-04-03 03:00:00,2024-04-05 11:00:00,56.0,Resolved,Hardware Replacement
+INC100087,Network Outage,Critical,Security Team,Remote Site 1,2024-09-04 04:00:00,2024-09-05 02:00:00,22.0,Resolved,Hardware Replacement
+INC100088,Server Crash,Low,DevOps,Remote Site 2,2024-07-11 15:00:00,2024-07-11 19:00:00,4.0,Resolved,Reboot
+INC100089,Application Bug,Medium,DevOps,Data Center B,2024-01-18 03:00:00,2024-01-19 13:00:00,34.0,Resolved,Hardware Replacement
+INC100090,Security Breach,Medium,DevOps,Head Office,2024-04-25 04:00:00,2024-04-27 05:00:00,49.0,Resolved,Configuration Fix
+INC100091,Application Bug,High,IT Support,Remote Site 1,2024-01-07 14:00:00,2024-01-10 12:00:00,70.0,Closed,Reboot
+INC100092,Security Breach,Medium,IT Support,Data Center A,2024-09-14 10:00:00,2024-09-14 14:00:00,4.0,Resolved,Patch Applied
+INC100093,Server Crash,Low,Database Admin,Data Center B,2024-03-22 10:00:00,2024-03-23 03:00:00,17.0,Resolved,Hardware Replacement
+INC100094,Network Outage,Medium,DevOps,Head Office,2024-09-18 18:00:00,2024-09-20 18:00:00,48.0,Resolved,Patch Applied
+INC100095,Database Failure,Low,Network Team,Head Office,2024-02-06 21:00:00,2024-02-07 01:00:00,4.0,Resolved,Configuration Fix
+INC100096,Database Failure,Critical,DevOps,Data Center B,2024-01-26 22:00:00,2024-01-28 06:00:00,32.0,Resolved,Reboot
+INC100097,Security Breach,Low,Database Admin,Data Center A,2024-04-28 12:00:00,2024-05-01 09:00:00,69.0,Closed,Hardware Replacement
+INC100098,Security Breach,Low,Database Admin,Head Office,2024-01-05 07:00:00,2024-01-07 13:00:00,54.0,Resolved,Hardware Replacement
+INC100099,Network Outage,Critical,Security Team,Remote Site 1,2024-08-29 10:00:00,2024-08-30 06:00:00,20.0,Resolved,Hardware Replacement
+INC100100,Server Crash,High,Database Admin,Remote Site 2,2024-09-21 09:00:00,2024-09-23 23:00:00,62.0,Closed,Hardware Replacement
+INC100101,Application Bug,High,Security Team,Data Center B,2024-10-10 13:00:00,2024-10-11 01:00:00,12.0,Resolved,Configuration Fix
+INC100102,Application Bug,Medium,DevOps,Remote Site 2,2024-07-27 07:00:00,2024-07-29 08:00:00,49.0,Resolved,Configuration Fix
+INC100103,Network Outage,Critical,Security Team,Data Center B,2024-06-15 10:00:00,2024-06-16 14:00:00,28.0,Resolved,Configuration Fix
+INC100104,Security Breach,High,Security Team,Remote Site 2,2024-08-27 08:00:00,2024-08-28 20:00:00,36.0,Resolved,Security Mitigation
+INC100105,Network Outage,Medium,IT Support,Data Center B,2024-09-02 18:00:00,2024-09-04 23:00:00,53.0,Resolved,Hardware Replacement
+INC100106,Database Failure,Medium,DevOps,Remote Site 1,2024-06-01 23:00:00,2024-06-02 02:00:00,3.0,Resolved,Reboot
+INC100107,Security Breach,Medium,DevOps,Data Center B,2024-04-14 12:00:00,2024-04-16 12:00:00,48.0,Resolved,Hardware Replacement
+INC100108,Database Failure,High,DevOps,Remote Site 2,2024-04-22 21:00:00,2024-04-24 19:00:00,46.0,Resolved,Hardware Replacement
+INC100109,Security Breach,High,Security Team,Data Center B,2024-02-11 04:00:00,2024-02-12 05:00:00,25.0,Resolved,Configuration Fix
+INC100110,Network Outage,Medium,Network Team,Data Center B,2024-09-09 02:00:00,2024-09-11 16:00:00,62.0,Closed,Configuration Fix
+INC100111,Database Failure,High,IT Support,Data Center B,2024-04-11 02:00:00,2024-04-12 08:00:00,30.0,Resolved,Configuration Fix
+INC100112,Server Crash,High,IT Support,Remote Site 2,2024-02-13 04:00:00,2024-02-14 16:00:00,36.0,Resolved,Reboot
+INC100113,Network Outage,High,Network Team,Remote Site 1,2024-02-05 00:00:00,2024-02-05 02:00:00,2.0,Resolved,Security Mitigation
+INC100114,Security Breach,Critical,DevOps,Remote Site 1,2024-04-26 07:00:00,2024-04-27 07:00:00,24.0,Resolved,Reboot
+INC100115,Security Breach,Critical,IT Support,Data Center A,2024-05-16 18:00:00,2024-05-19 09:00:00,63.0,Closed,Reboot
+INC100116,Database Failure,Low,Network Team,Data Center B,2024-10-03 20:00:00,2024-10-05 11:00:00,39.0,Resolved,Reboot
+INC100117,Server Crash,Low,Database Admin,Remote Site 1,2024-07-25 22:00:00,2024-07-27 03:00:00,29.0,Resolved,Security Mitigation
+INC100118,Application Bug,Critical,DevOps,Head Office,2024-10-20 14:00:00,2024-10-22 21:00:00,55.0,Resolved,Configuration Fix
+INC100119,Database Failure,Low,Database Admin,Data Center A,2024-11-19 10:00:00,2024-11-20 13:00:00,27.0,Resolved,Patch Applied
+INC100120,Security Breach,Low,Network Team,Data Center B,2024-02-29 07:00:00,2024-03-03 06:00:00,71.0,Closed,Reboot
+INC100121,Server Crash,Low,DevOps,Remote Site 1,2024-08-23 07:00:00,2024-08-25 20:00:00,61.0,Closed,Configuration Fix
+INC100122,Network Outage,Medium,Security Team,Head Office,2024-08-27 22:00:00,2024-08-30 09:00:00,59.0,Resolved,Reboot
+INC100123,Server Crash,High,Database Admin,Data Center B,2024-05-25 02:00:00,2024-05-25 17:00:00,15.0,Resolved,Security Mitigation
+INC100124,Server Crash,Medium,Security Team,Data Center B,2024-01-25 08:00:00,2024-01-25 16:00:00,8.0,Resolved,Patch Applied
+INC100125,Security Breach,High,DevOps,Data Center A,2024-06-08 23:00:00,2024-06-10 14:00:00,39.0,Resolved,Hardware Replacement
+INC100126,Security Breach,Critical,DevOps,Data Center A,2024-07-23 03:00:00,2024-07-23 09:00:00,6.0,Resolved,Hardware Replacement
+INC100127,Security Breach,High,IT Support,Data Center A,2024-03-19 03:00:00,2024-03-19 06:00:00,3.0,Resolved,Configuration Fix
+INC100128,Database Failure,Low,Network Team,Remote Site 1,2024-06-26 03:00:00,2024-06-28 12:00:00,57.0,Resolved,Configuration Fix
+INC100129,Server Crash,Critical,DevOps,Data Center A,2024-06-09 10:00:00,2024-06-11 07:00:00,45.0,Resolved,Hardware Replacement
+INC100130,Security Breach,High,IT Support,Data Center B,2024-04-22 13:00:00,2024-04-24 18:00:00,53.0,Resolved,Hardware Replacement
+INC100131,Security Breach,Critical,Database Admin,Data Center A,2024-06-04 05:00:00,2024-06-04 17:00:00,12.0,Resolved,Configuration Fix
+INC100132,Security Breach,High,IT Support,Remote Site 1,2024-10-22 05:00:00,2024-10-24 23:00:00,66.0,Closed,Reboot
+INC100133,Database Failure,Critical,DevOps,Data Center A,2024-03-05 00:00:00,2024-03-07 19:00:00,67.0,Closed,Configuration Fix
+INC100134,Database Failure,Critical,DevOps,Data Center A,2024-03-10 11:00:00,2024-03-11 22:00:00,35.0,Resolved,Security Mitigation
+INC100135,Server Crash,High,DevOps,Remote Site 1,2024-02-11 10:00:00,2024-02-11 14:00:00,4.0,Resolved,Security Mitigation
+INC100136,Server Crash,Medium,Security Team,Remote Site 2,2024-01-05 16:00:00,2024-01-08 15:00:00,71.0,Closed,Hardware Replacement
+INC100137,Network Outage,Medium,IT Support,Remote Site 1,2024-11-19 06:00:00,2024-11-19 22:00:00,16.0,Resolved,Patch Applied
+INC100138,Application Bug,High,Database Admin,Head Office,2024-05-21 19:00:00,2024-05-24 09:00:00,62.0,Closed,Hardware Replacement
+INC100139,Server Crash,Critical,Database Admin,Data Center B,2024-05-10 22:00:00,2024-05-11 23:00:00,25.0,Resolved,Security Mitigation
+INC100140,Database Failure,Medium,IT Support,Head Office,2024-09-20 17:00:00,2024-09-22 23:00:00,54.0,Resolved,Configuration Fix
+INC100141,Database Failure,High,IT Support,Head Office,2024-09-04 19:00:00,2024-09-06 10:00:00,39.0,Resolved,Security Mitigation
+INC100142,Database Failure,Critical,Network Team,Remote Site 1,2024-07-02 20:00:00,2024-07-05 10:00:00,62.0,Closed,Configuration Fix
+INC100143,Security Breach,Critical,DevOps,Head Office,2024-10-23 19:00:00,2024-10-24 20:00:00,25.0,Resolved,Patch Applied
+INC100144,Database Failure,Critical,Network Team,Remote Site 1,2024-01-15 21:00:00,2024-01-17 14:00:00,41.0,Resolved,Hardware Replacement
+INC100145,Application Bug,Critical,Network Team,Remote Site 1,2024-11-25 07:00:00,2024-11-25 12:00:00,5.0,Resolved,Patch Applied
+INC100146,Database Failure,High,IT Support,Remote Site 1,2024-02-04 00:00:00,2024-02-06 20:00:00,68.0,Closed,Hardware Replacement
+INC100147,Network Outage,Medium,DevOps,Data Center B,2024-01-26 12:00:00,2024-01-29 01:00:00,61.0,Closed,Configuration Fix
+INC100148,Security Breach,Critical,IT Support,Head Office,2024-10-17 22:00:00,2024-10-20 19:00:00,69.0,Closed,Hardware Replacement
+INC100149,Security Breach,Critical,Database Admin,Data Center A,2024-07-29 18:00:00,2024-07-30 03:00:00,9.0,Resolved,Patch Applied
+INC100150,Security Breach,Medium,IT Support,Remote Site 1,2024-02-03 14:00:00,2024-02-04 03:00:00,13.0,Resolved,Hardware Replacement
+INC100151,Server Crash,High,IT Support,Data Center A,2024-04-20 17:00:00,2024-04-21 01:00:00,8.0,Resolved,Configuration Fix
+INC100152,Security Breach,High,DevOps,Data Center B,2024-03-24 08:00:00,2024-03-27 04:00:00,68.0,Closed,Hardware Replacement
+INC100153,Database Failure,Medium,Network Team,Data Center B,2024-01-27 22:00:00,2024-01-29 23:00:00,49.0,Resolved,Security Mitigation
+INC100154,Server Crash,Critical,Database Admin,Data Center B,2024-03-20 06:00:00,2024-03-22 18:00:00,60.0,Closed,Configuration Fix
+INC100155,Application Bug,High,IT Support,Remote Site 1,2024-11-03 14:00:00,2024-11-05 03:00:00,37.0,Resolved,Security Mitigation
+INC100156,Server Crash,Low,DevOps,Head Office,2024-07-19 13:00:00,2024-07-21 04:00:00,39.0,Resolved,Hardware Replacement
+INC100157,Security Breach,Critical,Security Team,Data Center B,2024-05-11 07:00:00,2024-05-13 21:00:00,62.0,Closed,Reboot
+INC100158,Server Crash,Critical,Database Admin,Head Office,2024-07-15 04:00:00,2024-07-16 18:00:00,38.0,Resolved,Configuration Fix
+INC100159,Network Outage,Critical,Security Team,Data Center A,2024-07-12 04:00:00,2024-07-12 11:00:00,7.0,Resolved,Security Mitigation
+INC100160,Application Bug,High,Network Team,Remote Site 2,2024-09-30 17:00:00,2024-10-02 15:00:00,46.0,Resolved,Patch Applied
+INC100161,Server Crash,High,Network Team,Data Center A,2024-11-04 08:00:00,2024-11-04 14:00:00,6.0,Resolved,Configuration Fix
+INC100162,Application Bug,Low,Database Admin,Head Office,2024-09-06 23:00:00,2024-09-07 16:00:00,17.0,Resolved,Reboot
+INC100163,Security Breach,High,DevOps,Data Center B,2024-03-09 12:00:00,2024-03-10 05:00:00,17.0,Resolved,Security Mitigation
+INC100164,Security Breach,High,Network Team,Head Office,2024-11-07 23:00:00,2024-11-10 13:00:00,62.0,Closed,Configuration Fix
+INC100165,Security Breach,Low,DevOps,Data Center A,2024-02-18 01:00:00,2024-02-19 06:00:00,29.0,Resolved,Hardware Replacement
+INC100166,Database Failure,High,IT Support,Remote Site 1,2024-01-05 18:00:00,2024-01-07 04:00:00,34.0,Resolved,Security Mitigation
+INC100167,Network Outage,Critical,Security Team,Head Office,2024-07-18 12:00:00,2024-07-20 13:00:00,49.0,Resolved,Configuration Fix
+INC100168,Network Outage,Medium,DevOps,Data Center A,2024-07-30 11:00:00,2024-08-02 11:00:00,72.0,Closed,Configuration Fix
+INC100169,Database Failure,Medium,IT Support,Remote Site 1,2024-11-06 09:00:00,2024-11-08 00:00:00,39.0,Resolved,Hardware Replacement
+INC100170,Network Outage,Medium,IT Support,Data Center A,2024-04-13 21:00:00,2024-04-16 13:00:00,64.0,Closed,Reboot
+INC100171,Network Outage,Medium,Database Admin,Data Center B,2024-05-12 15:00:00,2024-05-15 02:00:00,59.0,Resolved,Configuration Fix
+INC100172,Database Failure,Critical,Database Admin,Data Center B,2024-10-29 05:00:00,2024-10-31 11:00:00,54.0,Resolved,Reboot
+INC100173,Application Bug,Critical,Security Team,Data Center A,2024-08-23 14:00:00,2024-08-25 14:00:00,48.0,Resolved,Patch Applied
+INC100174,Application Bug,Critical,Network Team,Head Office,2024-02-03 21:00:00,2024-02-05 21:00:00,48.0,Resolved,Security Mitigation
+INC100175,Security Breach,Low,DevOps,Head Office,2024-03-05 18:00:00,2024-03-06 10:00:00,16.0,Resolved,Hardware Replacement
+INC100176,Network Outage,Medium,Database Admin,Data Center A,2024-01-18 06:00:00,2024-01-20 01:00:00,43.0,Resolved,Patch Applied
+INC100177,Server Crash,Medium,IT Support,Remote Site 2,2024-03-11 17:00:00,2024-03-12 21:00:00,28.0,Resolved,Patch Applied
+INC100178,Security Breach,Medium,Database Admin,Data Center A,2024-04-04 15:00:00,2024-04-05 10:00:00,19.0,Resolved,Patch Applied
+INC100179,Database Failure,High,Network Team,Data Center A,2024-08-13 15:00:00,2024-08-13 19:00:00,4.0,Resolved,Patch Applied
+INC100180,Network Outage,High,Network Team,Remote Site 2,2024-04-20 12:00:00,2024-04-20 15:00:00,3.0,Resolved,Patch Applied
+INC100181,Security Breach,Low,Network Team,Remote Site 1,2024-06-28 13:00:00,2024-06-29 04:00:00,15.0,Resolved,Reboot
+INC100182,Application Bug,Critical,Security Team,Remote Site 2,2024-07-21 15:00:00,2024-07-22 05:00:00,14.0,Resolved,Hardware Replacement
+INC100183,Database Failure,Medium,Database Admin,Data Center A,2024-09-05 05:00:00,2024-09-08 00:00:00,67.0,Closed,Configuration Fix
+INC100184,Application Bug,Low,IT Support,Remote Site 1,2024-10-16 05:00:00,2024-10-18 09:00:00,52.0,Resolved,Hardware Replacement
+INC100185,Network Outage,Critical,DevOps,Data Center A,2024-11-02 22:00:00,2024-11-03 09:00:00,11.0,Resolved,Configuration Fix
+INC100186,Database Failure,Medium,IT Support,Data Center B,2024-04-03 20:00:00,2024-04-06 19:00:00,71.0,Closed,Configuration Fix
+INC100187,Application Bug,High,DevOps,Remote Site 2,2024-07-25 15:00:00,2024-07-27 23:00:00,56.0,Resolved,Reboot
+INC100188,Network Outage,Medium,DevOps,Remote Site 1,2024-10-30 03:00:00,2024-10-31 09:00:00,30.0,Resolved,Hardware Replacement
+INC100189,Security Breach,Critical,DevOps,Remote Site 1,2024-09-06 00:00:00,2024-09-06 13:00:00,13.0,Resolved,Configuration Fix
+INC100190,Application Bug,High,Security Team,Head Office,2024-11-21 11:00:00,2024-11-22 07:00:00,20.0,Resolved,Hardware Replacement
+INC100191,Network Outage,Low,IT Support,Data Center A,2024-05-27 09:00:00,2024-05-27 22:00:00,13.0,Resolved,Configuration Fix
+INC100192,Server Crash,Low,Database Admin,Remote Site 2,2024-07-10 17:00:00,2024-07-12 12:00:00,43.0,Resolved,Reboot
+INC100193,Application Bug,High,DevOps,Data Center A,2024-11-26 13:00:00,2024-11-28 02:00:00,37.0,Resolved,Security Mitigation
+INC100194,Security Breach,High,IT Support,Remote Site 2,2024-06-22 04:00:00,2024-06-23 08:00:00,28.0,Resolved,Patch Applied
+INC100195,Application Bug,Medium,IT Support,Head Office,2024-10-15 13:00:00,2024-10-18 13:00:00,72.0,Closed,Configuration Fix
+INC100196,Network Outage,High,Database Admin,Data Center B,2024-10-02 12:00:00,2024-10-04 19:00:00,55.0,Resolved,Security Mitigation
+INC100197,Database Failure,Low,Database Admin,Head Office,2024-01-10 21:00:00,2024-01-11 21:00:00,24.0,Resolved,Configuration Fix
+INC100198,Security Breach,High,Security Team,Data Center A,2024-03-02 22:00:00,2024-03-03 17:00:00,19.0,Resolved,Security Mitigation
+INC100199,Application Bug,Low,Network Team,Data Center A,2024-02-01 07:00:00,2024-02-04 03:00:00,68.0,Closed,Patch Applied
+INC100200,Application Bug,Critical,DevOps,Head Office,2024-02-23 17:00:00,2024-02-25 17:00:00,48.0,Resolved,Configuration Fix
+INC100201,Security Breach,Low,IT Support,Data Center B,2024-02-23 17:00:00,2024-02-24 00:00:00,7.0,Resolved,Reboot
+INC100202,Security Breach,Critical,DevOps,Remote Site 1,2024-07-26 05:00:00,2024-07-28 14:00:00,57.0,Resolved,Hardware Replacement
+INC100203,Security Breach,Medium,Database Admin,Data Center A,2024-04-27 19:00:00,2024-04-30 03:00:00,56.0,Resolved,Reboot
+INC100204,Security Breach,Critical,Database Admin,Head Office,2024-01-16 12:00:00,2024-01-17 17:00:00,29.0,Resolved,Hardware Replacement
+INC100205,Database Failure,Low,IT Support,Data Center B,2024-04-12 21:00:00,2024-04-14 01:00:00,28.0,Resolved,Patch Applied
+INC100206,Security Breach,High,Security Team,Data Center A,2024-01-03 15:00:00,2024-01-06 07:00:00,64.0,Closed,Hardware Replacement
+INC100207,Server Crash,Medium,DevOps,Remote Site 2,2024-08-28 04:00:00,2024-08-29 10:00:00,30.0,Resolved,Security Mitigation
+INC100208,Database Failure,High,IT Support,Remote Site 1,2024-10-21 03:00:00,2024-10-21 09:00:00,6.0,Resolved,Hardware Replacement
+INC100209,Network Outage,Critical,IT Support,Head Office,2024-07-15 12:00:00,2024-07-17 19:00:00,55.0,Resolved,Security Mitigation
+INC100210,Application Bug,Critical,Security Team,Data Center A,2024-05-18 06:00:00,2024-05-18 09:00:00,3.0,Resolved,Configuration Fix
+INC100211,Server Crash,Critical,Security Team,Data Center A,2024-05-29 01:00:00,2024-05-29 15:00:00,14.0,Resolved,Patch Applied
+INC100212,Application Bug,Critical,Database Admin,Data Center A,2024-05-15 02:00:00,2024-05-16 18:00:00,40.0,Resolved,Configuration Fix
+INC100213,Server Crash,High,Network Team,Data Center A,2024-06-23 05:00:00,2024-06-23 20:00:00,15.0,Resolved,Security Mitigation
+INC100214,Database Failure,Medium,Security Team,Head Office,2024-09-05 06:00:00,2024-09-06 01:00:00,19.0,Resolved,Patch Applied
+INC100215,Network Outage,Medium,Security Team,Data Center B,2024-02-29 05:00:00,2024-03-01 01:00:00,20.0,Resolved,Reboot
+INC100216,Server Crash,Critical,DevOps,Remote Site 2,2024-09-16 08:00:00,2024-09-18 18:00:00,58.0,Resolved,Security Mitigation
+INC100217,Database Failure,High,Security Team,Data Center B,2024-05-30 02:00:00,2024-05-30 11:00:00,9.0,Resolved,Hardware Replacement
+INC100218,Application Bug,High,Security Team,Remote Site 2,2024-01-20 04:00:00,2024-01-22 02:00:00,46.0,Resolved,Security Mitigation
+INC100219,Network Outage,High,DevOps,Remote Site 1,2024-01-13 20:00:00,2024-01-14 04:00:00,8.0,Resolved,Configuration Fix
+INC100220,Security Breach,Low,IT Support,Remote Site 2,2024-07-21 18:00:00,2024-07-24 11:00:00,65.0,Closed,Hardware Replacement
+INC100221,Application Bug,Low,DevOps,Remote Site 2,2024-08-10 11:00:00,2024-08-11 12:00:00,25.0,Resolved,Configuration Fix
+INC100222,Database Failure,Critical,Database Admin,Data Center B,2024-11-22 21:00:00,2024-11-23 05:00:00,8.0,Resolved,Hardware Replacement
+INC100223,Network Outage,High,IT Support,Remote Site 2,2024-08-08 13:00:00,2024-08-09 12:00:00,23.0,Resolved,Reboot
+INC100224,Server Crash,Critical,DevOps,Remote Site 2,2024-06-27 10:00:00,2024-06-28 07:00:00,21.0,Resolved,Configuration Fix
+INC100225,Security Breach,High,DevOps,Remote Site 1,2024-09-21 08:00:00,2024-09-23 04:00:00,44.0,Resolved,Security Mitigation
+INC100226,Network Outage,High,IT Support,Head Office,2024-02-02 06:00:00,2024-02-05 06:00:00,72.0,Closed,Hardware Replacement
+INC100227,Security Breach,High,Database Admin,Data Center B,2024-04-23 18:00:00,2024-04-24 05:00:00,11.0,Resolved,Security Mitigation
+INC100228,Server Crash,High,Security Team,Remote Site 1,2024-02-14 00:00:00,2024-02-14 11:00:00,11.0,Resolved,Configuration Fix
+INC100229,Database Failure,Critical,Security Team,Data Center B,2024-08-16 17:00:00,2024-08-19 13:00:00,68.0,Closed,Reboot
+INC100230,Application Bug,High,IT Support,Head Office,2024-04-15 10:00:00,2024-04-16 10:00:00,24.0,Resolved,Patch Applied
+INC100231,Security Breach,Critical,Network Team,Data Center B,2024-02-16 22:00:00,2024-02-17 18:00:00,20.0,Resolved,Reboot
+INC100232,Security Breach,Low,Database Admin,Remote Site 2,2024-10-12 01:00:00,2024-10-14 21:00:00,68.0,Closed,Reboot
+INC100233,Security Breach,Medium,Database Admin,Remote Site 1,2024-02-22 15:00:00,2024-02-23 12:00:00,21.0,Resolved,Patch Applied
+INC100234,Database Failure,Medium,DevOps,Data Center A,2024-05-20 05:00:00,2024-05-22 04:00:00,47.0,Resolved,Patch Applied
+INC100235,Application Bug,High,DevOps,Data Center B,2024-07-01 06:00:00,2024-07-02 13:00:00,31.0,Resolved,Configuration Fix
+INC100236,Application Bug,Medium,Security Team,Remote Site 2,2024-05-30 09:00:00,2024-06-01 21:00:00,60.0,Closed,Configuration Fix
+INC100237,Application Bug,Critical,Network Team,Data Center B,2024-09-30 11:00:00,2024-10-01 05:00:00,18.0,Resolved,Configuration Fix
+INC100238,Network Outage,Critical,Security Team,Remote Site 2,2024-11-14 21:00:00,2024-11-15 11:00:00,14.0,Resolved,Security Mitigation
+INC100239,Network Outage,High,IT Support,Data Center B,2024-04-03 02:00:00,2024-04-05 12:00:00,58.0,Resolved,Security Mitigation
+INC100240,Server Crash,Critical,IT Support,Data Center B,2024-10-05 18:00:00,2024-10-08 04:00:00,58.0,Resolved,Configuration Fix
+INC100241,Network Outage,Critical,IT Support,Remote Site 1,2024-06-20 08:00:00,2024-06-22 08:00:00,48.0,Resolved,Patch Applied
+INC100242,Application Bug,Low,Security Team,Data Center B,2024-01-10 14:00:00,2024-01-12 07:00:00,41.0,Resolved,Reboot
+INC100243,Security Breach,Medium,Network Team,Data Center A,2024-04-07 22:00:00,2024-04-10 11:00:00,61.0,Closed,Patch Applied
+INC100244,Application Bug,Critical,Database Admin,Data Center A,2024-11-05 04:00:00,2024-11-05 15:00:00,11.0,Resolved,Reboot
+INC100245,Security Breach,Medium,Network Team,Remote Site 2,2024-11-16 22:00:00,2024-11-19 18:00:00,68.0,Closed,Hardware Replacement
+INC100246,Network Outage,High,Network Team,Head Office,2024-02-11 14:00:00,2024-02-11 21:00:00,7.0,Resolved,Patch Applied
+INC100247,Application Bug,Critical,IT Support,Data Center A,2024-10-12 14:00:00,2024-10-15 06:00:00,64.0,Closed,Security Mitigation
+INC100248,Database Failure,Low,Database Admin,Remote Site 2,2024-03-23 13:00:00,2024-03-24 08:00:00,19.0,Resolved,Configuration Fix
+INC100249,Application Bug,Low,Database Admin,Head Office,2024-03-23 02:00:00,2024-03-25 08:00:00,54.0,Resolved,Patch Applied
+INC100250,Network Outage,High,IT Support,Remote Site 2,2024-07-04 17:00:00,2024-07-07 10:00:00,65.0,Closed,Security Mitigation
+INC100251,Database Failure,Low,DevOps,Remote Site 1,2024-01-15 20:00:00,2024-01-17 22:00:00,50.0,Resolved,Configuration Fix
+INC100252,Security Breach,Low,Security Team,Data Center A,2024-04-27 16:00:00,2024-04-28 23:00:00,31.0,Resolved,Reboot
+INC100253,Database Failure,High,Network Team,Data Center A,2024-04-30 06:00:00,2024-05-03 04:00:00,70.0,Closed,Configuration Fix
+INC100254,Server Crash,Critical,DevOps,Data Center B,2024-10-03 23:00:00,2024-10-04 17:00:00,18.0,Resolved,Reboot
+INC100255,Application Bug,Low,Security Team,Data Center B,2024-01-15 22:00:00,2024-01-17 00:00:00,26.0,Resolved,Reboot
+INC100256,Security Breach,High,Database Admin,Remote Site 1,2024-10-05 07:00:00,2024-10-08 05:00:00,70.0,Closed,Hardware Replacement
+INC100257,Security Breach,Low,Network Team,Head Office,2024-05-01 20:00:00,2024-05-02 03:00:00,7.0,Resolved,Configuration Fix
+INC100258,Security Breach,Low,Security Team,Remote Site 1,2024-10-30 14:00:00,2024-11-01 18:00:00,52.0,Resolved,Hardware Replacement
+INC100259,Application Bug,High,Network Team,Remote Site 1,2024-08-24 05:00:00,2024-08-26 21:00:00,64.0,Closed,Configuration Fix
+INC100260,Database Failure,High,IT Support,Remote Site 1,2024-01-27 22:00:00,2024-01-30 06:00:00,56.0,Resolved,Security Mitigation
+INC100261,Server Crash,High,Security Team,Data Center A,2024-01-28 07:00:00,2024-01-30 01:00:00,42.0,Resolved,Configuration Fix
+INC100262,Security Breach,Critical,Database Admin,Remote Site 1,2024-02-26 21:00:00,2024-02-29 06:00:00,57.0,Resolved,Configuration Fix
+INC100263,Application Bug,Low,Security Team,Remote Site 2,2024-05-28 11:00:00,2024-05-29 23:00:00,36.0,Resolved,Reboot
+INC100264,Network Outage,Critical,Security Team,Remote Site 2,2024-09-30 10:00:00,2024-10-01 07:00:00,21.0,Resolved,Reboot
+INC100265,Server Crash,Critical,IT Support,Data Center B,2024-01-23 22:00:00,2024-01-25 05:00:00,31.0,Resolved,Configuration Fix
+INC100266,Security Breach,Critical,Database Admin,Data Center A,2024-07-25 12:00:00,2024-07-26 08:00:00,20.0,Resolved,Hardware Replacement
+INC100267,Security Breach,High,DevOps,Data Center A,2024-07-14 21:00:00,2024-07-15 15:00:00,18.0,Resolved,Security Mitigation
+INC100268,Security Breach,Critical,Security Team,Head Office,2024-03-26 04:00:00,2024-03-26 19:00:00,15.0,Resolved,Reboot
+INC100269,Server Crash,Critical,Database Admin,Remote Site 1,2024-11-07 19:00:00,2024-11-10 19:00:00,72.0,Closed,Reboot
+INC100270,Security Breach,High,DevOps,Data Center B,2024-07-27 20:00:00,2024-07-29 09:00:00,37.0,Resolved,Hardware Replacement
+INC100271,Server Crash,Low,Network Team,Data Center A,2024-06-03 07:00:00,2024-06-04 06:00:00,23.0,Resolved,Hardware Replacement
+INC100272,Network Outage,High,Security Team,Data Center A,2024-07-06 17:00:00,2024-07-09 15:00:00,70.0,Closed,Configuration Fix
+INC100273,Security Breach,Medium,Network Team,Head Office,2024-06-22 15:00:00,2024-06-23 20:00:00,29.0,Resolved,Reboot
+INC100274,Server Crash,Medium,Network Team,Remote Site 1,2024-01-09 23:00:00,2024-01-11 22:00:00,47.0,Resolved,Security Mitigation
+INC100275,Database Failure,High,DevOps,Remote Site 2,2024-02-14 07:00:00,2024-02-14 19:00:00,12.0,Resolved,Reboot
+INC100276,Security Breach,Critical,DevOps,Remote Site 2,2024-05-20 05:00:00,2024-05-22 10:00:00,53.0,Resolved,Security Mitigation
+INC100277,Network Outage,Medium,Security Team,Data Center A,2024-06-02 14:00:00,2024-06-05 02:00:00,60.0,Closed,Security Mitigation
+INC100278,Security Breach,Medium,Database Admin,Remote Site 2,2024-03-03 02:00:00,2024-03-03 19:00:00,17.0,Resolved,Hardware Replacement
+INC100279,Database Failure,Low,IT Support,Remote Site 2,2024-02-22 05:00:00,2024-02-23 20:00:00,39.0,Resolved,Patch Applied
+INC100280,Server Crash,High,Network Team,Head Office,2024-11-19 09:00:00,2024-11-22 04:00:00,67.0,Closed,Configuration Fix
+INC100281,Network Outage,High,Network Team,Remote Site 2,2024-04-03 16:00:00,2024-04-04 09:00:00,17.0,Resolved,Configuration Fix
+INC100282,Database Failure,Low,Database Admin,Data Center B,2024-07-21 00:00:00,2024-07-21 20:00:00,20.0,Resolved,Patch Applied
+INC100283,Database Failure,High,Database Admin,Data Center A,2024-10-08 16:00:00,2024-10-08 20:00:00,4.0,Resolved,Reboot
+INC100284,Network Outage,High,Network Team,Remote Site 2,2024-05-22 04:00:00,2024-05-22 08:00:00,4.0,Resolved,Hardware Replacement
+INC100285,Database Failure,High,Security Team,Remote Site 1,2024-03-24 14:00:00,2024-03-26 18:00:00,52.0,Resolved,Configuration Fix
+INC100286,Application Bug,Low,IT Support,Data Center B,2024-05-30 01:00:00,2024-06-01 07:00:00,54.0,Resolved,Hardware Replacement
+INC100287,Application Bug,Medium,Security Team,Remote Site 2,2024-02-19 00:00:00,2024-02-20 17:00:00,41.0,Resolved,Configuration Fix
+INC100288,Security Breach,Critical,Network Team,Head Office,2024-06-24 18:00:00,2024-06-27 18:00:00,72.0,Closed,Reboot
+INC100289,Security Breach,Medium,DevOps,Data Center A,2024-04-01 07:00:00,2024-04-03 17:00:00,58.0,Resolved,Patch Applied
+INC100290,Server Crash,Low,IT Support,Head Office,2024-11-18 16:00:00,2024-11-20 18:00:00,50.0,Resolved,Security Mitigation
+INC100291,Application Bug,Medium,Network Team,Head Office,2024-11-14 17:00:00,2024-11-16 10:00:00,41.0,Resolved,Patch Applied
+INC100292,Server Crash,Critical,Database Admin,Remote Site 1,2024-06-19 05:00:00,2024-06-20 21:00:00,40.0,Resolved,Hardware Replacement
+INC100293,Network Outage,Low,DevOps,Remote Site 2,2024-06-05 01:00:00,2024-06-06 08:00:00,31.0,Resolved,Patch Applied
+INC100294,Database Failure,High,IT Support,Data Center A,2024-04-06 00:00:00,2024-04-08 16:00:00,64.0,Closed,Security Mitigation
+INC100295,Application Bug,High,Database Admin,Data Center A,2024-10-16 04:00:00,2024-10-16 18:00:00,14.0,Resolved,Hardware Replacement
+INC100296,Server Crash,High,Security Team,Remote Site 1,2024-05-04 21:00:00,2024-05-05 03:00:00,6.0,Resolved,Hardware Replacement
+INC100297,Network Outage,Medium,Security Team,Remote Site 2,2024-04-08 12:00:00,2024-04-08 22:00:00,10.0,Resolved,Hardware Replacement
+INC100298,Database Failure,Critical,Database Admin,Head Office,2024-10-08 16:00:00,2024-10-09 08:00:00,16.0,Resolved,Patch Applied
+INC100299,Network Outage,Critical,Security Team,Head Office,2024-07-09 09:00:00,2024-07-11 08:00:00,47.0,Resolved,Patch Applied
+INC100300,Server Crash,Critical,Database Admin,Data Center A,2024-01-16 11:00:00,2024-01-16 16:00:00,5.0,Resolved,Patch Applied
+INC100301,Security Breach,Critical,Database Admin,Remote Site 1,2024-02-20 20:00:00,2024-02-23 14:00:00,66.0,Closed,Patch Applied
+INC100302,Security Breach,High,Network Team,Remote Site 1,2024-07-29 10:00:00,2024-07-31 01:00:00,39.0,Resolved,Security Mitigation
+INC100303,Security Breach,Critical,Database Admin,Head Office,2024-06-11 02:00:00,2024-06-11 05:00:00,3.0,Resolved,Configuration Fix
+INC100304,Security Breach,Low,DevOps,Remote Site 2,2024-04-15 00:00:00,2024-04-15 04:00:00,4.0,Resolved,Security Mitigation
+INC100305,Application Bug,High,Database Admin,Remote Site 2,2024-03-18 16:00:00,2024-03-18 23:00:00,7.0,Resolved,Security Mitigation
+INC100306,Application Bug,Medium,Database Admin,Remote Site 2,2024-09-21 09:00:00,2024-09-23 10:00:00,49.0,Resolved,Patch Applied
+INC100307,Server Crash,Low,Database Admin,Data Center A,2024-03-06 02:00:00,2024-03-06 05:00:00,3.0,Resolved,Hardware Replacement
+INC100308,Security Breach,Critical,Network Team,Remote Site 1,2024-08-23 16:00:00,2024-08-24 19:00:00,27.0,Resolved,Hardware Replacement
+INC100309,Database Failure,Critical,IT Support,Data Center B,2024-06-26 01:00:00,2024-06-27 04:00:00,27.0,Resolved,Security Mitigation
+INC100310,Security Breach,Critical,Database Admin,Remote Site 1,2024-04-17 02:00:00,2024-04-18 01:00:00,23.0,Resolved,Hardware Replacement
+INC100311,Database Failure,High,Database Admin,Head Office,2024-08-18 16:00:00,2024-08-20 02:00:00,34.0,Resolved,Security Mitigation
+INC100312,Application Bug,Medium,Network Team,Head Office,2024-07-09 11:00:00,2024-07-11 02:00:00,39.0,Resolved,Patch Applied
+INC100313,Security Breach,High,Network Team,Remote Site 1,2024-04-18 05:00:00,2024-04-20 19:00:00,62.0,Closed,Configuration Fix
+INC100314,Database Failure,High,Security Team,Data Center A,2024-07-14 17:00:00,2024-07-17 15:00:00,70.0,Closed,Hardware Replacement
+INC100315,Application Bug,High,Network Team,Head Office,2024-01-15 08:00:00,2024-01-16 21:00:00,37.0,Resolved,Reboot
+INC100316,Security Breach,Critical,Security Team,Remote Site 1,2024-03-14 00:00:00,2024-03-15 02:00:00,26.0,Resolved,Security Mitigation
+INC100317,Security Breach,High,Network Team,Data Center A,2024-07-29 03:00:00,2024-07-30 10:00:00,31.0,Resolved,Patch Applied
+INC100318,Network Outage,Medium,Network Team,Data Center A,2024-02-04 04:00:00,2024-02-06 09:00:00,53.0,Resolved,Configuration Fix
+INC100319,Application Bug,Low,Network Team,Data Center A,2024-11-25 05:00:00,2024-11-28 04:00:00,71.0,Closed,Patch Applied
+INC100320,Application Bug,Critical,DevOps,Data Center B,2024-09-15 00:00:00,2024-09-16 13:00:00,37.0,Resolved,Configuration Fix
+INC100321,Security Breach,Low,IT Support,Remote Site 2,2024-03-20 06:00:00,2024-03-23 03:00:00,69.0,Closed,Reboot
+INC100322,Server Crash,Critical,Network Team,Data Center A,2024-10-12 10:00:00,2024-10-14 13:00:00,51.0,Resolved,Hardware Replacement
+INC100323,Server Crash,High,IT Support,Data Center A,2024-04-11 20:00:00,2024-04-12 10:00:00,14.0,Resolved,Configuration Fix
+INC100324,Security Breach,Critical,Database Admin,Remote Site 2,2024-06-17 14:00:00,2024-06-18 08:00:00,18.0,Resolved,Security Mitigation
+INC100325,Application Bug,High,Network Team,Data Center A,2024-04-22 20:00:00,2024-04-23 17:00:00,21.0,Resolved,Hardware Replacement
+INC100326,Security Breach,Medium,IT Support,Head Office,2024-09-26 21:00:00,2024-09-28 11:00:00,38.0,Resolved,Security Mitigation
+INC100327,Server Crash,Medium,Database Admin,Remote Site 1,2024-10-09 06:00:00,2024-10-11 13:00:00,55.0,Resolved,Security Mitigation
+INC100328,Security Breach,Low,DevOps,Data Center A,2024-03-04 01:00:00,2024-03-04 19:00:00,18.0,Resolved,Hardware Replacement
+INC100329,Security Breach,Medium,IT Support,Head Office,2024-05-10 22:00:00,2024-05-12 05:00:00,31.0,Resolved,Hardware Replacement
+INC100330,Security Breach,High,Security Team,Remote Site 2,2024-09-03 17:00:00,2024-09-03 19:00:00,2.0,Resolved,Configuration Fix
+INC100331,Security Breach,Medium,IT Support,Data Center A,2024-06-07 20:00:00,2024-06-09 12:00:00,40.0,Resolved,Patch Applied
+INC100332,Application Bug,High,IT Support,Head Office,2024-05-05 10:00:00,2024-05-06 15:00:00,29.0,Resolved,Patch Applied
+INC100333,Server Crash,Critical,Network Team,Remote Site 1,2024-09-12 05:00:00,2024-09-14 05:00:00,48.0,Resolved,Hardware Replacement
+INC100334,Database Failure,Critical,Database Admin,Data Center B,2024-09-17 01:00:00,2024-09-18 09:00:00,32.0,Resolved,Security Mitigation
+INC100335,Network Outage,Critical,Database Admin,Head Office,2024-01-27 15:00:00,2024-01-28 06:00:00,15.0,Resolved,Reboot
+INC100336,Database Failure,Medium,Database Admin,Remote Site 2,2024-02-21 03:00:00,2024-02-22 01:00:00,22.0,Resolved,Configuration Fix
+INC100337,Database Failure,Critical,IT Support,Data Center B,2024-09-01 16:00:00,2024-09-04 07:00:00,63.0,Closed,Reboot
+INC100338,Database Failure,Critical,IT Support,Remote Site 1,2024-02-15 00:00:00,2024-02-17 18:00:00,66.0,Closed,Hardware Replacement
+INC100339,Application Bug,Low,Database Admin,Remote Site 1,2024-08-17 15:00:00,2024-08-19 07:00:00,40.0,Resolved,Reboot
+INC100340,Application Bug,High,IT Support,Data Center B,2024-07-16 09:00:00,2024-07-16 19:00:00,10.0,Resolved,Reboot
+INC100341,Application Bug,High,IT Support,Remote Site 2,2024-01-21 13:00:00,2024-01-21 22:00:00,9.0,Resolved,Hardware Replacement
+INC100342,Network Outage,High,DevOps,Data Center B,2024-09-19 11:00:00,2024-09-20 05:00:00,18.0,Resolved,Hardware Replacement
+INC100343,Security Breach,Critical,DevOps,Remote Site 1,2024-05-08 05:00:00,2024-05-08 16:00:00,11.0,Resolved,Security Mitigation
+INC100344,Server Crash,High,IT Support,Data Center B,2024-07-02 09:00:00,2024-07-04 12:00:00,51.0,Resolved,Security Mitigation
+INC100345,Server Crash,Medium,IT Support,Data Center A,2024-04-11 20:00:00,2024-04-14 08:00:00,60.0,Closed,Security Mitigation
+INC100346,Application Bug,Critical,Network Team,Data Center B,2024-06-06 05:00:00,2024-06-08 02:00:00,45.0,Resolved,Patch Applied
+INC100347,Security Breach,Medium,IT Support,Data Center A,2024-10-03 07:00:00,2024-10-05 13:00:00,54.0,Resolved,Security Mitigation
+INC100348,Network Outage,Medium,Network Team,Data Center A,2024-02-04 10:00:00,2024-02-04 15:00:00,5.0,Resolved,Hardware Replacement
+INC100349,Database Failure,Low,Network Team,Data Center A,2024-05-17 07:00:00,2024-05-19 16:00:00,57.0,Resolved,Patch Applied
+INC100350,Database Failure,Medium,IT Support,Data Center B,2024-06-20 23:00:00,2024-06-22 13:00:00,38.0,Resolved,Patch Applied
+INC100351,Database Failure,High,Database Admin,Remote Site 2,2024-09-20 16:00:00,2024-09-22 10:00:00,42.0,Resolved,Patch Applied
+INC100352,Security Breach,Medium,Database Admin,Data Center B,2024-05-21 03:00:00,2024-05-22 18:00:00,39.0,Resolved,Configuration Fix
+INC100353,Network Outage,Medium,DevOps,Remote Site 2,2024-06-18 04:00:00,2024-06-18 11:00:00,7.0,Resolved,Configuration Fix
+INC100354,Application Bug,High,DevOps,Remote Site 1,2024-02-20 22:00:00,2024-02-22 13:00:00,39.0,Resolved,Hardware Replacement
+INC100355,Server Crash,Critical,Network Team,Data Center B,2024-04-12 15:00:00,2024-04-13 10:00:00,19.0,Resolved,Hardware Replacement
+INC100356,Network Outage,Critical,DevOps,Remote Site 2,2024-06-29 21:00:00,2024-06-30 15:00:00,18.0,Resolved,Hardware Replacement
+INC100357,Server Crash,High,Network Team,Head Office,2024-08-08 17:00:00,2024-08-09 04:00:00,11.0,Resolved,Hardware Replacement
+INC100358,Security Breach,Low,Database Admin,Data Center B,2024-01-18 14:00:00,2024-01-20 01:00:00,35.0,Resolved,Hardware Replacement
+INC100359,Database Failure,Low,IT Support,Data Center B,2024-10-01 15:00:00,2024-10-04 15:00:00,72.0,Closed,Patch Applied
+INC100360,Application Bug,Medium,Security Team,Head Office,2024-11-22 15:00:00,2024-11-22 17:00:00,2.0,Resolved,Patch Applied
+INC100361,Server Crash,Low,DevOps,Data Center B,2024-08-25 10:00:00,2024-08-26 13:00:00,27.0,Resolved,Hardware Replacement
+INC100362,Server Crash,High,Security Team,Remote Site 1,2024-06-08 03:00:00,2024-06-11 00:00:00,69.0,Closed,Configuration Fix
+INC100363,Security Breach,High,Security Team,Remote Site 2,2024-10-28 07:00:00,2024-10-30 23:00:00,64.0,Closed,Hardware Replacement
+INC100364,Network Outage,Critical,Security Team,Data Center B,2024-05-06 12:00:00,2024-05-08 05:00:00,41.0,Resolved,Hardware Replacement
+INC100365,Network Outage,Medium,Network Team,Data Center A,2024-03-30 00:00:00,2024-04-01 23:00:00,71.0,Closed,Security Mitigation
+INC100366,Database Failure,Critical,Security Team,Data Center B,2024-03-07 23:00:00,2024-03-09 18:00:00,43.0,Resolved,Patch Applied
+INC100367,Application Bug,Medium,DevOps,Remote Site 2,2024-08-11 10:00:00,2024-08-13 06:00:00,44.0,Resolved,Configuration Fix
+INC100368,Application Bug,Critical,DevOps,Data Center B,2024-09-07 02:00:00,2024-09-09 00:00:00,46.0,Resolved,Patch Applied
+INC100369,Server Crash,Critical,Network Team,Remote Site 2,2024-08-07 01:00:00,2024-08-07 09:00:00,8.0,Resolved,Security Mitigation
+INC100370,Network Outage,Low,IT Support,Data Center A,2024-05-20 18:00:00,2024-05-21 12:00:00,18.0,Resolved,Patch Applied
+INC100371,Network Outage,Medium,IT Support,Data Center B,2024-06-21 14:00:00,2024-06-24 01:00:00,59.0,Resolved,Configuration Fix
+INC100372,Network Outage,Critical,DevOps,Data Center A,2024-01-03 06:00:00,2024-01-06 03:00:00,69.0,Closed,Security Mitigation
+INC100373,Application Bug,Low,IT Support,Remote Site 2,2024-09-03 12:00:00,2024-09-05 00:00:00,36.0,Resolved,Security Mitigation
+INC100374,Security Breach,Low,Database Admin,Remote Site 1,2024-10-02 04:00:00,2024-10-03 03:00:00,23.0,Resolved,Reboot
+INC100375,Network Outage,Medium,Network Team,Data Center B,2024-07-30 13:00:00,2024-08-02 09:00:00,68.0,Closed,Configuration Fix
+INC100376,Security Breach,High,DevOps,Data Center A,2024-05-07 08:00:00,2024-05-09 12:00:00,52.0,Resolved,Hardware Replacement
+INC100377,Database Failure,Medium,Network Team,Head Office,2024-08-21 11:00:00,2024-08-21 22:00:00,11.0,Resolved,Reboot
+INC100378,Network Outage,Critical,DevOps,Remote Site 1,2024-07-07 15:00:00,2024-07-10 04:00:00,61.0,Closed,Reboot
+INC100379,Network Outage,Medium,IT Support,Remote Site 1,2024-10-15 12:00:00,2024-10-17 20:00:00,56.0,Resolved,Configuration Fix
+INC100380,Database Failure,Low,Database Admin,Data Center A,2024-03-19 10:00:00,2024-03-20 14:00:00,28.0,Resolved,Security Mitigation
+INC100381,Application Bug,High,IT Support,Data Center A,2024-08-21 14:00:00,2024-08-23 02:00:00,36.0,Resolved,Security Mitigation
+INC100382,Database Failure,Low,Network Team,Head Office,2024-01-06 08:00:00,2024-01-07 11:00:00,27.0,Resolved,Security Mitigation
+INC100383,Server Crash,Critical,IT Support,Head Office,2024-02-25 10:00:00,2024-02-26 17:00:00,31.0,Resolved,Security Mitigation
+INC100384,Application Bug,High,DevOps,Data Center B,2024-09-26 19:00:00,2024-09-27 06:00:00,11.0,Resolved,Security Mitigation
+INC100385,Security Breach,Low,IT Support,Remote Site 1,2024-03-20 05:00:00,2024-03-20 15:00:00,10.0,Resolved,Configuration Fix
+INC100386,Database Failure,Critical,Security Team,Data Center A,2024-08-04 10:00:00,2024-08-05 21:00:00,35.0,Resolved,Hardware Replacement
+INC100387,Application Bug,Medium,Security Team,Remote Site 2,2024-11-17 05:00:00,2024-11-19 06:00:00,49.0,Resolved,Hardware Replacement
+INC100388,Server Crash,Critical,IT Support,Remote Site 2,2024-04-10 19:00:00,2024-04-12 03:00:00,32.0,Resolved,Reboot
+INC100389,Network Outage,High,Network Team,Remote Site 1,2024-08-30 22:00:00,2024-08-31 18:00:00,20.0,Resolved,Hardware Replacement
+INC100390,Security Breach,High,IT Support,Data Center A,2024-01-02 18:00:00,2024-01-04 10:00:00,40.0,Resolved,Hardware Replacement
+INC100391,Security Breach,High,IT Support,Data Center B,2024-01-30 19:00:00,2024-01-31 19:00:00,24.0,Resolved,Hardware Replacement
+INC100392,Application Bug,Critical,IT Support,Data Center A,2024-01-31 14:00:00,2024-02-02 12:00:00,46.0,Resolved,Security Mitigation
+INC100393,Network Outage,High,DevOps,Data Center A,2024-04-09 14:00:00,2024-04-11 19:00:00,53.0,Resolved,Hardware Replacement
+INC100394,Network Outage,Medium,Database Admin,Remote Site 2,2024-02-27 21:00:00,2024-02-29 22:00:00,49.0,Resolved,Patch Applied
+INC100395,Server Crash,High,Security Team,Head Office,2024-06-17 07:00:00,2024-06-18 02:00:00,19.0,Resolved,Reboot
+INC100396,Server Crash,Critical,Security Team,Remote Site 1,2024-04-12 07:00:00,2024-04-14 21:00:00,62.0,Closed,Reboot
+INC100397,Security Breach,High,Network Team,Remote Site 1,2024-07-21 16:00:00,2024-07-22 18:00:00,26.0,Resolved,Hardware Replacement
+INC100398,Network Outage,Medium,Security Team,Data Center A,2024-11-19 20:00:00,2024-11-21 23:00:00,51.0,Resolved,Configuration Fix
+INC100399,Database Failure,Critical,Security Team,Remote Site 1,2024-04-24 06:00:00,2024-04-26 14:00:00,56.0,Resolved,Security Mitigation
+INC100400,Server Crash,High,Security Team,Remote Site 2,2024-11-19 08:00:00,2024-11-20 10:00:00,26.0,Resolved,Hardware Replacement
+INC100401,Security Breach,Medium,DevOps,Head Office,2024-04-09 11:00:00,2024-04-12 02:00:00,63.0,Closed,Security Mitigation
+INC100402,Server Crash,High,DevOps,Head Office,2024-10-05 16:00:00,2024-10-07 19:00:00,51.0,Resolved,Configuration Fix
+INC100403,Network Outage,Medium,Database Admin,Remote Site 2,2024-03-02 09:00:00,2024-03-05 08:00:00,71.0,Closed,Reboot
+INC100404,Application Bug,Medium,DevOps,Head Office,2024-10-10 17:00:00,2024-10-11 02:00:00,9.0,Resolved,Hardware Replacement
+INC100405,Application Bug,Medium,Security Team,Data Center B,2024-03-27 05:00:00,2024-03-28 01:00:00,20.0,Resolved,Hardware Replacement
+INC100406,Application Bug,Low,DevOps,Remote Site 2,2024-06-12 13:00:00,2024-06-14 17:00:00,52.0,Resolved,Security Mitigation
+INC100407,Database Failure,Critical,Database Admin,Data Center A,2024-09-26 21:00:00,2024-09-28 20:00:00,47.0,Resolved,Security Mitigation
+INC100408,Database Failure,Low,IT Support,Data Center B,2024-08-12 11:00:00,2024-08-14 09:00:00,46.0,Resolved,Patch Applied
+INC100409,Database Failure,Low,Database Admin,Remote Site 1,2024-11-26 00:00:00,2024-11-27 19:00:00,43.0,Resolved,Hardware Replacement
+INC100410,Network Outage,Low,IT Support,Head Office,2024-03-16 18:00:00,2024-03-19 12:00:00,66.0,Closed,Security Mitigation
+INC100411,Database Failure,Medium,DevOps,Head Office,2024-05-13 12:00:00,2024-05-16 00:00:00,60.0,Closed,Security Mitigation
+INC100412,Database Failure,Medium,Security Team,Data Center A,2024-06-13 18:00:00,2024-06-14 08:00:00,14.0,Resolved,Configuration Fix
+INC100413,Application Bug,Low,IT Support,Data Center B,2024-04-28 21:00:00,2024-04-30 13:00:00,40.0,Resolved,Configuration Fix
+INC100414,Application Bug,Medium,Database Admin,Remote Site 1,2024-04-28 21:00:00,2024-05-01 10:00:00,61.0,Closed,Reboot
+INC100415,Application Bug,Critical,Security Team,Data Center A,2024-04-12 11:00:00,2024-04-12 17:00:00,6.0,Resolved,Reboot
+INC100416,Network Outage,High,IT Support,Data Center B,2024-11-13 09:00:00,2024-11-14 17:00:00,32.0,Resolved,Security Mitigation
+INC100417,Server Crash,Medium,Security Team,Remote Site 2,2024-05-25 12:00:00,2024-05-28 00:00:00,60.0,Closed,Patch Applied
+INC100418,Application Bug,Medium,Network Team,Remote Site 1,2024-05-15 00:00:00,2024-05-15 04:00:00,4.0,Resolved,Security Mitigation
+INC100419,Server Crash,Critical,Database Admin,Remote Site 1,2024-05-12 17:00:00,2024-05-12 18:00:00,1.0,Resolved,Patch Applied
+INC100420,Server Crash,High,IT Support,Remote Site 2,2024-02-04 17:00:00,2024-02-07 14:00:00,69.0,Closed,Patch Applied
+INC100421,Security Breach,High,Network Team,Remote Site 1,2024-02-08 21:00:00,2024-02-10 07:00:00,34.0,Resolved,Hardware Replacement
+INC100422,Database Failure,High,Database Admin,Remote Site 1,2024-07-27 15:00:00,2024-07-29 18:00:00,51.0,Resolved,Security Mitigation
+INC100423,Network Outage,High,Security Team,Remote Site 1,2024-07-29 17:00:00,2024-07-30 16:00:00,23.0,Resolved,Configuration Fix
+INC100424,Database Failure,Low,Network Team,Head Office,2024-02-10 05:00:00,2024-02-11 12:00:00,31.0,Resolved,Configuration Fix
+INC100425,Network Outage,Medium,Security Team,Data Center B,2024-06-23 08:00:00,2024-06-25 10:00:00,50.0,Resolved,Hardware Replacement
+INC100426,Database Failure,Medium,Database Admin,Remote Site 1,2024-05-24 09:00:00,2024-05-25 09:00:00,24.0,Resolved,Hardware Replacement
+INC100427,Database Failure,Medium,Database Admin,Data Center B,2024-06-16 03:00:00,2024-06-17 16:00:00,37.0,Resolved,Patch Applied
+INC100428,Server Crash,High,DevOps,Remote Site 2,2024-01-19 07:00:00,2024-01-21 05:00:00,46.0,Resolved,Reboot
+INC100429,Application Bug,Medium,Network Team,Remote Site 1,2024-11-24 23:00:00,2024-11-27 23:00:00,72.0,Closed,Security Mitigation
+INC100430,Application Bug,Critical,DevOps,Remote Site 1,2024-08-30 09:00:00,2024-09-01 18:00:00,57.0,Resolved,Hardware Replacement
+INC100431,Server Crash,Low,Database Admin,Data Center A,2024-09-28 15:00:00,2024-09-29 20:00:00,29.0,Resolved,Configuration Fix
+INC100432,Network Outage,High,Network Team,Remote Site 2,2024-04-08 12:00:00,2024-04-09 10:00:00,22.0,Resolved,Hardware Replacement
+INC100433,Database Failure,Critical,Database Admin,Remote Site 2,2024-02-08 15:00:00,2024-02-09 06:00:00,15.0,Resolved,Configuration Fix
+INC100434,Database Failure,High,Database Admin,Data Center A,2024-09-16 09:00:00,2024-09-18 18:00:00,57.0,Resolved,Security Mitigation
+INC100435,Server Crash,Critical,IT Support,Data Center B,2024-04-11 14:00:00,2024-04-11 19:00:00,5.0,Resolved,Hardware Replacement
+INC100436,Security Breach,High,IT Support,Remote Site 1,2024-10-22 08:00:00,2024-10-23 00:00:00,16.0,Resolved,Patch Applied
+INC100437,Server Crash,High,Database Admin,Remote Site 1,2024-02-26 15:00:00,2024-02-27 09:00:00,18.0,Resolved,Patch Applied
+INC100438,Server Crash,Low,Database Admin,Head Office,2024-06-30 16:00:00,2024-07-02 04:00:00,36.0,Resolved,Security Mitigation
+INC100439,Database Failure,Medium,Security Team,Head Office,2024-04-08 18:00:00,2024-04-10 05:00:00,35.0,Resolved,Security Mitigation
+INC100440,Network Outage,Medium,DevOps,Data Center A,2024-04-04 15:00:00,2024-04-05 08:00:00,17.0,Resolved,Patch Applied
+INC100441,Server Crash,Medium,Security Team,Data Center B,2024-09-16 21:00:00,2024-09-19 00:00:00,51.0,Resolved,Hardware Replacement
+INC100442,Server Crash,High,DevOps,Remote Site 1,2024-06-03 06:00:00,2024-06-03 16:00:00,10.0,Resolved,Reboot
+INC100443,Application Bug,High,Security Team,Remote Site 1,2024-11-20 08:00:00,2024-11-22 23:00:00,63.0,Closed,Configuration Fix
+INC100444,Database Failure,Low,IT Support,Remote Site 1,2024-08-04 16:00:00,2024-08-06 14:00:00,46.0,Resolved,Reboot
+INC100445,Database Failure,Critical,Network Team,Remote Site 1,2024-10-08 13:00:00,2024-10-09 17:00:00,28.0,Resolved,Hardware Replacement
+INC100446,Security Breach,High,Security Team,Head Office,2024-07-05 19:00:00,2024-07-06 12:00:00,17.0,Resolved,Security Mitigation
+INC100447,Application Bug,High,IT Support,Data Center A,2024-02-03 23:00:00,2024-02-06 10:00:00,59.0,Resolved,Reboot
+INC100448,Network Outage,Medium,DevOps,Remote Site 1,2024-01-01 05:00:00,2024-01-03 12:00:00,55.0,Resolved,Patch Applied
+INC100449,Server Crash,High,Network Team,Head Office,2024-02-01 20:00:00,2024-02-03 19:00:00,47.0,Resolved,Configuration Fix
+INC100450,Network Outage,High,Network Team,Data Center A,2024-05-15 06:00:00,2024-05-16 22:00:00,40.0,Resolved,Patch Applied
+INC100451,Application Bug,Low,IT Support,Data Center A,2024-03-13 20:00:00,2024-03-16 10:00:00,62.0,Closed,Reboot
+INC100452,Server Crash,Medium,Database Admin,Remote Site 1,2024-01-04 04:00:00,2024-01-04 06:00:00,2.0,Resolved,Configuration Fix
+INC100453,Network Outage,Critical,Network Team,Remote Site 1,2024-01-25 04:00:00,2024-01-26 10:00:00,30.0,Resolved,Hardware Replacement
+INC100454,Network Outage,Low,IT Support,Head Office,2024-05-05 11:00:00,2024-05-07 02:00:00,39.0,Resolved,Patch Applied
+INC100455,Application Bug,Medium,Network Team,Data Center A,2024-06-30 01:00:00,2024-06-30 03:00:00,2.0,Resolved,Security Mitigation
+INC100456,Server Crash,Critical,Security Team,Data Center B,2024-08-02 09:00:00,2024-08-03 05:00:00,20.0,Resolved,Hardware Replacement
+INC100457,Database Failure,Critical,Network Team,Data Center A,2024-11-02 00:00:00,2024-11-02 13:00:00,13.0,Resolved,Patch Applied
+INC100458,Network Outage,Critical,Security Team,Remote Site 1,2024-04-17 08:00:00,2024-04-18 02:00:00,18.0,Resolved,Patch Applied
+INC100459,Security Breach,Low,Network Team,Remote Site 2,2024-07-24 03:00:00,2024-07-25 16:00:00,37.0,Resolved,Reboot
+INC100460,Security Breach,Medium,Database Admin,Remote Site 2,2024-06-22 22:00:00,2024-06-23 23:00:00,25.0,Resolved,Hardware Replacement
+INC100461,Security Breach,Low,Network Team,Remote Site 1,2024-05-11 17:00:00,2024-05-12 08:00:00,15.0,Resolved,Patch Applied
+INC100462,Application Bug,Low,Database Admin,Data Center A,2024-05-03 06:00:00,2024-05-04 23:00:00,41.0,Resolved,Patch Applied
+INC100463,Application Bug,Critical,Security Team,Remote Site 2,2024-08-21 02:00:00,2024-08-22 01:00:00,23.0,Resolved,Hardware Replacement
+INC100464,Network Outage,Low,Database Admin,Data Center A,2024-01-05 16:00:00,2024-01-07 02:00:00,34.0,Resolved,Patch Applied
+INC100465,Network Outage,Low,DevOps,Remote Site 2,2024-04-07 18:00:00,2024-04-10 11:00:00,65.0,Closed,Hardware Replacement
+INC100466,Application Bug,Critical,IT Support,Remote Site 2,2024-07-02 12:00:00,2024-07-03 08:00:00,20.0,Resolved,Configuration Fix
+INC100467,Network Outage,High,IT Support,Remote Site 2,2024-11-10 08:00:00,2024-11-11 11:00:00,27.0,Resolved,Patch Applied
+INC100468,Database Failure,High,DevOps,Remote Site 2,2024-08-04 12:00:00,2024-08-04 21:00:00,9.0,Resolved,Configuration Fix
+INC100469,Application Bug,Medium,IT Support,Data Center B,2024-01-30 10:00:00,2024-02-01 18:00:00,56.0,Resolved,Reboot
+INC100470,Application Bug,Low,Security Team,Data Center B,2024-02-10 18:00:00,2024-02-10 20:00:00,2.0,Resolved,Patch Applied
+INC100471,Network Outage,Medium,DevOps,Head Office,2024-06-27 12:00:00,2024-06-30 07:00:00,67.0,Closed,Configuration Fix
+INC100472,Server Crash,High,Network Team,Head Office,2024-09-07 04:00:00,2024-09-07 20:00:00,16.0,Resolved,Reboot
+INC100473,Security Breach,Critical,Security Team,Remote Site 2,2024-01-22 19:00:00,2024-01-24 05:00:00,34.0,Resolved,Security Mitigation
+INC100474,Network Outage,Critical,DevOps,Remote Site 2,2024-05-02 22:00:00,2024-05-03 06:00:00,8.0,Resolved,Hardware Replacement
+INC100475,Database Failure,Medium,Security Team,Data Center B,2024-03-28 01:00:00,2024-03-28 15:00:00,14.0,Resolved,Security Mitigation
+INC100476,Network Outage,Medium,Database Admin,Data Center A,2024-01-16 00:00:00,2024-01-16 02:00:00,2.0,Resolved,Patch Applied
+INC100477,Network Outage,Critical,Security Team,Remote Site 1,2024-11-10 02:00:00,2024-11-10 22:00:00,20.0,Resolved,Patch Applied
+INC100478,Network Outage,Critical,Network Team,Head Office,2024-03-25 17:00:00,2024-03-27 23:00:00,54.0,Resolved,Configuration Fix
+INC100479,Security Breach,Low,Database Admin,Head Office,2024-02-10 18:00:00,2024-02-13 11:00:00,65.0,Closed,Reboot
+INC100480,Server Crash,Medium,Database Admin,Data Center A,2024-11-21 15:00:00,2024-11-23 19:00:00,52.0,Resolved,Reboot
+INC100481,Application Bug,High,Security Team,Head Office,2024-01-30 11:00:00,2024-02-02 10:00:00,71.0,Closed,Hardware Replacement
+INC100482,Network Outage,High,Network Team,Head Office,2024-07-11 10:00:00,2024-07-13 01:00:00,39.0,Resolved,Security Mitigation
+INC100483,Server Crash,Critical,Security Team,Remote Site 2,2024-11-27 17:00:00,2024-11-30 09:00:00,64.0,Closed,Patch Applied
+INC100484,Database Failure,Medium,Network Team,Data Center A,2024-11-14 06:00:00,2024-11-16 11:00:00,53.0,Resolved,Reboot
+INC100485,Server Crash,High,IT Support,Head Office,2024-01-01 11:00:00,2024-01-03 12:00:00,49.0,Resolved,Configuration Fix
+INC100486,Network Outage,Medium,Database Admin,Data Center B,2024-05-23 07:00:00,2024-05-25 22:00:00,63.0,Closed,Reboot
+INC100487,Server Crash,High,IT Support,Data Center A,2024-11-10 11:00:00,2024-11-11 17:00:00,30.0,Resolved,Security Mitigation
+INC100488,Application Bug,High,DevOps,Data Center A,2024-07-17 05:00:00,2024-07-17 18:00:00,13.0,Resolved,Security Mitigation
+INC100489,Server Crash,Critical,IT Support,Remote Site 2,2024-07-12 19:00:00,2024-07-13 03:00:00,8.0,Resolved,Hardware Replacement
+INC100490,Server Crash,Medium,Security Team,Head Office,2024-10-17 10:00:00,2024-10-19 03:00:00,41.0,Resolved,Hardware Replacement
+INC100491,Security Breach,High,DevOps,Head Office,2024-03-20 17:00:00,2024-03-21 03:00:00,10.0,Resolved,Patch Applied
+INC100492,Server Crash,Low,Network Team,Data Center A,2024-02-26 02:00:00,2024-02-28 12:00:00,58.0,Resolved,Hardware Replacement
+INC100493,Security Breach,Critical,IT Support,Remote Site 2,2024-05-02 07:00:00,2024-05-03 10:00:00,27.0,Resolved,Hardware Replacement
+INC100494,Security Breach,Critical,Security Team,Data Center A,2024-01-31 20:00:00,2024-02-01 17:00:00,21.0,Resolved,Configuration Fix
+INC100495,Database Failure,Low,Network Team,Head Office,2024-02-20 15:00:00,2024-02-21 03:00:00,12.0,Resolved,Patch Applied
+INC100496,Security Breach,Critical,Database Admin,Data Center A,2024-08-19 03:00:00,2024-08-20 18:00:00,39.0,Resolved,Configuration Fix
+INC100497,Server Crash,Low,DevOps,Remote Site 1,2024-07-08 18:00:00,2024-07-11 17:00:00,71.0,Closed,Patch Applied
+INC100498,Network Outage,Critical,IT Support,Data Center B,2024-02-11 10:00:00,2024-02-11 12:00:00,2.0,Resolved,Reboot
+INC100499,Server Crash,Medium,Network Team,Remote Site 1,2024-05-07 01:00:00,2024-05-07 12:00:00,11.0,Resolved,Security Mitigation
+INC100500,Database Failure,High,IT Support,Data Center A,2024-01-23 00:00:00,2024-01-24 02:00:00,26.0,Resolved,Hardware Replacement
+INC100501,Server Crash,Low,Security Team,Data Center A,2024-01-15 13:00:00,2024-01-18 01:00:00,60.0,Closed,Reboot
+INC100502,Server Crash,Critical,DevOps,Remote Site 1,2024-01-11 01:00:00,2024-01-13 02:00:00,49.0,Resolved,Hardware Replacement
+INC100503,Server Crash,High,Network Team,Data Center B,2024-04-03 20:00:00,2024-04-05 08:00:00,36.0,Resolved,Hardware Replacement
+INC100504,Server Crash,Low,Database Admin,Remote Site 2,2024-07-29 14:00:00,2024-07-30 22:00:00,32.0,Resolved,Configuration Fix
+INC100505,Application Bug,Critical,Database Admin,Remote Site 1,2024-01-21 19:00:00,2024-01-22 07:00:00,12.0,Resolved,Configuration Fix
+INC100506,Application Bug,Medium,DevOps,Data Center B,2024-08-07 08:00:00,2024-08-10 04:00:00,68.0,Closed,Patch Applied
+INC100507,Database Failure,Low,DevOps,Head Office,2024-06-12 17:00:00,2024-06-15 15:00:00,70.0,Closed,Hardware Replacement
+INC100508,Security Breach,High,DevOps,Head Office,2024-03-02 09:00:00,2024-03-02 13:00:00,4.0,Resolved,Configuration Fix
+INC100509,Database Failure,Medium,IT Support,Head Office,2024-01-20 23:00:00,2024-01-23 12:00:00,61.0,Closed,Security Mitigation
+INC100510,Security Breach,Medium,Network Team,Data Center A,2024-03-25 14:00:00,2024-03-26 21:00:00,31.0,Resolved,Configuration Fix
+INC100511,Database Failure,Low,Network Team,Remote Site 2,2024-10-15 22:00:00,2024-10-18 00:00:00,50.0,Resolved,Configuration Fix
+INC100512,Server Crash,Medium,Network Team,Remote Site 2,2024-04-18 13:00:00,2024-04-20 11:00:00,46.0,Resolved,Security Mitigation
+INC100513,Network Outage,High,Database Admin,Remote Site 2,2024-02-18 12:00:00,2024-02-19 13:00:00,25.0,Resolved,Hardware Replacement
+INC100514,Database Failure,High,Network Team,Remote Site 1,2024-01-13 22:00:00,2024-01-14 10:00:00,12.0,Resolved,Reboot
+INC100515,Server Crash,Medium,IT Support,Remote Site 2,2024-06-12 03:00:00,2024-06-12 04:00:00,1.0,Resolved,Configuration Fix
+INC100516,Database Failure,Medium,Network Team,Head Office,2024-09-01 17:00:00,2024-09-02 16:00:00,23.0,Resolved,Configuration Fix
+INC100517,Network Outage,Low,Network Team,Remote Site 2,2024-08-28 12:00:00,2024-08-29 07:00:00,19.0,Resolved,Reboot
+INC100518,Database Failure,High,IT Support,Head Office,2024-08-28 11:00:00,2024-08-30 14:00:00,51.0,Resolved,Security Mitigation
+INC100519,Network Outage,High,Security Team,Head Office,2024-02-16 13:00:00,2024-02-17 10:00:00,21.0,Resolved,Hardware Replacement
+INC100520,Application Bug,High,Network Team,Remote Site 2,2024-08-24 17:00:00,2024-08-26 15:00:00,46.0,Resolved,Patch Applied
+INC100521,Database Failure,Medium,DevOps,Head Office,2024-09-07 12:00:00,2024-09-09 02:00:00,38.0,Resolved,Patch Applied
+INC100522,Server Crash,Low,Database Admin,Remote Site 1,2024-10-17 09:00:00,2024-10-17 14:00:00,5.0,Resolved,Patch Applied
+INC100523,Database Failure,High,Database Admin,Data Center B,2024-08-06 07:00:00,2024-08-06 21:00:00,14.0,Resolved,Hardware Replacement
+INC100524,Server Crash,High,IT Support,Data Center B,2024-04-28 09:00:00,2024-04-30 02:00:00,41.0,Resolved,Patch Applied
+INC100525,Network Outage,High,DevOps,Data Center A,2024-03-31 12:00:00,2024-04-01 15:00:00,27.0,Resolved,Patch Applied
+INC100526,Network Outage,High,Security Team,Data Center A,2024-09-02 21:00:00,2024-09-02 22:00:00,1.0,Resolved,Reboot
+INC100527,Application Bug,Critical,DevOps,Data Center B,2024-10-28 22:00:00,2024-10-31 03:00:00,53.0,Resolved,Hardware Replacement
+INC100528,Application Bug,High,Database Admin,Remote Site 1,2024-02-04 14:00:00,2024-02-07 04:00:00,62.0,Closed,Security Mitigation
+INC100529,Server Crash,Medium,DevOps,Data Center A,2024-09-29 19:00:00,2024-09-30 00:00:00,5.0,Resolved,Configuration Fix
+INC100530,Network Outage,High,Security Team,Data Center A,2024-01-26 07:00:00,2024-01-28 03:00:00,44.0,Resolved,Patch Applied
+INC100531,Application Bug,Medium,IT Support,Remote Site 2,2024-11-17 11:00:00,2024-11-17 23:00:00,12.0,Resolved,Configuration Fix
+INC100532,Database Failure,Critical,IT Support,Remote Site 1,2024-11-17 16:00:00,2024-11-18 14:00:00,22.0,Resolved,Security Mitigation
+INC100533,Application Bug,Medium,IT Support,Data Center A,2024-04-23 00:00:00,2024-04-24 03:00:00,27.0,Resolved,Patch Applied
+INC100534,Application Bug,High,Security Team,Head Office,2024-03-22 01:00:00,2024-03-22 14:00:00,13.0,Resolved,Reboot
+INC100535,Application Bug,Critical,Network Team,Data Center A,2024-05-03 03:00:00,2024-05-03 04:00:00,1.0,Resolved,Hardware Replacement
+INC100536,Network Outage,High,Database Admin,Remote Site 1,2024-03-09 03:00:00,2024-03-09 16:00:00,13.0,Resolved,Reboot
+INC100537,Server Crash,Medium,Security Team,Data Center A,2024-06-10 15:00:00,2024-06-11 06:00:00,15.0,Resolved,Configuration Fix
+INC100538,Application Bug,Critical,DevOps,Head Office,2024-02-01 02:00:00,2024-02-04 00:00:00,70.0,Closed,Hardware Replacement
+INC100539,Server Crash,High,DevOps,Head Office,2024-03-04 16:00:00,2024-03-07 02:00:00,58.0,Resolved,Reboot
+INC100540,Security Breach,Critical,DevOps,Head Office,2024-03-18 05:00:00,2024-03-19 16:00:00,35.0,Resolved,Security Mitigation
+INC100541,Network Outage,Medium,IT Support,Data Center A,2024-08-16 01:00:00,2024-08-17 22:00:00,45.0,Resolved,Security Mitigation
+INC100542,Application Bug,Medium,Database Admin,Data Center A,2024-10-13 23:00:00,2024-10-16 01:00:00,50.0,Resolved,Security Mitigation
+INC100543,Application Bug,Critical,Database Admin,Data Center B,2024-06-11 13:00:00,2024-06-13 04:00:00,39.0,Resolved,Reboot
+INC100544,Application Bug,Low,Database Admin,Remote Site 2,2024-11-03 08:00:00,2024-11-06 03:00:00,67.0,Closed,Security Mitigation
+INC100545,Database Failure,Medium,IT Support,Remote Site 1,2024-02-29 00:00:00,2024-02-29 22:00:00,22.0,Resolved,Patch Applied
+INC100546,Server Crash,Medium,IT Support,Remote Site 1,2024-01-27 17:00:00,2024-01-30 01:00:00,56.0,Resolved,Patch Applied
+INC100547,Server Crash,High,Security Team,Data Center A,2024-01-30 16:00:00,2024-02-01 18:00:00,50.0,Resolved,Security Mitigation
+INC100548,Application Bug,High,Security Team,Remote Site 2,2024-06-05 09:00:00,2024-06-05 11:00:00,2.0,Resolved,Security Mitigation
+INC100549,Database Failure,Critical,IT Support,Remote Site 1,2024-02-21 01:00:00,2024-02-21 20:00:00,19.0,Resolved,Security Mitigation
+INC100550,Database Failure,Low,IT Support,Remote Site 2,2024-09-23 02:00:00,2024-09-23 15:00:00,13.0,Resolved,Configuration Fix
+INC100551,Database Failure,High,DevOps,Head Office,2024-05-10 17:00:00,2024-05-13 08:00:00,63.0,Closed,Security Mitigation
+INC100552,Database Failure,Critical,IT Support,Data Center B,2024-04-04 00:00:00,2024-04-06 04:00:00,52.0,Resolved,Patch Applied
+INC100553,Database Failure,Critical,IT Support,Remote Site 1,2024-10-30 15:00:00,2024-11-01 10:00:00,43.0,Resolved,Patch Applied
+INC100554,Network Outage,Critical,Security Team,Head Office,2024-01-07 21:00:00,2024-01-09 17:00:00,44.0,Resolved,Configuration Fix
+INC100555,Security Breach,High,DevOps,Data Center A,2024-11-27 22:00:00,2024-11-29 04:00:00,30.0,Resolved,Patch Applied
+INC100556,Security Breach,Critical,Security Team,Head Office,2024-09-05 18:00:00,2024-09-08 00:00:00,54.0,Resolved,Security Mitigation
+INC100557,Network Outage,Medium,DevOps,Data Center B,2024-11-07 18:00:00,2024-11-09 23:00:00,53.0,Resolved,Hardware Replacement
+INC100558,Database Failure,High,IT Support,Remote Site 2,2024-09-27 03:00:00,2024-09-28 00:00:00,21.0,Resolved,Reboot
+INC100559,Security Breach,Critical,Network Team,Remote Site 2,2024-10-27 03:00:00,2024-10-27 07:00:00,4.0,Resolved,Patch Applied
+INC100560,Server Crash,Medium,IT Support,Data Center B,2024-01-12 06:00:00,2024-01-14 17:00:00,59.0,Resolved,Reboot
+INC100561,Security Breach,Medium,Security Team,Head Office,2024-10-08 02:00:00,2024-10-10 14:00:00,60.0,Closed,Security Mitigation
+INC100562,Application Bug,Low,IT Support,Data Center B,2024-05-07 03:00:00,2024-05-09 18:00:00,63.0,Closed,Security Mitigation
+INC100563,Application Bug,Medium,DevOps,Remote Site 2,2024-07-07 04:00:00,2024-07-09 01:00:00,45.0,Resolved,Configuration Fix
+INC100564,Server Crash,High,IT Support,Head Office,2024-01-10 08:00:00,2024-01-12 10:00:00,50.0,Resolved,Reboot
+INC100565,Server Crash,Medium,Network Team,Data Center B,2024-08-19 07:00:00,2024-08-20 10:00:00,27.0,Resolved,Configuration Fix
+INC100566,Application Bug,Low,IT Support,Remote Site 1,2024-11-07 03:00:00,2024-11-07 20:00:00,17.0,Resolved,Patch Applied
+INC100567,Database Failure,Low,Network Team,Head Office,2024-07-26 15:00:00,2024-07-28 07:00:00,40.0,Resolved,Configuration Fix
+INC100568,Application Bug,Critical,Security Team,Remote Site 1,2024-03-27 00:00:00,2024-03-28 04:00:00,28.0,Resolved,Hardware Replacement
+INC100569,Security Breach,Critical,Database Admin,Data Center A,2024-01-03 12:00:00,2024-01-06 06:00:00,66.0,Closed,Configuration Fix
+INC100570,Database Failure,High,Security Team,Data Center A,2024-06-13 10:00:00,2024-06-13 19:00:00,9.0,Resolved,Configuration Fix
+INC100571,Security Breach,High,Security Team,Head Office,2024-08-11 22:00:00,2024-08-13 13:00:00,39.0,Resolved,Patch Applied
+INC100572,Server Crash,Medium,IT Support,Remote Site 2,2024-05-17 22:00:00,2024-05-19 15:00:00,41.0,Resolved,Patch Applied
+INC100573,Network Outage,Critical,Security Team,Head Office,2024-11-05 13:00:00,2024-11-07 19:00:00,54.0,Resolved,Hardware Replacement
+INC100574,Application Bug,Low,Database Admin,Remote Site 2,2024-10-05 12:00:00,2024-10-06 13:00:00,25.0,Resolved,Configuration Fix
+INC100575,Server Crash,Critical,Security Team,Remote Site 2,2024-04-12 11:00:00,2024-04-13 09:00:00,22.0,Resolved,Security Mitigation
+INC100576,Server Crash,High,IT Support,Remote Site 1,2024-02-13 16:00:00,2024-02-15 02:00:00,34.0,Resolved,Security Mitigation
+INC100577,Server Crash,High,IT Support,Data Center B,2024-05-01 06:00:00,2024-05-02 11:00:00,29.0,Resolved,Configuration Fix
+INC100578,Application Bug,High,Security Team,Head Office,2024-07-18 20:00:00,2024-07-20 10:00:00,38.0,Resolved,Hardware Replacement
+INC100579,Network Outage,Critical,IT Support,Remote Site 2,2024-07-17 01:00:00,2024-07-17 11:00:00,10.0,Resolved,Hardware Replacement
+INC100580,Server Crash,Low,DevOps,Remote Site 2,2024-04-11 20:00:00,2024-04-14 01:00:00,53.0,Resolved,Reboot
+INC100581,Server Crash,Medium,Network Team,Head Office,2024-05-19 16:00:00,2024-05-22 03:00:00,59.0,Resolved,Patch Applied
+INC100582,Security Breach,Medium,IT Support,Remote Site 1,2024-04-23 12:00:00,2024-04-24 11:00:00,23.0,Resolved,Configuration Fix
+INC100583,Network Outage,Low,DevOps,Head Office,2024-03-12 11:00:00,2024-03-13 09:00:00,22.0,Resolved,Security Mitigation
+INC100584,Server Crash,Critical,IT Support,Data Center B,2024-07-28 17:00:00,2024-07-31 01:00:00,56.0,Resolved,Hardware Replacement
+INC100585,Application Bug,Critical,DevOps,Remote Site 1,2024-01-02 14:00:00,2024-01-02 19:00:00,5.0,Resolved,Security Mitigation
+INC100586,Server Crash,High,IT Support,Head Office,2024-09-15 08:00:00,2024-09-18 04:00:00,68.0,Closed,Patch Applied
+INC100587,Network Outage,Low,Network Team,Data Center B,2024-08-24 17:00:00,2024-08-26 14:00:00,45.0,Resolved,Configuration Fix
+INC100588,Server Crash,Low,DevOps,Remote Site 2,2024-07-19 22:00:00,2024-07-21 14:00:00,40.0,Resolved,Patch Applied
+INC100589,Network Outage,Low,Security Team,Head Office,2024-06-04 14:00:00,2024-06-07 09:00:00,67.0,Closed,Security Mitigation
+INC100590,Database Failure,High,DevOps,Data Center B,2024-04-26 23:00:00,2024-04-29 14:00:00,63.0,Closed,Configuration Fix
+INC100591,Server Crash,Medium,DevOps,Data Center A,2024-03-18 23:00:00,2024-03-20 04:00:00,29.0,Resolved,Patch Applied
+INC100592,Server Crash,Low,Database Admin,Remote Site 2,2024-02-27 16:00:00,2024-02-28 08:00:00,16.0,Resolved,Configuration Fix
+INC100593,Network Outage,Critical,Security Team,Remote Site 2,2024-07-31 16:00:00,2024-07-31 23:00:00,7.0,Resolved,Security Mitigation
+INC100594,Network Outage,Low,IT Support,Data Center A,2024-08-23 10:00:00,2024-08-24 01:00:00,15.0,Resolved,Hardware Replacement
+INC100595,Application Bug,Critical,IT Support,Remote Site 2,2024-03-27 06:00:00,2024-03-29 19:00:00,61.0,Closed,Patch Applied
+INC100596,Server Crash,Low,Security Team,Remote Site 1,2024-08-13 20:00:00,2024-08-14 09:00:00,13.0,Resolved,Security Mitigation
+INC100597,Security Breach,Medium,DevOps,Data Center A,2024-06-23 14:00:00,2024-06-24 06:00:00,16.0,Resolved,Configuration Fix
+INC100598,Network Outage,Low,DevOps,Data Center B,2024-07-26 20:00:00,2024-07-27 22:00:00,26.0,Resolved,Configuration Fix
+INC100599,Database Failure,Medium,Security Team,Remote Site 1,2024-04-10 19:00:00,2024-04-11 16:00:00,21.0,Resolved,Reboot
+INC100600,Database Failure,Critical,Network Team,Remote Site 1,2024-04-22 20:00:00,2024-04-24 03:00:00,31.0,Resolved,Reboot
+INC100601,Network Outage,Low,IT Support,Remote Site 2,2024-08-16 08:00:00,2024-08-19 00:00:00,64.0,Closed,Patch Applied
+INC100602,Network Outage,Low,IT Support,Head Office,2024-08-07 22:00:00,2024-08-09 04:00:00,30.0,Resolved,Hardware Replacement
+INC100603,Security Breach,High,DevOps,Data Center A,2024-02-04 01:00:00,2024-02-05 00:00:00,23.0,Resolved,Reboot
+INC100604,Security Breach,High,Security Team,Remote Site 1,2024-09-09 02:00:00,2024-09-09 17:00:00,15.0,Resolved,Reboot
+INC100605,Network Outage,Low,Network Team,Data Center B,2024-04-22 04:00:00,2024-04-24 02:00:00,46.0,Resolved,Hardware Replacement
+INC100606,Database Failure,High,IT Support,Head Office,2024-10-05 04:00:00,2024-10-07 00:00:00,44.0,Resolved,Patch Applied
+INC100607,Network Outage,Critical,DevOps,Remote Site 1,2024-04-02 18:00:00,2024-04-04 20:00:00,50.0,Resolved,Hardware Replacement
+INC100608,Application Bug,Medium,IT Support,Data Center B,2024-08-25 15:00:00,2024-08-25 23:00:00,8.0,Resolved,Patch Applied
+INC100609,Network Outage,Critical,Database Admin,Remote Site 1,2024-09-30 20:00:00,2024-10-03 05:00:00,57.0,Resolved,Patch Applied
+INC100610,Database Failure,Critical,Security Team,Remote Site 2,2024-01-10 20:00:00,2024-01-11 13:00:00,17.0,Resolved,Hardware Replacement
+INC100611,Application Bug,Low,DevOps,Remote Site 1,2024-01-16 16:00:00,2024-01-17 01:00:00,9.0,Resolved,Configuration Fix
+INC100612,Security Breach,Low,Database Admin,Remote Site 2,2024-09-04 01:00:00,2024-09-05 06:00:00,29.0,Resolved,Configuration Fix
+INC100613,Database Failure,Low,DevOps,Data Center B,2024-06-13 11:00:00,2024-06-15 08:00:00,45.0,Resolved,Hardware Replacement
+INC100614,Server Crash,Low,IT Support,Data Center B,2024-06-21 13:00:00,2024-06-24 02:00:00,61.0,Closed,Hardware Replacement
+INC100615,Server Crash,Low,DevOps,Head Office,2024-03-23 05:00:00,2024-03-25 00:00:00,43.0,Resolved,Configuration Fix
+INC100616,Network Outage,Medium,Database Admin,Remote Site 1,2024-05-17 15:00:00,2024-05-18 22:00:00,31.0,Resolved,Reboot
+INC100617,Application Bug,Critical,Database Admin,Remote Site 1,2024-01-31 01:00:00,2024-02-02 17:00:00,64.0,Closed,Hardware Replacement
+INC100618,Security Breach,Low,DevOps,Data Center A,2024-02-05 00:00:00,2024-02-07 04:00:00,52.0,Resolved,Hardware Replacement
+INC100619,Network Outage,Low,IT Support,Remote Site 2,2024-11-24 18:00:00,2024-11-26 09:00:00,39.0,Resolved,Security Mitigation
+INC100620,Database Failure,Medium,DevOps,Head Office,2024-05-04 00:00:00,2024-05-04 07:00:00,7.0,Resolved,Patch Applied
+INC100621,Application Bug,High,Database Admin,Remote Site 2,2024-07-23 18:00:00,2024-07-26 07:00:00,61.0,Closed,Configuration Fix
+INC100622,Application Bug,Low,IT Support,Data Center B,2024-01-01 17:00:00,2024-01-03 13:00:00,44.0,Resolved,Configuration Fix
+INC100623,Security Breach,High,IT Support,Data Center A,2024-11-02 03:00:00,2024-11-03 01:00:00,22.0,Resolved,Hardware Replacement
+INC100624,Server Crash,Critical,IT Support,Head Office,2024-07-27 12:00:00,2024-07-28 14:00:00,26.0,Resolved,Patch Applied
+INC100625,Network Outage,Critical,Network Team,Remote Site 1,2024-10-08 10:00:00,2024-10-09 11:00:00,25.0,Resolved,Configuration Fix
+INC100626,Network Outage,Critical,IT Support,Remote Site 2,2024-02-12 01:00:00,2024-02-14 11:00:00,58.0,Resolved,Hardware Replacement
+INC100627,Database Failure,Medium,DevOps,Data Center A,2024-06-30 00:00:00,2024-06-30 07:00:00,7.0,Resolved,Security Mitigation
+INC100628,Application Bug,Critical,Database Admin,Data Center B,2024-08-24 03:00:00,2024-08-25 02:00:00,23.0,Resolved,Patch Applied
+INC100629,Network Outage,Critical,Database Admin,Remote Site 2,2024-10-28 07:00:00,2024-10-30 01:00:00,42.0,Resolved,Security Mitigation
+INC100630,Application Bug,Critical,Database Admin,Data Center B,2024-04-03 09:00:00,2024-04-05 12:00:00,51.0,Resolved,Configuration Fix
+INC100631,Security Breach,Critical,Network Team,Data Center B,2024-05-20 21:00:00,2024-05-23 15:00:00,66.0,Closed,Configuration Fix
+INC100632,Database Failure,High,Database Admin,Data Center B,2024-03-09 13:00:00,2024-03-10 16:00:00,27.0,Resolved,Security Mitigation
+INC100633,Security Breach,High,Network Team,Data Center B,2024-06-20 23:00:00,2024-06-23 21:00:00,70.0,Closed,Configuration Fix
+INC100634,Network Outage,High,Database Admin,Remote Site 1,2024-07-17 22:00:00,2024-07-20 04:00:00,54.0,Resolved,Security Mitigation
+INC100635,Security Breach,Critical,IT Support,Remote Site 2,2024-02-06 08:00:00,2024-02-06 12:00:00,4.0,Resolved,Hardware Replacement
+INC100636,Server Crash,Low,IT Support,Data Center B,2024-04-01 03:00:00,2024-04-02 00:00:00,21.0,Resolved,Configuration Fix
+INC100637,Security Breach,Medium,IT Support,Head Office,2024-03-10 15:00:00,2024-03-13 13:00:00,70.0,Closed,Reboot
+INC100638,Security Breach,Critical,IT Support,Remote Site 2,2024-10-23 06:00:00,2024-10-26 06:00:00,72.0,Closed,Patch Applied
+INC100639,Database Failure,Critical,Network Team,Remote Site 2,2024-09-24 17:00:00,2024-09-26 06:00:00,37.0,Resolved,Reboot
+INC100640,Application Bug,Critical,DevOps,Head Office,2024-11-25 16:00:00,2024-11-28 15:00:00,71.0,Closed,Reboot
+INC100641,Network Outage,High,Network Team,Remote Site 2,2024-10-23 13:00:00,2024-10-25 22:00:00,57.0,Resolved,Patch Applied
+INC100642,Security Breach,Medium,Network Team,Head Office,2024-06-02 04:00:00,2024-06-03 03:00:00,23.0,Resolved,Reboot
+INC100643,Server Crash,Medium,Database Admin,Data Center A,2024-05-08 18:00:00,2024-05-09 00:00:00,6.0,Resolved,Hardware Replacement
+INC100644,Security Breach,High,Network Team,Data Center B,2024-07-18 08:00:00,2024-07-19 17:00:00,33.0,Resolved,Reboot
+INC100645,Security Breach,Critical,Network Team,Data Center A,2024-02-22 11:00:00,2024-02-24 05:00:00,42.0,Resolved,Security Mitigation
+INC100646,Network Outage,High,DevOps,Remote Site 2,2024-07-06 18:00:00,2024-07-08 16:00:00,46.0,Resolved,Reboot
+INC100647,Security Breach,Medium,Network Team,Remote Site 2,2024-01-24 06:00:00,2024-01-26 23:00:00,65.0,Closed,Patch Applied
+INC100648,Application Bug,Critical,IT Support,Head Office,2024-03-16 12:00:00,2024-03-17 16:00:00,28.0,Resolved,Configuration Fix
+INC100649,Security Breach,High,Security Team,Data Center B,2024-11-20 08:00:00,2024-11-23 04:00:00,68.0,Closed,Hardware Replacement
+INC100650,Database Failure,Low,IT Support,Head Office,2024-06-01 02:00:00,2024-06-02 09:00:00,31.0,Resolved,Security Mitigation
+INC100651,Database Failure,Medium,IT Support,Head Office,2024-05-10 04:00:00,2024-05-10 19:00:00,15.0,Resolved,Hardware Replacement
+INC100652,Security Breach,High,IT Support,Remote Site 2,2024-10-07 14:00:00,2024-10-09 14:00:00,48.0,Resolved,Security Mitigation
+INC100653,Database Failure,Critical,DevOps,Data Center A,2024-04-11 04:00:00,2024-04-12 05:00:00,25.0,Resolved,Configuration Fix
+INC100654,Database Failure,Low,IT Support,Data Center B,2024-11-27 15:00:00,2024-11-30 12:00:00,69.0,Closed,Security Mitigation
+INC100655,Network Outage,Low,Network Team,Data Center B,2024-10-22 05:00:00,2024-10-24 12:00:00,55.0,Resolved,Reboot
+INC100656,Server Crash,Critical,IT Support,Data Center B,2024-01-09 02:00:00,2024-01-11 13:00:00,59.0,Resolved,Configuration Fix
+INC100657,Network Outage,Low,IT Support,Data Center A,2024-03-01 18:00:00,2024-03-03 03:00:00,33.0,Resolved,Security Mitigation
+INC100658,Network Outage,Medium,Security Team,Remote Site 1,2024-05-12 10:00:00,2024-05-14 20:00:00,58.0,Resolved,Hardware Replacement
+INC100659,Application Bug,High,IT Support,Remote Site 1,2024-08-17 19:00:00,2024-08-18 11:00:00,16.0,Resolved,Security Mitigation
+INC100660,Network Outage,Low,Database Admin,Data Center A,2024-08-27 05:00:00,2024-08-27 15:00:00,10.0,Resolved,Configuration Fix
+INC100661,Database Failure,Low,Security Team,Head Office,2024-07-26 00:00:00,2024-07-26 12:00:00,12.0,Resolved,Configuration Fix
+INC100662,Application Bug,Critical,DevOps,Data Center A,2024-06-10 18:00:00,2024-06-11 15:00:00,21.0,Resolved,Security Mitigation
+INC100663,Server Crash,Medium,DevOps,Remote Site 2,2024-04-10 16:00:00,2024-04-11 11:00:00,19.0,Resolved,Configuration Fix
+INC100664,Security Breach,Low,Database Admin,Remote Site 2,2024-02-18 06:00:00,2024-02-18 22:00:00,16.0,Resolved,Reboot
+INC100665,Network Outage,Critical,Database Admin,Remote Site 2,2024-11-19 05:00:00,2024-11-19 16:00:00,11.0,Resolved,Configuration Fix
+INC100666,Server Crash,High,Network Team,Remote Site 1,2024-11-05 02:00:00,2024-11-07 20:00:00,66.0,Closed,Patch Applied
+INC100667,Server Crash,Medium,Network Team,Remote Site 2,2024-10-11 22:00:00,2024-10-13 07:00:00,33.0,Resolved,Patch Applied
+INC100668,Network Outage,Medium,Database Admin,Data Center A,2024-10-17 14:00:00,2024-10-20 13:00:00,71.0,Closed,Hardware Replacement
+INC100669,Database Failure,Low,Security Team,Data Center A,2024-03-26 13:00:00,2024-03-27 02:00:00,13.0,Resolved,Patch Applied
+INC100670,Database Failure,Critical,Security Team,Head Office,2024-02-13 18:00:00,2024-02-15 01:00:00,31.0,Resolved,Reboot
+INC100671,Security Breach,Low,Network Team,Head Office,2024-06-14 20:00:00,2024-06-17 06:00:00,58.0,Resolved,Configuration Fix
+INC100672,Database Failure,High,Database Admin,Data Center B,2024-07-12 01:00:00,2024-07-14 00:00:00,47.0,Resolved,Configuration Fix
+INC100673,Application Bug,Medium,IT Support,Head Office,2024-03-25 00:00:00,2024-03-26 05:00:00,29.0,Resolved,Hardware Replacement
+INC100674,Security Breach,High,Network Team,Head Office,2024-10-26 15:00:00,2024-10-29 05:00:00,62.0,Closed,Hardware Replacement
+INC100675,Application Bug,High,Security Team,Remote Site 1,2024-07-07 07:00:00,2024-07-07 21:00:00,14.0,Resolved,Patch Applied
+INC100676,Database Failure,Low,Security Team,Data Center B,2024-10-31 05:00:00,2024-11-03 02:00:00,69.0,Closed,Patch Applied
+INC100677,Security Breach,Low,IT Support,Data Center A,2024-10-16 23:00:00,2024-10-19 16:00:00,65.0,Closed,Reboot
+INC100678,Database Failure,Critical,Database Admin,Data Center B,2024-11-05 08:00:00,2024-11-05 13:00:00,5.0,Resolved,Security Mitigation
+INC100679,Security Breach,Critical,Network Team,Head Office,2024-05-13 23:00:00,2024-05-15 04:00:00,29.0,Resolved,Security Mitigation
+INC100680,Security Breach,Medium,DevOps,Remote Site 2,2024-06-23 05:00:00,2024-06-23 17:00:00,12.0,Resolved,Hardware Replacement
+INC100681,Security Breach,Low,Network Team,Remote Site 2,2024-08-21 12:00:00,2024-08-22 10:00:00,22.0,Resolved,Security Mitigation
+INC100682,Server Crash,Critical,Network Team,Data Center B,2024-07-12 07:00:00,2024-07-13 02:00:00,19.0,Resolved,Hardware Replacement
+INC100683,Security Breach,Low,Network Team,Remote Site 1,2024-03-20 02:00:00,2024-03-20 11:00:00,9.0,Resolved,Configuration Fix
+INC100684,Security Breach,Medium,IT Support,Data Center B,2024-06-25 18:00:00,2024-06-27 17:00:00,47.0,Resolved,Hardware Replacement
+INC100685,Application Bug,Critical,IT Support,Data Center A,2024-08-09 08:00:00,2024-08-11 02:00:00,42.0,Resolved,Reboot
+INC100686,Database Failure,High,Security Team,Remote Site 2,2024-07-04 19:00:00,2024-07-05 18:00:00,23.0,Resolved,Hardware Replacement
+INC100687,Application Bug,High,Database Admin,Data Center A,2024-06-25 08:00:00,2024-06-26 17:00:00,33.0,Resolved,Hardware Replacement
+INC100688,Server Crash,Critical,Security Team,Head Office,2024-06-15 04:00:00,2024-06-17 18:00:00,62.0,Closed,Security Mitigation
+INC100689,Network Outage,Medium,DevOps,Data Center B,2024-03-19 12:00:00,2024-03-19 22:00:00,10.0,Resolved,Security Mitigation
+INC100690,Security Breach,Medium,Network Team,Data Center B,2024-02-23 17:00:00,2024-02-25 16:00:00,47.0,Resolved,Security Mitigation
+INC100691,Network Outage,Medium,DevOps,Head Office,2024-09-02 20:00:00,2024-09-03 11:00:00,15.0,Resolved,Hardware Replacement
+INC100692,Application Bug,Critical,Network Team,Remote Site 2,2024-02-25 00:00:00,2024-02-27 05:00:00,53.0,Resolved,Reboot
+INC100693,Server Crash,Low,Network Team,Remote Site 2,2024-07-21 04:00:00,2024-07-22 01:00:00,21.0,Resolved,Patch Applied
+INC100694,Database Failure,Low,Database Admin,Data Center B,2024-01-20 02:00:00,2024-01-21 00:00:00,22.0,Resolved,Configuration Fix
+INC100695,Server Crash,Critical,Database Admin,Remote Site 2,2024-08-05 15:00:00,2024-08-05 18:00:00,3.0,Resolved,Configuration Fix
+INC100696,Network Outage,Medium,DevOps,Remote Site 2,2024-06-09 21:00:00,2024-06-12 11:00:00,62.0,Closed,Patch Applied
+INC100697,Server Crash,Critical,Database Admin,Data Center B,2024-09-28 05:00:00,2024-09-29 05:00:00,24.0,Resolved,Security Mitigation
+INC100698,Database Failure,High,Network Team,Head Office,2024-11-10 19:00:00,2024-11-13 06:00:00,59.0,Resolved,Security Mitigation
+INC100699,Database Failure,Low,Network Team,Remote Site 1,2024-05-11 13:00:00,2024-05-12 06:00:00,17.0,Resolved,Reboot
+INC100700,Network Outage,Medium,Database Admin,Remote Site 2,2024-08-21 14:00:00,2024-08-23 20:00:00,54.0,Resolved,Patch Applied
+INC100701,Database Failure,Low,Network Team,Remote Site 1,2024-11-03 17:00:00,2024-11-03 22:00:00,5.0,Resolved,Security Mitigation
+INC100702,Database Failure,Low,IT Support,Remote Site 1,2024-08-13 01:00:00,2024-08-13 18:00:00,17.0,Resolved,Security Mitigation
+INC100703,Database Failure,Low,DevOps,Remote Site 2,2024-05-23 14:00:00,2024-05-25 14:00:00,48.0,Resolved,Reboot
+INC100704,Database Failure,Critical,Network Team,Remote Site 1,2024-09-26 12:00:00,2024-09-28 13:00:00,49.0,Resolved,Configuration Fix
+INC100705,Database Failure,Low,DevOps,Data Center B,2024-03-27 21:00:00,2024-03-30 11:00:00,62.0,Closed,Patch Applied
+INC100706,Network Outage,High,Database Admin,Remote Site 2,2024-05-19 11:00:00,2024-05-20 20:00:00,33.0,Resolved,Patch Applied
+INC100707,Network Outage,Low,Database Admin,Remote Site 2,2024-02-10 05:00:00,2024-02-13 00:00:00,67.0,Closed,Reboot
+INC100708,Application Bug,Medium,Security Team,Remote Site 1,2024-05-03 15:00:00,2024-05-04 05:00:00,14.0,Resolved,Patch Applied
+INC100709,Application Bug,High,Security Team,Remote Site 2,2024-05-24 13:00:00,2024-05-26 12:00:00,47.0,Resolved,Security Mitigation
+INC100710,Security Breach,Critical,Network Team,Remote Site 1,2024-07-07 10:00:00,2024-07-10 10:00:00,72.0,Closed,Hardware Replacement
+INC100711,Server Crash,High,Database Admin,Remote Site 2,2024-06-14 02:00:00,2024-06-15 11:00:00,33.0,Resolved,Configuration Fix
+INC100712,Database Failure,High,DevOps,Data Center B,2024-10-18 20:00:00,2024-10-19 12:00:00,16.0,Resolved,Patch Applied
+INC100713,Application Bug,Medium,IT Support,Data Center B,2024-06-22 12:00:00,2024-06-24 16:00:00,52.0,Resolved,Configuration Fix
+INC100714,Database Failure,Low,Network Team,Remote Site 1,2024-11-25 05:00:00,2024-11-25 06:00:00,1.0,Resolved,Reboot
+INC100715,Server Crash,Critical,Database Admin,Remote Site 1,2024-01-31 02:00:00,2024-01-31 11:00:00,9.0,Resolved,Configuration Fix
+INC100716,Server Crash,High,IT Support,Remote Site 2,2024-01-13 21:00:00,2024-01-15 23:00:00,50.0,Resolved,Hardware Replacement
+INC100717,Database Failure,High,Database Admin,Data Center A,2024-11-18 19:00:00,2024-11-19 18:00:00,23.0,Resolved,Hardware Replacement
+INC100718,Application Bug,Low,Network Team,Remote Site 2,2024-04-07 14:00:00,2024-04-08 15:00:00,25.0,Resolved,Reboot
+INC100719,Database Failure,Medium,Database Admin,Data Center B,2024-08-18 01:00:00,2024-08-18 06:00:00,5.0,Resolved,Configuration Fix
+INC100720,Server Crash,Low,Network Team,Data Center A,2024-04-04 04:00:00,2024-04-06 08:00:00,52.0,Resolved,Configuration Fix
+INC100721,Application Bug,Critical,Database Admin,Data Center B,2024-06-25 17:00:00,2024-06-25 19:00:00,2.0,Resolved,Reboot
+INC100722,Network Outage,High,Database Admin,Remote Site 2,2024-04-28 19:00:00,2024-04-30 16:00:00,45.0,Resolved,Configuration Fix
+INC100723,Server Crash,Medium,DevOps,Remote Site 1,2024-07-15 05:00:00,2024-07-15 06:00:00,1.0,Resolved,Configuration Fix
+INC100724,Server Crash,Critical,Database Admin,Data Center A,2024-07-09 16:00:00,2024-07-10 02:00:00,10.0,Resolved,Security Mitigation
+INC100725,Security Breach,High,IT Support,Remote Site 2,2024-11-22 13:00:00,2024-11-23 22:00:00,33.0,Resolved,Security Mitigation
+INC100726,Database Failure,High,DevOps,Remote Site 1,2024-07-11 05:00:00,2024-07-13 19:00:00,62.0,Closed,Patch Applied
+INC100727,Security Breach,Critical,DevOps,Remote Site 2,2024-10-21 05:00:00,2024-10-21 09:00:00,4.0,Resolved,Hardware Replacement
+INC100728,Network Outage,High,IT Support,Remote Site 1,2024-08-04 06:00:00,2024-08-05 11:00:00,29.0,Resolved,Patch Applied
+INC100729,Security Breach,Critical,Security Team,Remote Site 2,2024-07-01 20:00:00,2024-07-01 22:00:00,2.0,Resolved,Configuration Fix
+INC100730,Server Crash,High,IT Support,Remote Site 1,2024-08-17 22:00:00,2024-08-19 18:00:00,44.0,Resolved,Reboot
+INC100731,Database Failure,Medium,DevOps,Head Office,2024-04-30 16:00:00,2024-05-01 20:00:00,28.0,Resolved,Security Mitigation
+INC100732,Security Breach,Medium,Network Team,Remote Site 1,2024-09-08 14:00:00,2024-09-09 16:00:00,26.0,Resolved,Patch Applied
+INC100733,Server Crash,High,Network Team,Data Center B,2024-03-10 05:00:00,2024-03-11 13:00:00,32.0,Resolved,Security Mitigation
+INC100734,Security Breach,Medium,IT Support,Data Center A,2024-11-10 02:00:00,2024-11-10 13:00:00,11.0,Resolved,Hardware Replacement
+INC100735,Database Failure,Low,Database Admin,Data Center A,2024-10-16 10:00:00,2024-10-19 00:00:00,62.0,Closed,Configuration Fix
+INC100736,Database Failure,High,DevOps,Remote Site 2,2024-10-23 12:00:00,2024-10-25 00:00:00,36.0,Resolved,Hardware Replacement
+INC100737,Server Crash,High,DevOps,Data Center B,2024-09-13 01:00:00,2024-09-13 18:00:00,17.0,Resolved,Reboot
+INC100738,Database Failure,Critical,DevOps,Remote Site 2,2024-01-12 02:00:00,2024-01-14 19:00:00,65.0,Closed,Configuration Fix
+INC100739,Application Bug,Medium,DevOps,Data Center A,2024-08-26 08:00:00,2024-08-29 03:00:00,67.0,Closed,Hardware Replacement
+INC100740,Security Breach,Low,IT Support,Data Center B,2024-05-09 12:00:00,2024-05-10 01:00:00,13.0,Resolved,Configuration Fix
+INC100741,Security Breach,High,Network Team,Remote Site 2,2024-03-30 17:00:00,2024-04-01 00:00:00,31.0,Resolved,Configuration Fix
+INC100742,Application Bug,High,Security Team,Data Center B,2024-06-19 05:00:00,2024-06-21 12:00:00,55.0,Resolved,Patch Applied
+INC100743,Application Bug,High,Security Team,Remote Site 1,2024-04-05 10:00:00,2024-04-07 20:00:00,58.0,Resolved,Patch Applied
+INC100744,Database Failure,Medium,Database Admin,Data Center B,2024-10-04 21:00:00,2024-10-05 10:00:00,13.0,Resolved,Configuration Fix
+INC100745,Server Crash,Critical,DevOps,Data Center B,2024-02-19 18:00:00,2024-02-20 14:00:00,20.0,Resolved,Hardware Replacement
+INC100746,Network Outage,Medium,DevOps,Remote Site 1,2024-02-15 21:00:00,2024-02-18 16:00:00,67.0,Closed,Security Mitigation
+INC100747,Security Breach,Critical,Security Team,Head Office,2024-07-10 21:00:00,2024-07-11 04:00:00,7.0,Resolved,Hardware Replacement
+INC100748,Network Outage,Medium,IT Support,Data Center B,2024-10-04 18:00:00,2024-10-06 03:00:00,33.0,Resolved,Hardware Replacement
+INC100749,Network Outage,Critical,Security Team,Head Office,2024-05-03 05:00:00,2024-05-05 04:00:00,47.0,Resolved,Security Mitigation
+INC100750,Database Failure,High,Security Team,Data Center A,2024-05-20 13:00:00,2024-05-21 05:00:00,16.0,Resolved,Configuration Fix
+INC100751,Database Failure,Medium,Database Admin,Remote Site 2,2024-08-09 19:00:00,2024-08-12 16:00:00,69.0,Closed,Patch Applied
+INC100752,Security Breach,High,Security Team,Remote Site 2,2024-06-15 09:00:00,2024-06-17 19:00:00,58.0,Resolved,Reboot
+INC100753,Application Bug,High,DevOps,Data Center B,2024-10-23 08:00:00,2024-10-24 06:00:00,22.0,Resolved,Configuration Fix
+INC100754,Application Bug,Critical,IT Support,Data Center A,2024-02-25 07:00:00,2024-02-27 03:00:00,44.0,Resolved,Patch Applied
+INC100755,Security Breach,High,Security Team,Head Office,2024-07-25 15:00:00,2024-07-27 18:00:00,51.0,Resolved,Configuration Fix
+INC100756,Application Bug,High,Database Admin,Remote Site 2,2024-11-25 13:00:00,2024-11-27 23:00:00,58.0,Resolved,Hardware Replacement
+INC100757,Server Crash,Medium,IT Support,Data Center B,2024-09-05 09:00:00,2024-09-06 16:00:00,31.0,Resolved,Configuration Fix
+INC100758,Network Outage,Medium,Network Team,Remote Site 1,2024-02-05 03:00:00,2024-02-05 16:00:00,13.0,Resolved,Reboot
+INC100759,Application Bug,Low,IT Support,Remote Site 1,2024-06-27 20:00:00,2024-06-28 07:00:00,11.0,Resolved,Reboot
+INC100760,Security Breach,Medium,IT Support,Remote Site 1,2024-04-15 14:00:00,2024-04-16 20:00:00,30.0,Resolved,Patch Applied
+INC100761,Security Breach,Critical,Network Team,Data Center B,2024-06-28 19:00:00,2024-06-29 17:00:00,22.0,Resolved,Reboot
+INC100762,Network Outage,High,Security Team,Remote Site 1,2024-06-08 11:00:00,2024-06-11 09:00:00,70.0,Closed,Configuration Fix
+INC100763,Database Failure,Critical,Network Team,Remote Site 2,2024-03-01 10:00:00,2024-03-03 21:00:00,59.0,Resolved,Security Mitigation
+INC100764,Application Bug,High,Security Team,Remote Site 1,2024-07-03 04:00:00,2024-07-04 10:00:00,30.0,Resolved,Reboot
+INC100765,Application Bug,High,Security Team,Remote Site 1,2024-03-29 16:00:00,2024-03-30 12:00:00,20.0,Resolved,Configuration Fix
+INC100766,Network Outage,Low,Database Admin,Data Center B,2024-04-27 09:00:00,2024-04-28 22:00:00,37.0,Resolved,Hardware Replacement
+INC100767,Database Failure,Low,DevOps,Remote Site 1,2024-04-12 06:00:00,2024-04-12 08:00:00,2.0,Resolved,Hardware Replacement
+INC100768,Security Breach,Medium,IT Support,Remote Site 2,2024-05-07 12:00:00,2024-05-08 13:00:00,25.0,Resolved,Hardware Replacement
+INC100769,Database Failure,Critical,DevOps,Data Center B,2024-02-25 17:00:00,2024-02-27 19:00:00,50.0,Resolved,Hardware Replacement
+INC100770,Server Crash,High,IT Support,Remote Site 1,2024-08-01 10:00:00,2024-08-02 17:00:00,31.0,Resolved,Security Mitigation
+INC100771,Database Failure,High,Security Team,Remote Site 2,2024-10-03 01:00:00,2024-10-04 12:00:00,35.0,Resolved,Hardware Replacement
+INC100772,Server Crash,Low,Network Team,Data Center B,2024-04-08 20:00:00,2024-04-09 11:00:00,15.0,Resolved,Hardware Replacement
+INC100773,Database Failure,Critical,Security Team,Remote Site 2,2024-06-16 22:00:00,2024-06-17 23:00:00,25.0,Resolved,Configuration Fix
+INC100774,Network Outage,Medium,IT Support,Remote Site 2,2024-01-08 13:00:00,2024-01-09 13:00:00,24.0,Resolved,Reboot
+INC100775,Security Breach,High,Network Team,Remote Site 1,2024-09-05 04:00:00,2024-09-05 06:00:00,2.0,Resolved,Patch Applied
+INC100776,Network Outage,Medium,IT Support,Remote Site 1,2024-03-15 03:00:00,2024-03-16 23:00:00,44.0,Resolved,Hardware Replacement
+INC100777,Security Breach,Critical,Security Team,Remote Site 1,2024-08-25 21:00:00,2024-08-26 02:00:00,5.0,Resolved,Configuration Fix
+INC100778,Network Outage,Medium,IT Support,Head Office,2024-09-21 18:00:00,2024-09-23 21:00:00,51.0,Resolved,Reboot
+INC100779,Database Failure,Critical,Network Team,Data Center B,2024-11-01 17:00:00,2024-11-03 02:00:00,33.0,Resolved,Hardware Replacement
+INC100780,Network Outage,Low,Network Team,Remote Site 1,2024-09-20 05:00:00,2024-09-22 14:00:00,57.0,Resolved,Patch Applied
+INC100781,Network Outage,Medium,DevOps,Data Center A,2024-06-26 21:00:00,2024-06-28 00:00:00,27.0,Resolved,Hardware Replacement
+INC100782,Application Bug,High,Security Team,Data Center B,2024-08-02 18:00:00,2024-08-03 00:00:00,6.0,Resolved,Security Mitigation
+INC100783,Database Failure,Low,Security Team,Remote Site 1,2024-08-05 22:00:00,2024-08-07 13:00:00,39.0,Resolved,Patch Applied
+INC100784,Security Breach,Low,Network Team,Data Center A,2024-03-21 13:00:00,2024-03-23 21:00:00,56.0,Resolved,Configuration Fix
+INC100785,Network Outage,Medium,Security Team,Remote Site 2,2024-02-10 20:00:00,2024-02-12 23:00:00,51.0,Resolved,Patch Applied
+INC100786,Network Outage,Low,Database Admin,Remote Site 1,2024-08-22 23:00:00,2024-08-23 19:00:00,20.0,Resolved,Configuration Fix
+INC100787,Network Outage,Medium,Network Team,Remote Site 1,2024-02-01 04:00:00,2024-02-03 00:00:00,44.0,Resolved,Reboot
+INC100788,Network Outage,High,Network Team,Remote Site 2,2024-09-27 03:00:00,2024-09-27 17:00:00,14.0,Resolved,Patch Applied
+INC100789,Application Bug,Medium,Security Team,Remote Site 2,2024-09-26 03:00:00,2024-09-28 00:00:00,45.0,Resolved,Hardware Replacement
+INC100790,Server Crash,Low,DevOps,Head Office,2024-09-04 06:00:00,2024-09-05 00:00:00,18.0,Resolved,Configuration Fix
+INC100791,Network Outage,Critical,DevOps,Remote Site 2,2024-04-10 14:00:00,2024-04-13 12:00:00,70.0,Closed,Hardware Replacement
+INC100792,Server Crash,Medium,Database Admin,Head Office,2024-04-20 11:00:00,2024-04-22 23:00:00,60.0,Closed,Configuration Fix
+INC100793,Database Failure,Medium,IT Support,Remote Site 2,2024-02-22 21:00:00,2024-02-25 07:00:00,58.0,Resolved,Configuration Fix
+INC100794,Security Breach,High,DevOps,Data Center A,2024-09-21 20:00:00,2024-09-24 13:00:00,65.0,Closed,Hardware Replacement
+INC100795,Server Crash,Low,Database Admin,Head Office,2024-09-21 21:00:00,2024-09-23 04:00:00,31.0,Resolved,Configuration Fix
+INC100796,Network Outage,Critical,Network Team,Remote Site 2,2024-08-21 04:00:00,2024-08-23 20:00:00,64.0,Closed,Security Mitigation
+INC100797,Server Crash,High,Security Team,Remote Site 1,2024-08-06 18:00:00,2024-08-08 12:00:00,42.0,Resolved,Reboot
+INC100798,Network Outage,Low,IT Support,Data Center B,2024-03-01 23:00:00,2024-03-02 04:00:00,5.0,Resolved,Patch Applied
+INC100799,Network Outage,Critical,Network Team,Data Center A,2024-01-11 20:00:00,2024-01-13 22:00:00,50.0,Resolved,Hardware Replacement
+INC100800,Database Failure,High,IT Support,Head Office,2024-03-16 08:00:00,2024-03-16 18:00:00,10.0,Resolved,Reboot
+INC100801,Server Crash,Critical,IT Support,Remote Site 1,2024-09-30 09:00:00,2024-09-30 17:00:00,8.0,Resolved,Configuration Fix
+INC100802,Database Failure,Critical,Security Team,Data Center A,2024-10-08 03:00:00,2024-10-09 14:00:00,35.0,Resolved,Security Mitigation
+INC100803,Network Outage,Low,Security Team,Data Center A,2024-11-18 10:00:00,2024-11-19 14:00:00,28.0,Resolved,Security Mitigation
+INC100804,Network Outage,Low,Network Team,Remote Site 2,2024-05-11 12:00:00,2024-05-12 13:00:00,25.0,Resolved,Patch Applied
+INC100805,Database Failure,Medium,Database Admin,Data Center B,2024-07-09 14:00:00,2024-07-12 14:00:00,72.0,Closed,Hardware Replacement
+INC100806,Network Outage,High,DevOps,Remote Site 1,2024-10-28 08:00:00,2024-10-28 22:00:00,14.0,Resolved,Patch Applied
+INC100807,Server Crash,Critical,Database Admin,Head Office,2024-08-12 10:00:00,2024-08-13 07:00:00,21.0,Resolved,Security Mitigation
+INC100808,Database Failure,Critical,Security Team,Head Office,2024-07-06 18:00:00,2024-07-08 12:00:00,42.0,Resolved,Configuration Fix
+INC100809,Application Bug,Critical,Security Team,Remote Site 2,2024-03-23 03:00:00,2024-03-26 01:00:00,70.0,Closed,Patch Applied
+INC100810,Application Bug,High,Security Team,Remote Site 1,2024-06-01 17:00:00,2024-06-03 20:00:00,51.0,Resolved,Reboot
+INC100811,Network Outage,High,Database Admin,Data Center A,2024-06-25 16:00:00,2024-06-26 10:00:00,18.0,Resolved,Configuration Fix
+INC100812,Network Outage,High,Network Team,Data Center B,2024-10-19 02:00:00,2024-10-20 19:00:00,41.0,Resolved,Reboot
+INC100813,Security Breach,Medium,IT Support,Data Center A,2024-06-06 03:00:00,2024-06-08 01:00:00,46.0,Resolved,Patch Applied
+INC100814,Server Crash,High,Security Team,Remote Site 2,2024-03-26 06:00:00,2024-03-27 12:00:00,30.0,Resolved,Configuration Fix
+INC100815,Security Breach,Low,Database Admin,Remote Site 1,2024-07-13 05:00:00,2024-07-14 09:00:00,28.0,Resolved,Reboot
+INC100816,Security Breach,Critical,Network Team,Remote Site 1,2024-10-08 20:00:00,2024-10-09 09:00:00,13.0,Resolved,Security Mitigation
+INC100817,Security Breach,Low,Database Admin,Remote Site 1,2024-01-27 18:00:00,2024-01-28 02:00:00,8.0,Resolved,Configuration Fix
+INC100818,Security Breach,Critical,DevOps,Data Center A,2024-10-23 21:00:00,2024-10-25 03:00:00,30.0,Resolved,Security Mitigation
+INC100819,Network Outage,Critical,IT Support,Head Office,2024-06-27 23:00:00,2024-06-28 05:00:00,6.0,Resolved,Configuration Fix
+INC100820,Database Failure,Medium,Security Team,Remote Site 2,2024-08-26 04:00:00,2024-08-27 09:00:00,29.0,Resolved,Patch Applied
+INC100821,Network Outage,Critical,DevOps,Remote Site 2,2024-07-15 08:00:00,2024-07-18 01:00:00,65.0,Closed,Reboot
+INC100822,Server Crash,Critical,Security Team,Remote Site 1,2024-02-20 12:00:00,2024-02-21 05:00:00,17.0,Resolved,Configuration Fix
+INC100823,Network Outage,Critical,Database Admin,Data Center A,2024-07-06 02:00:00,2024-07-08 06:00:00,52.0,Resolved,Configuration Fix
+INC100824,Network Outage,Critical,Database Admin,Remote Site 1,2024-09-21 03:00:00,2024-09-21 20:00:00,17.0,Resolved,Patch Applied
+INC100825,Application Bug,Medium,DevOps,Remote Site 1,2024-08-10 15:00:00,2024-08-11 17:00:00,26.0,Resolved,Security Mitigation
+INC100826,Database Failure,Medium,Network Team,Data Center A,2024-03-31 21:00:00,2024-04-03 05:00:00,56.0,Resolved,Configuration Fix
+INC100827,Database Failure,Low,IT Support,Remote Site 1,2024-05-24 13:00:00,2024-05-26 12:00:00,47.0,Resolved,Configuration Fix
+INC100828,Server Crash,High,Security Team,Remote Site 2,2024-08-11 17:00:00,2024-08-11 21:00:00,4.0,Resolved,Configuration Fix
+INC100829,Server Crash,High,Database Admin,Remote Site 1,2024-07-31 17:00:00,2024-08-01 12:00:00,19.0,Resolved,Hardware Replacement
+INC100830,Network Outage,Medium,Network Team,Head Office,2024-02-23 05:00:00,2024-02-23 16:00:00,11.0,Resolved,Reboot
+INC100831,Network Outage,Medium,Database Admin,Data Center B,2024-10-23 12:00:00,2024-10-25 01:00:00,37.0,Resolved,Reboot
+INC100832,Security Breach,Low,Security Team,Remote Site 1,2024-06-09 19:00:00,2024-06-09 22:00:00,3.0,Resolved,Configuration Fix
+INC100833,Server Crash,Medium,Network Team,Remote Site 2,2024-06-27 14:00:00,2024-06-29 00:00:00,34.0,Resolved,Security Mitigation
+INC100834,Application Bug,Medium,IT Support,Remote Site 1,2024-07-17 23:00:00,2024-07-20 19:00:00,68.0,Closed,Reboot
+INC100835,Security Breach,Medium,IT Support,Head Office,2024-03-09 12:00:00,2024-03-10 23:00:00,35.0,Resolved,Reboot
+INC100836,Application Bug,Low,IT Support,Remote Site 1,2024-08-13 09:00:00,2024-08-14 20:00:00,35.0,Resolved,Configuration Fix
+INC100837,Network Outage,Low,Security Team,Remote Site 1,2024-03-19 21:00:00,2024-03-21 22:00:00,49.0,Resolved,Security Mitigation
+INC100838,Network Outage,High,DevOps,Remote Site 2,2024-06-30 10:00:00,2024-06-30 22:00:00,12.0,Resolved,Patch Applied
+INC100839,Server Crash,Critical,Database Admin,Data Center A,2024-01-14 13:00:00,2024-01-15 21:00:00,32.0,Resolved,Security Mitigation
+INC100840,Security Breach,High,DevOps,Remote Site 1,2024-09-11 02:00:00,2024-09-11 23:00:00,21.0,Resolved,Reboot
+INC100841,Security Breach,High,Security Team,Head Office,2024-03-21 14:00:00,2024-03-24 07:00:00,65.0,Closed,Configuration Fix
+INC100842,Network Outage,High,DevOps,Data Center A,2024-11-18 06:00:00,2024-11-21 06:00:00,72.0,Closed,Configuration Fix
+INC100843,Server Crash,Medium,Security Team,Remote Site 1,2024-08-12 05:00:00,2024-08-12 23:00:00,18.0,Resolved,Reboot
+INC100844,Application Bug,Medium,DevOps,Data Center B,2024-07-14 13:00:00,2024-07-15 09:00:00,20.0,Resolved,Hardware Replacement
+INC100845,Security Breach,High,DevOps,Remote Site 2,2024-02-14 23:00:00,2024-02-16 02:00:00,27.0,Resolved,Patch Applied
+INC100846,Database Failure,Medium,Network Team,Head Office,2024-08-23 00:00:00,2024-08-25 20:00:00,68.0,Closed,Patch Applied
+INC100847,Application Bug,Medium,Database Admin,Data Center B,2024-04-18 08:00:00,2024-04-18 17:00:00,9.0,Resolved,Security Mitigation
+INC100848,Database Failure,Low,Network Team,Head Office,2024-10-13 13:00:00,2024-10-14 08:00:00,19.0,Resolved,Reboot
+INC100849,Security Breach,Critical,DevOps,Head Office,2024-05-31 05:00:00,2024-06-01 17:00:00,36.0,Resolved,Patch Applied
+INC100850,Server Crash,Low,Network Team,Data Center B,2024-01-09 22:00:00,2024-01-11 09:00:00,35.0,Resolved,Security Mitigation
+INC100851,Database Failure,Medium,Database Admin,Data Center B,2024-03-19 19:00:00,2024-03-19 23:00:00,4.0,Resolved,Configuration Fix
+INC100852,Network Outage,Critical,Network Team,Remote Site 2,2024-10-15 19:00:00,2024-10-18 08:00:00,61.0,Closed,Configuration Fix
+INC100853,Server Crash,Critical,DevOps,Remote Site 1,2024-02-16 22:00:00,2024-02-17 19:00:00,21.0,Resolved,Patch Applied
+INC100854,Server Crash,Low,DevOps,Data Center A,2024-11-11 21:00:00,2024-11-13 08:00:00,35.0,Resolved,Hardware Replacement
+INC100855,Server Crash,Medium,Network Team,Data Center A,2024-03-01 10:00:00,2024-03-03 19:00:00,57.0,Resolved,Security Mitigation
+INC100856,Application Bug,High,DevOps,Data Center B,2024-05-25 22:00:00,2024-05-28 02:00:00,52.0,Resolved,Reboot
+INC100857,Database Failure,Critical,Security Team,Remote Site 1,2024-07-27 17:00:00,2024-07-30 14:00:00,69.0,Closed,Security Mitigation
+INC100858,Network Outage,Low,DevOps,Remote Site 1,2024-10-09 06:00:00,2024-10-09 12:00:00,6.0,Resolved,Patch Applied
+INC100859,Database Failure,Critical,IT Support,Remote Site 2,2024-05-12 05:00:00,2024-05-15 00:00:00,67.0,Closed,Reboot
+INC100860,Server Crash,High,DevOps,Remote Site 1,2024-10-28 20:00:00,2024-10-30 11:00:00,39.0,Resolved,Configuration Fix
+INC100861,Application Bug,Medium,DevOps,Head Office,2024-07-28 06:00:00,2024-07-28 13:00:00,7.0,Resolved,Security Mitigation
+INC100862,Server Crash,Critical,DevOps,Data Center A,2024-09-03 15:00:00,2024-09-06 08:00:00,65.0,Closed,Reboot
+INC100863,Server Crash,Medium,DevOps,Remote Site 1,2024-04-20 09:00:00,2024-04-22 19:00:00,58.0,Resolved,Reboot
+INC100864,Server Crash,Critical,Database Admin,Data Center B,2024-10-28 05:00:00,2024-10-30 16:00:00,59.0,Resolved,Reboot
+INC100865,Security Breach,High,Network Team,Data Center A,2024-02-01 03:00:00,2024-02-01 18:00:00,15.0,Resolved,Hardware Replacement
+INC100866,Security Breach,Low,Database Admin,Remote Site 1,2024-09-05 02:00:00,2024-09-07 20:00:00,66.0,Closed,Security Mitigation
+INC100867,Server Crash,Critical,Database Admin,Remote Site 1,2024-01-15 23:00:00,2024-01-16 21:00:00,22.0,Resolved,Configuration Fix
+INC100868,Database Failure,Medium,Network Team,Data Center B,2024-03-02 01:00:00,2024-03-02 08:00:00,7.0,Resolved,Hardware Replacement
+INC100869,Security Breach,High,DevOps,Head Office,2024-08-01 19:00:00,2024-08-02 19:00:00,24.0,Resolved,Reboot
+INC100870,Server Crash,Medium,IT Support,Remote Site 2,2024-09-18 06:00:00,2024-09-19 15:00:00,33.0,Resolved,Reboot
+INC100871,Application Bug,Critical,DevOps,Remote Site 2,2024-10-02 14:00:00,2024-10-02 15:00:00,1.0,Resolved,Security Mitigation
+INC100872,Application Bug,Medium,Network Team,Remote Site 2,2024-08-13 02:00:00,2024-08-15 15:00:00,61.0,Closed,Hardware Replacement
+INC100873,Application Bug,Critical,IT Support,Remote Site 2,2024-07-23 20:00:00,2024-07-23 21:00:00,1.0,Resolved,Patch Applied
+INC100874,Database Failure,High,Database Admin,Remote Site 2,2024-10-06 22:00:00,2024-10-08 01:00:00,27.0,Resolved,Reboot
+INC100875,Server Crash,Medium,IT Support,Head Office,2024-01-13 12:00:00,2024-01-14 07:00:00,19.0,Resolved,Reboot
+INC100876,Database Failure,High,Security Team,Data Center A,2024-01-17 17:00:00,2024-01-18 07:00:00,14.0,Resolved,Hardware Replacement
+INC100877,Server Crash,Medium,Security Team,Remote Site 2,2024-08-13 14:00:00,2024-08-16 14:00:00,72.0,Closed,Patch Applied
+INC100878,Application Bug,High,IT Support,Data Center A,2024-09-19 07:00:00,2024-09-20 22:00:00,39.0,Resolved,Configuration Fix
+INC100879,Security Breach,Critical,IT Support,Remote Site 1,2024-10-14 20:00:00,2024-10-17 19:00:00,71.0,Closed,Reboot
+INC100880,Security Breach,Critical,Network Team,Data Center A,2024-08-25 02:00:00,2024-08-26 14:00:00,36.0,Resolved,Configuration Fix
+INC100881,Database Failure,Critical,Database Admin,Data Center B,2024-08-25 12:00:00,2024-08-26 15:00:00,27.0,Resolved,Security Mitigation
+INC100882,Network Outage,Low,Database Admin,Remote Site 2,2024-01-30 22:00:00,2024-02-02 12:00:00,62.0,Closed,Security Mitigation
+INC100883,Security Breach,Critical,Database Admin,Head Office,2024-03-29 15:00:00,2024-04-01 11:00:00,68.0,Closed,Security Mitigation
+INC100884,Database Failure,High,Network Team,Remote Site 2,2024-07-11 01:00:00,2024-07-13 17:00:00,64.0,Closed,Security Mitigation
+INC100885,Application Bug,Critical,Network Team,Remote Site 2,2024-03-20 10:00:00,2024-03-22 00:00:00,38.0,Resolved,Patch Applied
+INC100886,Network Outage,Low,IT Support,Remote Site 1,2024-08-01 11:00:00,2024-08-02 03:00:00,16.0,Resolved,Patch Applied
+INC100887,Database Failure,Critical,DevOps,Data Center A,2024-04-23 22:00:00,2024-04-25 19:00:00,45.0,Resolved,Security Mitigation
+INC100888,Server Crash,Low,Network Team,Head Office,2024-03-27 20:00:00,2024-03-28 05:00:00,9.0,Resolved,Configuration Fix
+INC100889,Security Breach,High,IT Support,Data Center A,2024-08-22 02:00:00,2024-08-23 21:00:00,43.0,Resolved,Configuration Fix
+INC100890,Application Bug,Low,Network Team,Data Center B,2024-04-22 19:00:00,2024-04-24 15:00:00,44.0,Resolved,Hardware Replacement
+INC100891,Application Bug,Low,Network Team,Remote Site 1,2024-02-23 00:00:00,2024-02-25 11:00:00,59.0,Resolved,Security Mitigation
+INC100892,Security Breach,Critical,DevOps,Data Center A,2024-10-12 01:00:00,2024-10-14 20:00:00,67.0,Closed,Configuration Fix
+INC100893,Database Failure,High,Database Admin,Remote Site 2,2024-01-07 09:00:00,2024-01-08 12:00:00,27.0,Resolved,Security Mitigation
+INC100894,Security Breach,High,IT Support,Data Center B,2024-04-05 17:00:00,2024-04-05 21:00:00,4.0,Resolved,Configuration Fix
+INC100895,Application Bug,Medium,Database Admin,Remote Site 2,2024-05-12 23:00:00,2024-05-13 23:00:00,24.0,Resolved,Security Mitigation
+INC100896,Network Outage,High,Security Team,Data Center A,2024-04-02 16:00:00,2024-04-04 21:00:00,53.0,Resolved,Reboot
+INC100897,Application Bug,Medium,Security Team,Remote Site 1,2024-10-10 02:00:00,2024-10-11 17:00:00,39.0,Resolved,Patch Applied
+INC100898,Database Failure,High,Network Team,Data Center A,2024-05-07 17:00:00,2024-05-07 22:00:00,5.0,Resolved,Patch Applied
+INC100899,Network Outage,Critical,Database Admin,Data Center A,2024-09-29 17:00:00,2024-10-02 07:00:00,62.0,Closed,Security Mitigation
+INC100900,Server Crash,Medium,Security Team,Remote Site 1,2024-09-07 00:00:00,2024-09-09 20:00:00,68.0,Closed,Configuration Fix
+INC100901,Security Breach,Medium,IT Support,Remote Site 2,2024-08-18 23:00:00,2024-08-19 16:00:00,17.0,Resolved,Patch Applied
+INC100902,Network Outage,Critical,DevOps,Remote Site 2,2024-02-09 12:00:00,2024-02-09 13:00:00,1.0,Resolved,Configuration Fix
+INC100903,Network Outage,Low,Security Team,Remote Site 1,2024-10-30 12:00:00,2024-10-30 18:00:00,6.0,Resolved,Reboot
+INC100904,Database Failure,High,IT Support,Remote Site 2,2024-09-15 21:00:00,2024-09-17 13:00:00,40.0,Resolved,Patch Applied
+INC100905,Security Breach,Medium,Network Team,Head Office,2024-04-04 10:00:00,2024-04-07 07:00:00,69.0,Closed,Configuration Fix
+INC100906,Application Bug,Low,Security Team,Data Center B,2024-02-23 18:00:00,2024-02-25 06:00:00,36.0,Resolved,Reboot
+INC100907,Network Outage,Low,Network Team,Remote Site 2,2024-04-29 13:00:00,2024-05-02 12:00:00,71.0,Closed,Configuration Fix
+INC100908,Security Breach,Medium,Security Team,Remote Site 2,2024-03-24 13:00:00,2024-03-25 11:00:00,22.0,Resolved,Reboot
+INC100909,Security Breach,High,Database Admin,Remote Site 1,2024-01-18 07:00:00,2024-01-19 00:00:00,17.0,Resolved,Reboot
+INC100910,Application Bug,Low,IT Support,Remote Site 1,2024-01-19 08:00:00,2024-01-19 20:00:00,12.0,Resolved,Hardware Replacement
+INC100911,Application Bug,Medium,Database Admin,Remote Site 2,2024-08-02 20:00:00,2024-08-05 06:00:00,58.0,Resolved,Security Mitigation
+INC100912,Security Breach,High,Security Team,Data Center B,2024-08-31 08:00:00,2024-09-03 05:00:00,69.0,Closed,Reboot
+INC100913,Application Bug,Medium,IT Support,Remote Site 1,2024-02-03 04:00:00,2024-02-05 15:00:00,59.0,Resolved,Configuration Fix
+INC100914,Application Bug,Critical,Network Team,Data Center B,2024-02-19 01:00:00,2024-02-20 11:00:00,34.0,Resolved,Configuration Fix
+INC100915,Application Bug,Medium,Security Team,Head Office,2024-06-03 17:00:00,2024-06-06 08:00:00,63.0,Closed,Reboot
+INC100916,Network Outage,Critical,IT Support,Head Office,2024-06-12 09:00:00,2024-06-14 21:00:00,60.0,Closed,Patch Applied
+INC100917,Security Breach,High,Database Admin,Remote Site 2,2024-02-13 11:00:00,2024-02-16 05:00:00,66.0,Closed,Reboot
+INC100918,Application Bug,Low,Security Team,Remote Site 2,2024-08-09 16:00:00,2024-08-10 02:00:00,10.0,Resolved,Configuration Fix
+INC100919,Database Failure,Critical,DevOps,Remote Site 2,2024-05-21 02:00:00,2024-05-22 09:00:00,31.0,Resolved,Security Mitigation
+INC100920,Server Crash,Medium,DevOps,Remote Site 1,2024-01-23 13:00:00,2024-01-25 09:00:00,44.0,Resolved,Patch Applied
+INC100921,Database Failure,Critical,DevOps,Remote Site 2,2024-09-25 17:00:00,2024-09-27 13:00:00,44.0,Resolved,Security Mitigation
+INC100922,Server Crash,Medium,IT Support,Remote Site 2,2024-10-12 14:00:00,2024-10-15 05:00:00,63.0,Closed,Reboot
+INC100923,Database Failure,Critical,Security Team,Remote Site 2,2024-02-03 07:00:00,2024-02-05 16:00:00,57.0,Resolved,Patch Applied
+INC100924,Security Breach,Critical,IT Support,Remote Site 2,2024-02-07 02:00:00,2024-02-09 03:00:00,49.0,Resolved,Configuration Fix
+INC100925,Application Bug,Low,IT Support,Data Center B,2024-10-05 21:00:00,2024-10-06 15:00:00,18.0,Resolved,Security Mitigation
+INC100926,Network Outage,Medium,Network Team,Remote Site 1,2024-06-30 08:00:00,2024-07-01 22:00:00,38.0,Resolved,Hardware Replacement
+INC100927,Database Failure,Critical,Network Team,Data Center B,2024-08-20 14:00:00,2024-08-22 07:00:00,41.0,Resolved,Configuration Fix
+INC100928,Database Failure,High,DevOps,Head Office,2024-01-31 11:00:00,2024-01-31 13:00:00,2.0,Resolved,Security Mitigation
+INC100929,Database Failure,Critical,Network Team,Head Office,2024-01-22 07:00:00,2024-01-24 07:00:00,48.0,Resolved,Security Mitigation
+INC100930,Network Outage,Low,Database Admin,Head Office,2024-02-07 10:00:00,2024-02-08 23:00:00,37.0,Resolved,Reboot
+INC100931,Server Crash,Critical,Database Admin,Remote Site 1,2024-08-01 09:00:00,2024-08-03 02:00:00,41.0,Resolved,Hardware Replacement
+INC100932,Application Bug,Critical,DevOps,Remote Site 2,2024-03-13 02:00:00,2024-03-14 01:00:00,23.0,Resolved,Hardware Replacement
+INC100933,Server Crash,Medium,Database Admin,Remote Site 1,2024-10-14 20:00:00,2024-10-16 19:00:00,47.0,Resolved,Hardware Replacement
+INC100934,Server Crash,High,Network Team,Data Center B,2024-01-04 23:00:00,2024-01-05 09:00:00,10.0,Resolved,Reboot
+INC100935,Server Crash,Critical,DevOps,Data Center B,2024-01-29 21:00:00,2024-01-30 15:00:00,18.0,Resolved,Hardware Replacement
+INC100936,Application Bug,Critical,Database Admin,Data Center B,2024-06-04 02:00:00,2024-06-06 20:00:00,66.0,Closed,Hardware Replacement
+INC100937,Database Failure,Critical,DevOps,Head Office,2024-03-18 01:00:00,2024-03-19 01:00:00,24.0,Resolved,Hardware Replacement
+INC100938,Database Failure,Low,Database Admin,Remote Site 1,2024-10-16 01:00:00,2024-10-17 08:00:00,31.0,Resolved,Security Mitigation
+INC100939,Security Breach,Critical,Database Admin,Remote Site 2,2024-05-05 06:00:00,2024-05-05 11:00:00,5.0,Resolved,Reboot
+INC100940,Database Failure,Critical,Security Team,Data Center A,2024-07-17 01:00:00,2024-07-19 15:00:00,62.0,Closed,Reboot
+INC100941,Server Crash,High,DevOps,Remote Site 2,2024-01-27 16:00:00,2024-01-30 11:00:00,67.0,Closed,Security Mitigation
+INC100942,Network Outage,Medium,DevOps,Data Center A,2024-08-21 11:00:00,2024-08-24 09:00:00,70.0,Closed,Security Mitigation
+INC100943,Security Breach,Low,Security Team,Remote Site 2,2024-09-22 17:00:00,2024-09-22 19:00:00,2.0,Resolved,Hardware Replacement
+INC100944,Application Bug,Critical,Database Admin,Head Office,2024-05-23 16:00:00,2024-05-25 14:00:00,46.0,Resolved,Configuration Fix
+INC100945,Security Breach,Medium,IT Support,Remote Site 2,2024-09-12 19:00:00,2024-09-14 10:00:00,39.0,Resolved,Security Mitigation
+INC100946,Security Breach,Low,DevOps,Remote Site 2,2024-02-27 17:00:00,2024-02-28 00:00:00,7.0,Resolved,Configuration Fix
+INC100947,Database Failure,Low,Security Team,Remote Site 1,2024-01-29 03:00:00,2024-01-29 20:00:00,17.0,Resolved,Security Mitigation
+INC100948,Network Outage,High,Security Team,Data Center B,2024-07-29 04:00:00,2024-07-30 16:00:00,36.0,Resolved,Configuration Fix
+INC100949,Security Breach,Low,IT Support,Remote Site 2,2024-02-29 14:00:00,2024-03-01 10:00:00,20.0,Resolved,Hardware Replacement
+INC100950,Security Breach,Medium,Security Team,Data Center B,2024-06-14 12:00:00,2024-06-15 12:00:00,24.0,Resolved,Security Mitigation
+INC100951,Network Outage,High,IT Support,Data Center B,2024-07-22 06:00:00,2024-07-23 02:00:00,20.0,Resolved,Hardware Replacement
+INC100952,Application Bug,Critical,Network Team,Remote Site 1,2024-09-04 19:00:00,2024-09-05 17:00:00,22.0,Resolved,Patch Applied
+INC100953,Database Failure,High,IT Support,Head Office,2024-09-14 20:00:00,2024-09-15 11:00:00,15.0,Resolved,Reboot
+INC100954,Server Crash,Critical,DevOps,Remote Site 1,2024-04-12 20:00:00,2024-04-15 09:00:00,61.0,Closed,Security Mitigation
+INC100955,Server Crash,Critical,DevOps,Remote Site 1,2024-03-30 15:00:00,2024-03-31 10:00:00,19.0,Resolved,Security Mitigation
+INC100956,Application Bug,Low,Security Team,Remote Site 1,2024-05-10 09:00:00,2024-05-12 02:00:00,41.0,Resolved,Security Mitigation
+INC100957,Network Outage,Low,Database Admin,Head Office,2024-11-22 09:00:00,2024-11-24 17:00:00,56.0,Resolved,Security Mitigation
+INC100958,Security Breach,High,Security Team,Head Office,2024-09-30 20:00:00,2024-10-01 09:00:00,13.0,Resolved,Configuration Fix
+INC100959,Database Failure,Critical,DevOps,Data Center B,2024-09-07 15:00:00,2024-09-08 16:00:00,25.0,Resolved,Security Mitigation
+INC100960,Security Breach,Medium,Security Team,Remote Site 2,2024-01-04 14:00:00,2024-01-04 16:00:00,2.0,Resolved,Reboot
+INC100961,Network Outage,Critical,IT Support,Remote Site 2,2024-02-05 11:00:00,2024-02-07 21:00:00,58.0,Resolved,Configuration Fix
+INC100962,Server Crash,High,Security Team,Data Center B,2024-01-12 14:00:00,2024-01-12 18:00:00,4.0,Resolved,Security Mitigation
+INC100963,Network Outage,Low,Database Admin,Data Center B,2024-11-20 10:00:00,2024-11-21 02:00:00,16.0,Resolved,Reboot
+INC100964,Network Outage,Medium,DevOps,Remote Site 2,2024-10-01 03:00:00,2024-10-02 03:00:00,24.0,Resolved,Reboot
+INC100965,Server Crash,High,Security Team,Remote Site 1,2024-08-13 10:00:00,2024-08-13 20:00:00,10.0,Resolved,Hardware Replacement
+INC100966,Security Breach,Critical,Security Team,Head Office,2024-02-25 06:00:00,2024-02-25 16:00:00,10.0,Resolved,Configuration Fix
+INC100967,Network Outage,Critical,DevOps,Head Office,2024-01-21 12:00:00,2024-01-22 22:00:00,34.0,Resolved,Configuration Fix
+INC100968,Server Crash,Critical,IT Support,Remote Site 1,2024-11-12 22:00:00,2024-11-14 00:00:00,26.0,Resolved,Security Mitigation
+INC100969,Application Bug,Medium,DevOps,Data Center A,2024-02-19 02:00:00,2024-02-22 00:00:00,70.0,Closed,Hardware Replacement
+INC100970,Server Crash,Low,DevOps,Head Office,2024-02-05 06:00:00,2024-02-05 11:00:00,5.0,Resolved,Reboot
+INC100971,Network Outage,High,DevOps,Data Center A,2024-11-02 00:00:00,2024-11-04 16:00:00,64.0,Closed,Patch Applied
+INC100972,Network Outage,Low,DevOps,Head Office,2024-02-21 17:00:00,2024-02-23 12:00:00,43.0,Resolved,Hardware Replacement
+INC100973,Database Failure,Low,Database Admin,Remote Site 1,2024-06-12 04:00:00,2024-06-14 12:00:00,56.0,Resolved,Hardware Replacement
+INC100974,Network Outage,Medium,IT Support,Remote Site 1,2024-11-21 16:00:00,2024-11-24 06:00:00,62.0,Closed,Reboot
+INC100975,Database Failure,High,Security Team,Head Office,2024-05-16 17:00:00,2024-05-17 01:00:00,8.0,Resolved,Reboot
+INC100976,Security Breach,High,IT Support,Remote Site 1,2024-09-16 13:00:00,2024-09-18 03:00:00,38.0,Resolved,Patch Applied
+INC100977,Server Crash,Low,DevOps,Data Center B,2024-04-12 00:00:00,2024-04-14 02:00:00,50.0,Resolved,Reboot
+INC100978,Security Breach,Critical,IT Support,Remote Site 1,2024-09-07 23:00:00,2024-09-09 00:00:00,25.0,Resolved,Patch Applied
+INC100979,Network Outage,Medium,IT Support,Remote Site 2,2024-03-22 09:00:00,2024-03-25 00:00:00,63.0,Closed,Hardware Replacement
+INC100980,Network Outage,High,DevOps,Remote Site 2,2024-11-25 08:00:00,2024-11-27 18:00:00,58.0,Resolved,Reboot
+INC100981,Network Outage,High,IT Support,Head Office,2024-09-25 21:00:00,2024-09-26 03:00:00,6.0,Resolved,Hardware Replacement
+INC100982,Network Outage,Medium,Database Admin,Remote Site 1,2024-11-16 21:00:00,2024-11-19 18:00:00,69.0,Closed,Patch Applied
+INC100983,Database Failure,Medium,IT Support,Data Center A,2024-09-08 00:00:00,2024-09-08 19:00:00,19.0,Resolved,Hardware Replacement
+INC100984,Network Outage,Critical,Database Admin,Data Center A,2024-03-23 20:00:00,2024-03-24 13:00:00,17.0,Resolved,Reboot
+INC100985,Server Crash,Low,Security Team,Data Center A,2024-06-04 17:00:00,2024-06-05 15:00:00,22.0,Resolved,Security Mitigation
+INC100986,Network Outage,Low,IT Support,Remote Site 1,2024-07-22 02:00:00,2024-07-23 07:00:00,29.0,Resolved,Reboot
+INC100987,Server Crash,Critical,Security Team,Remote Site 1,2024-04-20 16:00:00,2024-04-21 08:00:00,16.0,Resolved,Security Mitigation
+INC100988,Database Failure,Medium,Security Team,Data Center B,2024-09-17 20:00:00,2024-09-18 02:00:00,6.0,Resolved,Security Mitigation
+INC100989,Server Crash,High,IT Support,Data Center A,2024-04-03 11:00:00,2024-04-04 06:00:00,19.0,Resolved,Hardware Replacement
+INC100990,Server Crash,High,Database Admin,Data Center B,2024-05-29 17:00:00,2024-05-31 01:00:00,32.0,Resolved,Security Mitigation
+INC100991,Network Outage,Medium,IT Support,Remote Site 2,2024-05-08 09:00:00,2024-05-09 06:00:00,21.0,Resolved,Reboot
+INC100992,Application Bug,Low,IT Support,Data Center A,2024-03-02 05:00:00,2024-03-02 17:00:00,12.0,Resolved,Security Mitigation
+INC100993,Security Breach,Critical,DevOps,Data Center B,2024-03-11 08:00:00,2024-03-12 03:00:00,19.0,Resolved,Configuration Fix
+INC100994,Database Failure,Critical,DevOps,Data Center B,2024-11-16 04:00:00,2024-11-17 03:00:00,23.0,Resolved,Security Mitigation
+INC100995,Network Outage,Medium,DevOps,Remote Site 2,2024-11-20 08:00:00,2024-11-20 20:00:00,12.0,Resolved,Configuration Fix
+INC100996,Security Breach,Critical,IT Support,Remote Site 2,2024-03-21 10:00:00,2024-03-22 11:00:00,25.0,Resolved,Reboot
+INC100997,Database Failure,Low,Database Admin,Head Office,2024-10-21 11:00:00,2024-10-24 09:00:00,70.0,Closed,Security Mitigation
+INC100998,Server Crash,Critical,Network Team,Head Office,2024-01-19 02:00:00,2024-01-20 03:00:00,25.0,Resolved,Reboot
+INC100999,Server Crash,Critical,DevOps,Data Center B,2024-02-24 12:00:00,2024-02-24 18:00:00,6.0,Resolved,Reboot
+INC101000,Security Breach,High,Network Team,Remote Site 1,2024-03-26 19:00:00,2024-03-28 14:00:00,43.0,Resolved,Security Mitigation
+INC101001,Application Bug,Low,IT Support,Data Center A,2024-11-11 16:00:00,2024-11-14 13:00:00,69.0,Closed,Patch Applied
+INC101002,Server Crash,Low,DevOps,Remote Site 2,2024-02-09 14:00:00,2024-02-10 00:00:00,10.0,Resolved,Patch Applied
+INC101003,Application Bug,High,DevOps,Data Center B,2024-09-12 00:00:00,2024-09-13 18:00:00,42.0,Resolved,Patch Applied
+INC101004,Network Outage,High,Network Team,Data Center A,2024-03-21 22:00:00,2024-03-24 03:00:00,53.0,Resolved,Patch Applied
+INC101005,Application Bug,Medium,IT Support,Remote Site 1,2024-07-18 17:00:00,2024-07-21 08:00:00,63.0,Closed,Reboot
+INC101006,Application Bug,Medium,Network Team,Remote Site 2,2024-06-04 07:00:00,2024-06-05 06:00:00,23.0,Resolved,Hardware Replacement
+INC101007,Security Breach,Medium,DevOps,Data Center B,2024-08-03 17:00:00,2024-08-05 15:00:00,46.0,Resolved,Configuration Fix
+INC101008,Server Crash,High,Network Team,Data Center A,2024-08-24 06:00:00,2024-08-24 14:00:00,8.0,Resolved,Configuration Fix
+INC101009,Server Crash,Low,DevOps,Remote Site 1,2024-05-22 18:00:00,2024-05-23 16:00:00,22.0,Resolved,Configuration Fix
+INC101010,Server Crash,High,Database Admin,Data Center B,2024-09-26 11:00:00,2024-09-27 09:00:00,22.0,Resolved,Security Mitigation
+INC101011,Database Failure,Medium,IT Support,Remote Site 1,2024-10-19 12:00:00,2024-10-22 07:00:00,67.0,Closed,Hardware Replacement
+INC101012,Server Crash,Critical,DevOps,Head Office,2024-01-05 22:00:00,2024-01-08 05:00:00,55.0,Resolved,Patch Applied
+INC101013,Server Crash,High,DevOps,Remote Site 2,2024-03-16 21:00:00,2024-03-17 17:00:00,20.0,Resolved,Security Mitigation
+INC101014,Network Outage,Critical,IT Support,Data Center A,2024-06-09 15:00:00,2024-06-12 08:00:00,65.0,Closed,Reboot
+INC101015,Application Bug,Critical,DevOps,Data Center A,2024-06-03 10:00:00,2024-06-06 02:00:00,64.0,Closed,Patch Applied
+INC101016,Network Outage,Low,DevOps,Data Center B,2024-02-15 07:00:00,2024-02-17 05:00:00,46.0,Resolved,Configuration Fix
+INC101017,Server Crash,Low,IT Support,Remote Site 1,2024-08-16 08:00:00,2024-08-18 00:00:00,40.0,Resolved,Patch Applied
+INC101018,Application Bug,Low,DevOps,Remote Site 1,2024-09-20 10:00:00,2024-09-21 04:00:00,18.0,Resolved,Hardware Replacement
+INC101019,Server Crash,High,DevOps,Data Center A,2024-10-20 16:00:00,2024-10-21 02:00:00,10.0,Resolved,Hardware Replacement
+INC101020,Security Breach,Low,Security Team,Remote Site 1,2024-09-13 23:00:00,2024-09-15 10:00:00,35.0,Resolved,Security Mitigation
+INC101021,Database Failure,Medium,IT Support,Remote Site 2,2024-10-27 15:00:00,2024-10-29 10:00:00,43.0,Resolved,Reboot
+INC101022,Database Failure,High,IT Support,Data Center A,2024-05-10 17:00:00,2024-05-12 16:00:00,47.0,Resolved,Hardware Replacement
+INC101023,Database Failure,Low,Security Team,Head Office,2024-02-29 19:00:00,2024-03-03 19:00:00,72.0,Closed,Reboot
+INC101024,Database Failure,Medium,Network Team,Head Office,2024-03-22 10:00:00,2024-03-25 08:00:00,70.0,Closed,Reboot
+INC101025,Application Bug,Medium,Network Team,Head Office,2024-04-30 09:00:00,2024-05-01 20:00:00,35.0,Resolved,Security Mitigation
+INC101026,Application Bug,High,IT Support,Data Center A,2024-05-07 06:00:00,2024-05-09 03:00:00,45.0,Resolved,Hardware Replacement
+INC101027,Application Bug,Low,DevOps,Remote Site 2,2024-08-19 12:00:00,2024-08-22 09:00:00,69.0,Closed,Configuration Fix
+INC101028,Application Bug,High,IT Support,Data Center B,2024-10-31 10:00:00,2024-11-02 21:00:00,59.0,Resolved,Reboot
+INC101029,Network Outage,Critical,Network Team,Head Office,2024-11-23 02:00:00,2024-11-23 12:00:00,10.0,Resolved,Reboot
+INC101030,Server Crash,High,IT Support,Data Center B,2024-06-18 09:00:00,2024-06-19 05:00:00,20.0,Resolved,Patch Applied
+INC101031,Database Failure,Low,Security Team,Remote Site 1,2024-11-26 22:00:00,2024-11-29 20:00:00,70.0,Closed,Patch Applied
+INC101032,Application Bug,High,DevOps,Remote Site 1,2024-09-08 19:00:00,2024-09-08 22:00:00,3.0,Resolved,Configuration Fix
+INC101033,Server Crash,Low,IT Support,Data Center B,2024-10-11 23:00:00,2024-10-14 18:00:00,67.0,Closed,Configuration Fix
+INC101034,Application Bug,High,Security Team,Remote Site 1,2024-07-21 12:00:00,2024-07-24 08:00:00,68.0,Closed,Security Mitigation
+INC101035,Application Bug,Critical,Security Team,Remote Site 2,2024-02-15 00:00:00,2024-02-16 16:00:00,40.0,Resolved,Patch Applied
+INC101036,Security Breach,Medium,DevOps,Head Office,2024-11-27 08:00:00,2024-11-28 21:00:00,37.0,Resolved,Reboot
+INC101037,Server Crash,High,Security Team,Remote Site 1,2024-11-22 09:00:00,2024-11-23 07:00:00,22.0,Resolved,Security Mitigation
+INC101038,Server Crash,High,Network Team,Data Center B,2024-10-13 11:00:00,2024-10-14 07:00:00,20.0,Resolved,Patch Applied
+INC101039,Server Crash,Low,IT Support,Head Office,2024-07-15 02:00:00,2024-07-15 19:00:00,17.0,Resolved,Hardware Replacement
+INC101040,Security Breach,High,Network Team,Data Center B,2024-07-10 23:00:00,2024-07-11 04:00:00,5.0,Resolved,Configuration Fix
+INC101041,Security Breach,Medium,Security Team,Remote Site 1,2024-07-03 06:00:00,2024-07-04 03:00:00,21.0,Resolved,Security Mitigation
+INC101042,Security Breach,Low,IT Support,Remote Site 1,2024-11-13 19:00:00,2024-11-16 11:00:00,64.0,Closed,Patch Applied
+INC101043,Application Bug,High,Network Team,Data Center A,2024-11-27 03:00:00,2024-11-30 01:00:00,70.0,Closed,Security Mitigation
+INC101044,Security Breach,High,DevOps,Head Office,2024-11-26 23:00:00,2024-11-27 18:00:00,19.0,Resolved,Security Mitigation
+INC101045,Application Bug,High,IT Support,Remote Site 1,2024-11-03 06:00:00,2024-11-03 12:00:00,6.0,Resolved,Patch Applied
+INC101046,Database Failure,Low,Security Team,Data Center A,2024-05-17 02:00:00,2024-05-18 07:00:00,29.0,Resolved,Hardware Replacement
+INC101047,Security Breach,Low,Security Team,Data Center A,2024-07-26 13:00:00,2024-07-27 14:00:00,25.0,Resolved,Security Mitigation
+INC101048,Database Failure,Medium,Security Team,Data Center B,2024-01-08 16:00:00,2024-01-09 03:00:00,11.0,Resolved,Security Mitigation
+INC101049,Application Bug,Low,Database Admin,Remote Site 1,2024-03-07 08:00:00,2024-03-09 23:00:00,63.0,Closed,Configuration Fix
+INC101050,Database Failure,Low,Security Team,Remote Site 1,2024-02-20 11:00:00,2024-02-22 18:00:00,55.0,Resolved,Configuration Fix
+INC101051,Application Bug,High,IT Support,Head Office,2024-04-27 17:00:00,2024-04-29 14:00:00,45.0,Resolved,Configuration Fix
+INC101052,Application Bug,Low,Network Team,Remote Site 1,2024-09-10 02:00:00,2024-09-12 08:00:00,54.0,Resolved,Hardware Replacement
+INC101053,Security Breach,Medium,DevOps,Remote Site 1,2024-02-17 15:00:00,2024-02-18 03:00:00,12.0,Resolved,Patch Applied
+INC101054,Server Crash,High,DevOps,Remote Site 2,2024-04-24 11:00:00,2024-04-24 20:00:00,9.0,Resolved,Security Mitigation
+INC101055,Application Bug,Low,IT Support,Remote Site 1,2024-08-06 01:00:00,2024-08-07 12:00:00,35.0,Resolved,Hardware Replacement
+INC101056,Server Crash,Critical,Database Admin,Data Center B,2024-03-09 00:00:00,2024-03-10 00:00:00,24.0,Resolved,Hardware Replacement
+INC101057,Security Breach,Critical,IT Support,Head Office,2024-10-11 20:00:00,2024-10-13 11:00:00,39.0,Resolved,Hardware Replacement
+INC101058,Database Failure,Critical,Network Team,Data Center A,2024-09-27 01:00:00,2024-09-27 02:00:00,1.0,Resolved,Patch Applied
+INC101059,Security Breach,High,DevOps,Data Center A,2024-08-11 04:00:00,2024-08-12 17:00:00,37.0,Resolved,Hardware Replacement
+INC101060,Server Crash,Critical,Network Team,Data Center A,2024-02-10 17:00:00,2024-02-12 05:00:00,36.0,Resolved,Hardware Replacement
+INC101061,Network Outage,High,Database Admin,Remote Site 1,2024-07-12 01:00:00,2024-07-14 09:00:00,56.0,Resolved,Configuration Fix
+INC101062,Application Bug,Low,Security Team,Remote Site 2,2024-09-07 04:00:00,2024-09-07 07:00:00,3.0,Resolved,Configuration Fix
+INC101063,Server Crash,Low,Network Team,Head Office,2024-06-06 08:00:00,2024-06-07 02:00:00,18.0,Resolved,Configuration Fix
+INC101064,Server Crash,Low,Security Team,Head Office,2024-05-23 04:00:00,2024-05-25 02:00:00,46.0,Resolved,Reboot
+INC101065,Security Breach,High,Database Admin,Data Center A,2024-06-24 09:00:00,2024-06-25 10:00:00,25.0,Resolved,Patch Applied
+INC101066,Network Outage,Medium,Database Admin,Head Office,2024-10-24 19:00:00,2024-10-26 12:00:00,41.0,Resolved,Configuration Fix
+INC101067,Security Breach,High,IT Support,Remote Site 2,2024-07-16 23:00:00,2024-07-18 21:00:00,46.0,Resolved,Patch Applied
+INC101068,Network Outage,Medium,Database Admin,Head Office,2024-05-07 07:00:00,2024-05-09 22:00:00,63.0,Closed,Hardware Replacement
+INC101069,Security Breach,Medium,IT Support,Data Center B,2024-02-22 18:00:00,2024-02-25 11:00:00,65.0,Closed,Patch Applied
+INC101070,Server Crash,Low,DevOps,Remote Site 1,2024-11-08 16:00:00,2024-11-09 02:00:00,10.0,Resolved,Reboot
+INC101071,Server Crash,Low,DevOps,Head Office,2024-04-16 08:00:00,2024-04-18 07:00:00,47.0,Resolved,Patch Applied
+INC101072,Application Bug,High,Network Team,Head Office,2024-01-10 19:00:00,2024-01-11 11:00:00,16.0,Resolved,Patch Applied
+INC101073,Server Crash,Medium,Network Team,Head Office,2024-02-12 18:00:00,2024-02-13 21:00:00,27.0,Resolved,Patch Applied
+INC101074,Network Outage,Critical,IT Support,Data Center A,2024-01-07 10:00:00,2024-01-10 00:00:00,62.0,Closed,Hardware Replacement
+INC101075,Network Outage,Medium,IT Support,Data Center A,2024-09-27 16:00:00,2024-09-30 10:00:00,66.0,Closed,Security Mitigation
+INC101076,Network Outage,Critical,IT Support,Head Office,2024-01-15 18:00:00,2024-01-16 03:00:00,9.0,Resolved,Configuration Fix
+INC101077,Network Outage,Low,IT Support,Remote Site 2,2024-03-11 02:00:00,2024-03-12 04:00:00,26.0,Resolved,Patch Applied
+INC101078,Security Breach,Low,IT Support,Data Center B,2024-10-15 17:00:00,2024-10-17 05:00:00,36.0,Resolved,Security Mitigation
+INC101079,Security Breach,High,Network Team,Remote Site 2,2024-09-23 12:00:00,2024-09-24 19:00:00,31.0,Resolved,Security Mitigation
+INC101080,Database Failure,Low,IT Support,Remote Site 2,2024-09-17 12:00:00,2024-09-17 14:00:00,2.0,Resolved,Security Mitigation
+INC101081,Server Crash,Medium,Security Team,Data Center B,2024-11-03 18:00:00,2024-11-06 15:00:00,69.0,Closed,Reboot
+INC101082,Network Outage,Medium,Database Admin,Remote Site 1,2024-05-05 02:00:00,2024-05-06 02:00:00,24.0,Resolved,Hardware Replacement
+INC101083,Network Outage,Medium,Security Team,Remote Site 1,2024-05-24 18:00:00,2024-05-25 22:00:00,28.0,Resolved,Security Mitigation
+INC101084,Server Crash,Critical,IT Support,Head Office,2024-02-12 04:00:00,2024-02-14 16:00:00,60.0,Closed,Reboot
+INC101085,Database Failure,Medium,DevOps,Head Office,2024-08-28 13:00:00,2024-08-30 02:00:00,37.0,Resolved,Security Mitigation
+INC101086,Network Outage,Low,Security Team,Remote Site 1,2024-02-09 11:00:00,2024-02-11 13:00:00,50.0,Resolved,Configuration Fix
+INC101087,Application Bug,High,DevOps,Data Center B,2024-07-08 01:00:00,2024-07-10 06:00:00,53.0,Resolved,Configuration Fix
+INC101088,Application Bug,Medium,IT Support,Remote Site 1,2024-11-16 12:00:00,2024-11-18 12:00:00,48.0,Resolved,Patch Applied
+INC101089,Network Outage,Critical,IT Support,Remote Site 1,2024-05-29 12:00:00,2024-06-01 07:00:00,67.0,Closed,Reboot
+INC101090,Network Outage,Medium,DevOps,Remote Site 1,2024-08-25 05:00:00,2024-08-25 19:00:00,14.0,Resolved,Patch Applied
+INC101091,Network Outage,High,Network Team,Head Office,2024-03-09 08:00:00,2024-03-11 12:00:00,52.0,Resolved,Reboot
+INC101092,Server Crash,Critical,DevOps,Head Office,2024-09-18 01:00:00,2024-09-19 12:00:00,35.0,Resolved,Hardware Replacement
+INC101093,Security Breach,Critical,Database Admin,Remote Site 1,2024-06-14 09:00:00,2024-06-17 03:00:00,66.0,Closed,Configuration Fix
+INC101094,Server Crash,Critical,IT Support,Data Center A,2024-03-26 13:00:00,2024-03-29 04:00:00,63.0,Closed,Hardware Replacement
+INC101095,Server Crash,Medium,IT Support,Data Center A,2024-09-08 20:00:00,2024-09-09 03:00:00,7.0,Resolved,Reboot
+INC101096,Application Bug,Low,Network Team,Remote Site 1,2024-07-25 08:00:00,2024-07-27 02:00:00,42.0,Resolved,Patch Applied
+INC101097,Security Breach,Low,IT Support,Remote Site 2,2024-09-18 23:00:00,2024-09-21 15:00:00,64.0,Closed,Hardware Replacement
+INC101098,Server Crash,High,DevOps,Remote Site 1,2024-06-21 07:00:00,2024-06-22 17:00:00,34.0,Resolved,Security Mitigation
+INC101099,Security Breach,Low,IT Support,Remote Site 1,2024-10-27 09:00:00,2024-10-28 01:00:00,16.0,Resolved,Hardware Replacement
+INC101100,Application Bug,High,DevOps,Remote Site 1,2024-06-05 21:00:00,2024-06-06 02:00:00,5.0,Resolved,Reboot
+INC101101,Server Crash,High,Network Team,Remote Site 1,2024-05-27 00:00:00,2024-05-27 18:00:00,18.0,Resolved,Configuration Fix
+INC101102,Application Bug,Critical,IT Support,Remote Site 2,2024-08-18 09:00:00,2024-08-21 00:00:00,63.0,Closed,Security Mitigation
+INC101103,Database Failure,Critical,DevOps,Remote Site 2,2024-10-18 14:00:00,2024-10-19 11:00:00,21.0,Resolved,Security Mitigation
+INC101104,Network Outage,Critical,Security Team,Remote Site 1,2024-07-20 17:00:00,2024-07-22 18:00:00,49.0,Resolved,Security Mitigation
+INC101105,Security Breach,High,Security Team,Data Center A,2024-01-10 14:00:00,2024-01-10 20:00:00,6.0,Resolved,Patch Applied
+INC101106,Security Breach,High,Database Admin,Data Center A,2024-09-18 04:00:00,2024-09-20 00:00:00,44.0,Resolved,Hardware Replacement
+INC101107,Network Outage,Critical,Security Team,Head Office,2024-05-20 14:00:00,2024-05-22 11:00:00,45.0,Resolved,Reboot
+INC101108,Server Crash,Medium,Network Team,Head Office,2024-07-21 06:00:00,2024-07-21 17:00:00,11.0,Resolved,Reboot
+INC101109,Security Breach,Low,Security Team,Data Center B,2024-01-07 17:00:00,2024-01-10 14:00:00,69.0,Closed,Configuration Fix
+INC101110,Network Outage,Critical,DevOps,Remote Site 2,2024-06-24 16:00:00,2024-06-26 22:00:00,54.0,Resolved,Configuration Fix
+INC101111,Network Outage,Critical,Database Admin,Data Center A,2024-04-18 00:00:00,2024-04-20 01:00:00,49.0,Resolved,Security Mitigation
+INC101112,Application Bug,High,Database Admin,Data Center A,2024-10-02 21:00:00,2024-10-05 12:00:00,63.0,Closed,Reboot
+INC101113,Server Crash,High,DevOps,Remote Site 2,2024-10-03 23:00:00,2024-10-05 19:00:00,44.0,Resolved,Patch Applied
+INC101114,Database Failure,High,Security Team,Remote Site 1,2024-03-09 20:00:00,2024-03-12 12:00:00,64.0,Closed,Reboot
+INC101115,Database Failure,Medium,Security Team,Head Office,2024-01-17 05:00:00,2024-01-18 20:00:00,39.0,Resolved,Security Mitigation
+INC101116,Application Bug,Medium,Database Admin,Data Center A,2024-09-01 23:00:00,2024-09-02 12:00:00,13.0,Resolved,Security Mitigation
+INC101117,Security Breach,High,IT Support,Remote Site 2,2024-09-30 11:00:00,2024-10-03 07:00:00,68.0,Closed,Hardware Replacement
+INC101118,Application Bug,Medium,Security Team,Data Center A,2024-08-10 09:00:00,2024-08-12 00:00:00,39.0,Resolved,Security Mitigation
+INC101119,Security Breach,Critical,Database Admin,Head Office,2024-03-09 07:00:00,2024-03-11 13:00:00,54.0,Resolved,Hardware Replacement
+INC101120,Security Breach,Critical,Database Admin,Data Center B,2024-10-27 16:00:00,2024-10-27 19:00:00,3.0,Resolved,Security Mitigation
+INC101121,Server Crash,Critical,Network Team,Remote Site 1,2024-04-01 10:00:00,2024-04-04 07:00:00,69.0,Closed,Security Mitigation
+INC101122,Application Bug,Low,Database Admin,Data Center B,2024-05-04 08:00:00,2024-05-06 20:00:00,60.0,Closed,Patch Applied
+INC101123,Server Crash,Medium,Security Team,Remote Site 1,2024-05-20 00:00:00,2024-05-21 17:00:00,41.0,Resolved,Reboot
+INC101124,Server Crash,Critical,Security Team,Head Office,2024-08-08 12:00:00,2024-08-09 09:00:00,21.0,Resolved,Configuration Fix
+INC101125,Database Failure,Medium,DevOps,Data Center B,2024-02-08 18:00:00,2024-02-09 14:00:00,20.0,Resolved,Patch Applied
+INC101126,Network Outage,Medium,Security Team,Remote Site 1,2024-06-14 16:00:00,2024-06-17 16:00:00,72.0,Closed,Hardware Replacement
+INC101127,Application Bug,Low,Network Team,Data Center B,2024-04-03 02:00:00,2024-04-03 20:00:00,18.0,Resolved,Reboot
+INC101128,Security Breach,High,Database Admin,Data Center B,2024-08-07 22:00:00,2024-08-08 04:00:00,6.0,Resolved,Hardware Replacement
+INC101129,Network Outage,Low,IT Support,Head Office,2024-07-24 08:00:00,2024-07-25 23:00:00,39.0,Resolved,Reboot
+INC101130,Application Bug,High,IT Support,Remote Site 1,2024-11-17 22:00:00,2024-11-18 16:00:00,18.0,Resolved,Patch Applied
+INC101131,Network Outage,Low,Database Admin,Remote Site 2,2024-11-20 03:00:00,2024-11-22 23:00:00,68.0,Closed,Configuration Fix
+INC101132,Application Bug,Low,Network Team,Remote Site 2,2024-02-11 17:00:00,2024-02-13 10:00:00,41.0,Resolved,Configuration Fix
+INC101133,Database Failure,Critical,Network Team,Remote Site 1,2024-03-15 09:00:00,2024-03-16 04:00:00,19.0,Resolved,Reboot
+INC101134,Server Crash,Medium,Security Team,Remote Site 1,2024-05-19 09:00:00,2024-05-20 18:00:00,33.0,Resolved,Security Mitigation
+INC101135,Network Outage,Critical,Database Admin,Head Office,2024-08-26 19:00:00,2024-08-27 10:00:00,15.0,Resolved,Configuration Fix
+INC101136,Database Failure,Critical,DevOps,Data Center B,2024-11-24 19:00:00,2024-11-26 07:00:00,36.0,Resolved,Patch Applied
+INC101137,Security Breach,Critical,Security Team,Head Office,2024-01-08 04:00:00,2024-01-08 09:00:00,5.0,Resolved,Reboot
+INC101138,Server Crash,High,Database Admin,Remote Site 1,2024-04-15 13:00:00,2024-04-17 12:00:00,47.0,Resolved,Reboot
+INC101139,Database Failure,Medium,DevOps,Remote Site 1,2024-01-03 16:00:00,2024-01-05 19:00:00,51.0,Resolved,Configuration Fix
+INC101140,Security Breach,Low,Network Team,Head Office,2024-03-12 19:00:00,2024-03-13 16:00:00,21.0,Resolved,Hardware Replacement
+INC101141,Security Breach,Critical,IT Support,Head Office,2024-10-22 17:00:00,2024-10-23 04:00:00,11.0,Resolved,Hardware Replacement
+INC101142,Application Bug,Critical,Security Team,Remote Site 1,2024-10-26 06:00:00,2024-10-26 19:00:00,13.0,Resolved,Patch Applied
+INC101143,Security Breach,Low,Security Team,Remote Site 1,2024-07-24 12:00:00,2024-07-27 11:00:00,71.0,Closed,Configuration Fix
+INC101144,Application Bug,Low,IT Support,Data Center B,2024-08-03 02:00:00,2024-08-05 11:00:00,57.0,Resolved,Patch Applied
+INC101145,Network Outage,Critical,Network Team,Head Office,2024-04-17 02:00:00,2024-04-17 13:00:00,11.0,Resolved,Reboot
+INC101146,Server Crash,Medium,Database Admin,Data Center B,2024-10-16 02:00:00,2024-10-18 07:00:00,53.0,Resolved,Configuration Fix
+INC101147,Application Bug,Critical,Network Team,Head Office,2024-02-29 05:00:00,2024-03-01 23:00:00,42.0,Resolved,Configuration Fix
+INC101148,Server Crash,Low,DevOps,Head Office,2024-03-03 02:00:00,2024-03-05 05:00:00,51.0,Resolved,Hardware Replacement
+INC101149,Database Failure,Medium,IT Support,Data Center A,2024-11-11 02:00:00,2024-11-14 02:00:00,72.0,Closed,Security Mitigation
+INC101150,Server Crash,Low,DevOps,Data Center B,2024-03-30 08:00:00,2024-03-31 06:00:00,22.0,Resolved,Reboot
+INC101151,Application Bug,Critical,Database Admin,Head Office,2024-02-20 22:00:00,2024-02-21 10:00:00,12.0,Resolved,Configuration Fix
+INC101152,Server Crash,Low,IT Support,Remote Site 2,2024-05-28 12:00:00,2024-05-30 23:00:00,59.0,Resolved,Hardware Replacement
+INC101153,Network Outage,Medium,Network Team,Data Center B,2024-11-18 22:00:00,2024-11-20 09:00:00,35.0,Resolved,Configuration Fix
+INC101154,Application Bug,Critical,Network Team,Remote Site 1,2024-10-19 07:00:00,2024-10-20 10:00:00,27.0,Resolved,Security Mitigation
+INC101155,Server Crash,High,Network Team,Remote Site 1,2024-03-02 13:00:00,2024-03-04 18:00:00,53.0,Resolved,Patch Applied
+INC101156,Network Outage,High,Security Team,Data Center B,2024-07-29 20:00:00,2024-08-01 06:00:00,58.0,Resolved,Patch Applied
+INC101157,Security Breach,Critical,IT Support,Data Center A,2024-06-09 01:00:00,2024-06-09 19:00:00,18.0,Resolved,Configuration Fix
+INC101158,Application Bug,Medium,DevOps,Remote Site 1,2024-09-08 06:00:00,2024-09-09 15:00:00,33.0,Resolved,Reboot
+INC101159,Network Outage,Low,IT Support,Head Office,2024-11-13 19:00:00,2024-11-15 02:00:00,31.0,Resolved,Hardware Replacement
+INC101160,Security Breach,Low,IT Support,Head Office,2024-06-21 05:00:00,2024-06-23 06:00:00,49.0,Resolved,Configuration Fix
+INC101161,Application Bug,High,Network Team,Remote Site 2,2024-01-15 00:00:00,2024-01-15 23:00:00,23.0,Resolved,Configuration Fix
+INC101162,Server Crash,Critical,Security Team,Remote Site 1,2024-02-15 00:00:00,2024-02-15 12:00:00,12.0,Resolved,Configuration Fix
+INC101163,Database Failure,Critical,Network Team,Head Office,2024-02-09 21:00:00,2024-02-11 14:00:00,41.0,Resolved,Reboot
+INC101164,Server Crash,Critical,Security Team,Head Office,2024-11-12 03:00:00,2024-11-14 11:00:00,56.0,Resolved,Configuration Fix
+INC101165,Security Breach,High,Database Admin,Head Office,2024-05-28 17:00:00,2024-05-29 15:00:00,22.0,Resolved,Configuration Fix
+INC101166,Application Bug,Medium,Database Admin,Remote Site 1,2024-01-19 03:00:00,2024-01-20 04:00:00,25.0,Resolved,Patch Applied
+INC101167,Network Outage,Medium,Network Team,Data Center A,2024-06-09 12:00:00,2024-06-10 22:00:00,34.0,Resolved,Patch Applied
+INC101168,Application Bug,Critical,IT Support,Remote Site 1,2024-01-14 22:00:00,2024-01-17 07:00:00,57.0,Resolved,Configuration Fix
+INC101169,Database Failure,Critical,DevOps,Remote Site 1,2024-02-08 09:00:00,2024-02-09 04:00:00,19.0,Resolved,Reboot
+INC101170,Security Breach,Low,Network Team,Head Office,2024-03-02 15:00:00,2024-03-03 13:00:00,22.0,Resolved,Security Mitigation
+INC101171,Security Breach,Medium,Database Admin,Data Center A,2024-06-28 13:00:00,2024-06-29 13:00:00,24.0,Resolved,Hardware Replacement
+INC101172,Network Outage,Medium,DevOps,Data Center A,2024-10-29 21:00:00,2024-10-31 16:00:00,43.0,Resolved,Reboot
+INC101173,Security Breach,Low,DevOps,Head Office,2024-07-20 12:00:00,2024-07-21 02:00:00,14.0,Resolved,Configuration Fix
+INC101174,Server Crash,Low,IT Support,Remote Site 1,2024-10-10 13:00:00,2024-10-13 03:00:00,62.0,Closed,Hardware Replacement
+INC101175,Security Breach,Low,Security Team,Data Center A,2024-08-11 23:00:00,2024-08-14 09:00:00,58.0,Resolved,Configuration Fix
+INC101176,Database Failure,Medium,Network Team,Data Center A,2024-09-30 14:00:00,2024-10-02 03:00:00,37.0,Resolved,Configuration Fix
+INC101177,Network Outage,Low,Database Admin,Remote Site 2,2024-05-10 04:00:00,2024-05-10 16:00:00,12.0,Resolved,Hardware Replacement
+INC101178,Security Breach,Medium,Network Team,Remote Site 1,2024-01-31 10:00:00,2024-01-31 13:00:00,3.0,Resolved,Patch Applied
+INC101179,Server Crash,Critical,DevOps,Head Office,2024-08-08 21:00:00,2024-08-09 17:00:00,20.0,Resolved,Reboot
+INC101180,Security Breach,Critical,DevOps,Head Office,2024-11-04 11:00:00,2024-11-05 04:00:00,17.0,Resolved,Configuration Fix
+INC101181,Network Outage,High,Database Admin,Data Center B,2024-06-16 02:00:00,2024-06-18 12:00:00,58.0,Resolved,Hardware Replacement
+INC101182,Application Bug,High,Database Admin,Remote Site 2,2024-05-24 09:00:00,2024-05-24 21:00:00,12.0,Resolved,Hardware Replacement
+INC101183,Security Breach,Medium,DevOps,Remote Site 1,2024-02-01 17:00:00,2024-02-01 23:00:00,6.0,Resolved,Security Mitigation
+INC101184,Security Breach,Critical,Network Team,Data Center B,2024-11-13 16:00:00,2024-11-16 08:00:00,64.0,Closed,Security Mitigation
+INC101185,Database Failure,Low,Security Team,Remote Site 1,2024-05-29 06:00:00,2024-05-29 17:00:00,11.0,Resolved,Hardware Replacement
+INC101186,Security Breach,Medium,Network Team,Head Office,2024-10-14 05:00:00,2024-10-15 13:00:00,32.0,Resolved,Security Mitigation
+INC101187,Application Bug,High,Database Admin,Data Center A,2024-07-07 01:00:00,2024-07-07 11:00:00,10.0,Resolved,Reboot
+INC101188,Database Failure,Low,Database Admin,Remote Site 1,2024-05-20 23:00:00,2024-05-21 12:00:00,13.0,Resolved,Hardware Replacement
+INC101189,Database Failure,High,Security Team,Head Office,2024-07-18 20:00:00,2024-07-19 07:00:00,11.0,Resolved,Security Mitigation
+INC101190,Network Outage,Low,DevOps,Data Center B,2024-09-25 08:00:00,2024-09-26 08:00:00,24.0,Resolved,Hardware Replacement
+INC101191,Network Outage,Low,DevOps,Head Office,2024-04-17 03:00:00,2024-04-19 14:00:00,59.0,Resolved,Hardware Replacement
+INC101192,Database Failure,High,Security Team,Data Center B,2024-03-13 01:00:00,2024-03-14 01:00:00,24.0,Resolved,Reboot
+INC101193,Database Failure,High,IT Support,Remote Site 1,2024-07-01 09:00:00,2024-07-01 12:00:00,3.0,Resolved,Reboot
+INC101194,Application Bug,Low,IT Support,Data Center B,2024-08-11 20:00:00,2024-08-14 10:00:00,62.0,Closed,Hardware Replacement
+INC101195,Application Bug,Critical,Security Team,Remote Site 2,2024-10-04 13:00:00,2024-10-06 12:00:00,47.0,Resolved,Hardware Replacement
+INC101196,Security Breach,Low,Network Team,Data Center B,2024-01-05 17:00:00,2024-01-06 18:00:00,25.0,Resolved,Reboot
+INC101197,Network Outage,Medium,IT Support,Data Center B,2024-06-13 05:00:00,2024-06-14 00:00:00,19.0,Resolved,Patch Applied
+INC101198,Application Bug,Medium,IT Support,Head Office,2024-09-19 17:00:00,2024-09-22 05:00:00,60.0,Closed,Patch Applied
+INC101199,Application Bug,Critical,IT Support,Data Center A,2024-02-26 16:00:00,2024-02-27 12:00:00,20.0,Resolved,Hardware Replacement

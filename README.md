@@ -5,11 +5,11 @@ AI-powered multi-agent platform that automates the full incident lifecycle:
 
 ## Architecture
 
-- **Backend**: Node.js + Express with 6 AI agents powered by Groq (llama3-70b)
+- **Backend**: Node.js + Express with 6 AI agents powered by Groq
 - **Database**: Supabase (PostgreSQL) with real-time subscriptions
 - **Frontend**: React 18 + Vite + TailwindCSS + Recharts
 - **Real-time**: Socket.io for live incident updates
-- **AI Agents**: Detection, Decision, Action, Resolution, Reporting, Escalation
+- **AI Agents (Python)**: LangChain + LangGraph; Node invokes agents via `python -m incident_management.bridge` (see `incident_management/`)
 
 ## Quick Start
 
@@ -34,7 +34,11 @@ cp .env.example .env
 ### 3. Install Dependencies
 
 ```bash
-cd aims/server && npm install
+# Python agents (required for the incident pipeline)
+python -m pip install -r incident_management/requirements.txt
+
+# Node + frontend
+cd server && npm install
 cd ../client && npm install
 ```
 
@@ -46,12 +50,17 @@ cd server && node seed.js
 
 ### 5. Start the Application
 
-```bash
-# Terminal 1 - Backend
-cd server && npm run dev
+**Recommended:** from the repo root run **`npm run dev`** — it starts the API first, waits until `.aims-backend-port` is written (actual listen port), then starts Vite so `/api` proxy and Socket.io stay in sync even when port 5000 is busy.
 
-# Terminal 2 - Frontend
-cd client && npm run dev
+Optional overrides: `client/.env.development` with `VITE_DEV_API_TARGET` (wins over the port file), or copy `client/.env.development.example`.
+
+```bash
+# One command (repo root — install root deps once: npm install)
+npm run dev
+
+# Or two terminals
+cd server && npm run dev
+cd client && npm run dev   # restart after API is listening so Vite picks up .aims-backend-port
 ```
 
 - Frontend: http://localhost:5173
@@ -90,9 +99,9 @@ Each agent uses Groq AI with structured JSON output. Three API keys are distribu
 
 ```
 aims/
+  incident_management/  - Python agents, LangGraph graph, bridge (Groq via LangChain)
   server/
-    agents/       - 6 AI agent modules with prompt templates
-    config/       - Supabase, Groq router, environment config
+    config/       - Supabase, environment config
     engine/       - Orchestration pipeline, workflow engine, safety guards
     models/       - Supabase data access layer
     routes/       - Express API routes

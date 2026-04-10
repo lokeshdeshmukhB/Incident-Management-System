@@ -1,10 +1,5 @@
 const { v4: uuidv4 } = require('uuid');
-const detectionAgent = require('../agents/DetectionAgent');
-const decisionAgent = require('../agents/DecisionAgent');
-const actionAgent = require('../agents/ActionAgent');
-const resolutionAgent = require('../agents/ResolutionAgent');
-const reportingAgent = require('../agents/ReportingAgent');
-const escalationAgent = require('../agents/EscalationAgent');
+const { runAgent } = require('../services/pythonAgentBridge');
 const workflowEngine = require('./workflowEngine');
 const { runHealthCheck } = require('./healthChecker');
 const { executeAction } = require('../services/actionExecutor');
@@ -31,7 +26,7 @@ async function processAlert(rawAlert, io) {
     addTimelineEvent('Alert received, starting detection');
     setActivity({ agent: 'detection', status: 'running' });
     if (io) io.emit('agent:activity', { agent: 'detection', status: 'running' });
-    const detection = await detectionAgent.run(rawAlert);
+    const detection = runAgent('detection', rawAlert);
 
     if (detection.error || !detection.valid) {
       addTimelineEvent(`Detection failed or invalid alert: ${detection.message || 'invalid schema'}`);
@@ -95,7 +90,7 @@ async function processAlert(rawAlert, io) {
     const workflowRules = await workflowEngine.getRules();
     const recentIncidents = await IncidentModel.findRecentByService(detection.service);
 
-    const decision = await decisionAgent.run({
+    const decision = runAgent('decision', {
       alert: detection,
       workflowRules,
       currentRetryCount: 0,
@@ -124,7 +119,7 @@ async function processAlert(rawAlert, io) {
 
       setActivity({ agent: 'action', incident_id: incidentId, status: 'running' });
       if (io) io.emit('agent:activity', { agent: 'action', incident_id: incidentId, status: 'running' });
-      const actionPlan = await actionAgent.run({ decision, alert: detection });
+      const actionPlan = runAgent('action', { decision, alert: detection });
       addTimelineEvent(`Action plan: ${actionPlan.execution_command || decision.action}`);
 
       executionResult = await executeAction(
@@ -166,7 +161,7 @@ async function processAlert(rawAlert, io) {
 
     const matchedRule = await workflowEngine.matchRule(detection.alert_type);
 
-    const resolution = await resolutionAgent.run({
+    const resolution = runAgent('resolution', {
       incidentId,
       actionResult: executionResult || actionResult,
       postActionHealth: healthResult,
@@ -195,7 +190,7 @@ async function processAlert(rawAlert, io) {
       addTimelineEvent('Triggering escalation');
       setActivity({ agent: 'escalation', incident_id: incidentId, status: 'running' });
       if (io) io.emit('agent:activity', { agent: 'escalation', incident_id: incidentId, status: 'running' });
-      const escalation = await escalationAgent.run({
+      const escalation = runAgent('escalation', {
         incidentId,
         alert: detection,
         failedActions: [decision.action],
@@ -241,7 +236,7 @@ async function processAlert(rawAlert, io) {
 
     setActivity({ agent: 'reporting', incident_id: incidentId, status: 'running' });
     if (io) io.emit('agent:activity', { agent: 'reporting', incident_id: incidentId, status: 'running' });
-    const report = await reportingAgent.run({
+    const report = runAgent('reporting', {
       incidentId,
       alert: rawAlert,
       detection,
@@ -300,7 +295,7 @@ async function handleRetry(incidentId, rawAlert, detection, prevDecision, matche
 
   if (retryCount >= matchedRule.max_retries) {
     addTimelineEvent(`Max retries (${matchedRule.max_retries}) reached, escalating`);
-    const escalation = await escalationAgent.run({
+    const escalation = runAgent('escalation', {
       incidentId,
       alert: detection,
       failedActions: [prevDecision.action],
@@ -326,7 +321,7 @@ async function handleRetry(incidentId, rawAlert, detection, prevDecision, matche
   await IncidentModel.update(incidentId, { retry_count: retryCount });
 
   const workflowRules = await workflowEngine.getRules();
-  const decision = await decisionAgent.run({
+  const decision = runAgent('decision', {
     alert: detection,
     workflowRules,
     currentRetryCount: retryCount,
@@ -340,11 +335,11 @@ async function handleRetry(incidentId, rawAlert, detection, prevDecision, matche
     return { success: false, incident_id: incidentId, status: 'escalated' };
   }
 
-  const actionPlan = await actionAgent.run({ decision, alert: detection });
+  const actionPlan = runAgent('action', { decision, alert: detection });
   const executionResult = await executeAction(decision.action, detection.service, actionPlan.execution_command);
   const healthResult = await runHealthCheck({ ...rawAlert, ...detection }, executionResult.success);
 
-  const resolution = await resolutionAgent.run({
+  const resolution = runAgent('resolution', {
     incidentId,
     actionResult: executionResult,
     postActionHealth: healthResult,

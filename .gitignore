@@ -1,6 +1,7 @@
 node_modules/
 dist/
 .env
+.aims-backend-port
 *.log
 .DS_Store
 Thumbs.db

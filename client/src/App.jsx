@@ -25,7 +25,12 @@ export default function App() {
   useSocket();
 
   return (
-    <BrowserRouter>
+    <BrowserRouter
+      future={{
+        v7_startTransition: true,
+        v7_relativeSplatPath: true,
+      }}
+    >
       <div className="flex h-screen overflow-hidden">
         <aside className="w-64 bg-slate-900 border-r border-slate-800 flex flex-col">
           <div className="p-6 border-b border-slate-800">

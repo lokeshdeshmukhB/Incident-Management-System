@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const ReportModel = require('../models/Report');
 const IncidentModel = require('../models/Incident');
-const reportingAgent = require('../agents/ReportingAgent');
+const { runAgent } = require('../services/pythonAgentBridge');
 const logger = require('../services/logger');
 
 router.get('/', async (req, res) => {
@@ -37,7 +37,7 @@ router.post('/:incident_id/regenerate', async (req, res) => {
 
     const agentOutputs = incident.agent_outputs || {};
 
-    const report = await reportingAgent.run({
+    const report = runAgent('reporting', {
       incidentId: incident.incident_id,
       alert: agentOutputs.detection || {},
       detection: agentOutputs.detection || {},

@@ -4,9 +4,14 @@
   "description": "Automated Incident Management System - AI-powered multi-agent incident handling",
   "private": true,
   "scripts": {
+    "dev": "concurrently -k -n server,client -c blue,green \"npm run dev:server\" \"wait-on file:.aims-backend-port && npm run dev:client\"",
     "dev:server": "cd server && npm run dev",
     "dev:client": "cd client && npm run dev",
-    "install:all": "cd server && npm install && cd ../client && npm install",
+    "install:all": "npm install && cd server && npm install && cd ../client && npm install",
     "seed": "cd server && node seed.js"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.0",
+    "wait-on": "^8.0.1"
   }
 }

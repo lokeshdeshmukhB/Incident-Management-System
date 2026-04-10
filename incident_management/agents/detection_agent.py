@@ -1,6 +1,6 @@
-const BaseAgent = require('./BaseAgent');
+from incident_management.agents.base_agent import BaseAgent
 
-const SYSTEM_PROMPT = `You are the Detection Agent in an automated incident management system.
+SYSTEM_PROMPT = """You are the Detection Agent in an automated incident management system.
 
 Your job is to analyze incoming infrastructure alerts and produce a structured, enriched incident object.
 
@@ -30,7 +30,7 @@ OUTPUT FORMAT (JSON only, no preamble):
   "severity": "<severity>",
   "service": "<service>",
   "host": "<host>",
-  "description": "<1-2 sentence human-readable explanation of what is happening>",
+  "description": "<1-2 sentence human-readable explanation>",
   "confidence": 0.0-1.0,
   "is_duplicate": true | false,
   "urgency": "IMMEDIATE" | "DEFERRED",
@@ -40,26 +40,24 @@ OUTPUT FORMAT (JSON only, no preamble):
 RULES:
 - Never guess missing values. If data is missing, set valid: false.
 - Confidence < 0.6 means flag for human review but still proceed.
-- Always output valid JSON. No markdown, no explanation text.`;
+- Always output valid JSON. No markdown, no explanation text."""
 
-class DetectionAgent extends BaseAgent {
-  constructor() {
-    super('detection', SYSTEM_PROMPT);
-  }
 
-  async run(rawAlert) {
-    const input = {
-      timestamp: rawAlert.timestamp,
-      alert_type: rawAlert.alert_type,
-      severity: rawAlert.severity,
-      service: rawAlert.service,
-      host: rawAlert.host,
-      metric_value: rawAlert.metric_value,
-      threshold: rawAlert.threshold,
-    };
+class DetectionAgent(BaseAgent):
+    def __init__(self) -> None:
+        super().__init__("detection", SYSTEM_PROMPT)
 
-    return super.run(input);
-  }
-}
+    def run(self, raw_alert: dict) -> dict:
+        payload = {
+            "timestamp": raw_alert.get("timestamp"),
+            "alert_type": raw_alert.get("alert_type"),
+            "severity": raw_alert.get("severity"),
+            "service": raw_alert.get("service"),
+            "host": raw_alert.get("host"),
+            "metric_value": raw_alert.get("metric_value"),
+            "threshold": raw_alert.get("threshold"),
+        }
+        return BaseAgent.run(self, payload)
 
-module.exports = new DetectionAgent();
+
+detection_agent = DetectionAgent()

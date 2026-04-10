@@ -2,14 +2,24 @@ import { useEffect, useRef } from 'react';
 import { io } from 'socket.io-client';
 import useIncidentStore from '../store/incidentStore';
 
-const SOCKET_URL = import.meta.env.VITE_API_URL || '';
+/** Injected in dev by Vite (see vite.config.js) — connects straight to the API and avoids WS proxy issues. */
+// eslint-disable-next-line no-undef
+const DEV_API_ORIGIN = typeof __AIMS_DEV_API_ORIGIN__ !== 'undefined' ? __AIMS_DEV_API_ORIGIN__ : '';
+
+const SOCKET_URL =
+  import.meta.env.VITE_API_URL ||
+  (import.meta.env.DEV && DEV_API_ORIGIN ? DEV_API_ORIGIN : '');
 
 export function useSocket() {
   const socketRef = useRef(null);
   const { addIncident, updateIncident, setAgentActivity, addNotification } = useIncidentStore();
 
   useEffect(() => {
-    const socket = io(SOCKET_URL, { transports: ['websocket', 'polling'] });
+    const socket = io(SOCKET_URL, {
+      transports: ['polling', 'websocket'],
+      reconnectionDelay: 1000,
+      reconnectionDelayMax: 5000,
+    });
     socketRef.current = socket;
 
     socket.on('connect', () => {

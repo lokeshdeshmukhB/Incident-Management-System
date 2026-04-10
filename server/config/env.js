@@ -1,7 +1,13 @@
 const dotenv = require('dotenv');
 const path = require('path');
 
-dotenv.config({ path: path.resolve(__dirname, '../../.env') });
+// Prefer backend-local `.env`, then repo-root `.env`, then `.env.example`.
+// This supports both setups:
+// - env stored at `server/.env`
+// - env stored at repo root `.env`
+let loaded = dotenv.config({ path: path.resolve(__dirname, '../.env') });
+if (loaded.error) loaded = dotenv.config({ path: path.resolve(__dirname, '../../.env') });
+if (loaded.error) loaded = dotenv.config({ path: path.resolve(__dirname, '../../.env.example') });
 
 const required = [
   'SUPABASE_URL',
@@ -11,9 +17,19 @@ const required = [
 
 const missing = required.filter((key) => !process.env[key]);
 if (missing.length > 0) {
-  console.error(`Missing required environment variables: ${missing.join(', ')}`);
-  console.error('Copy .env.example to .env and fill in the values.');
-  process.exit(1);
+  const msg = `Missing required environment variables: ${missing.join(', ')}`;
+  const hint = 'Copy .env.example to .env and fill in the values.';
+
+  // Only hard-fail when explicitly running in production.
+  if ((process.env.NODE_ENV || 'development') === 'production') {
+    console.error(msg);
+    console.error(hint);
+    process.exit(1);
+  } else {
+    console.warn(msg);
+    console.warn(hint);
+    console.warn('Continuing in development mode with limited functionality.');
+  }
 }
 
 module.exports = {
@@ -28,7 +44,7 @@ module.exports = {
       process.env.GROQ_API_KEY_2 || process.env.GROQ_API_KEY_1,
       process.env.GROQ_API_KEY_3 || process.env.GROQ_API_KEY_1,
     ],
-    model: process.env.GROQ_MODEL || 'llama3-70b-8192',
+    model: process.env.GROQ_MODEL || 'llama-3.3-70b-versatile',
   },
   app: {
     port: parseInt(process.env.PORT, 10) || 5000,
