@@ -1047,190 +1047,6 @@ function getStageSummary(stage, output) {
 }
 </file>
 
-<file path="client/src/pages/IncidentsPage.jsx">
-import { useState } from 'react';
-import { Plus, Search } from 'lucide-react';
-import IncidentTable from '../components/Incidents/IncidentTable';
-import { useIncidents, ingestAlert } from '../hooks/useIncidents';
-
-const STATUSES = ['', 'pending', 'in_progress', 'resolved', 'escalated'];
-const SEVERITIES = ['', 'critical', 'high', 'medium', 'low'];
-const SERVICES = ['', 'checkout', 'payments', 'payments-api', 'auth', 'orders'];
-
-const ESCALATION_DEMO_ALERT = {
-  alert_type: 'repeated_failure',
-  severity: 'critical',
-  service: 'payments-api',
-  host: 'host-01',
-  metric_value: 1,
-  threshold: 0,
-};
-
-export default function IncidentsPage() {
-  const [filters, setFilters] = useState({ status: '', severity: '', service: '' });
-  const [showIngest, setShowIngest] = useState(false);
-  const [alertForm, setAlertForm] = useState({
-    alert_type: 'high_cpu',
-    severity: 'critical',
-    service: 'checkout',
-    host: 'host-01',
-    metric_value: 95,
-    threshold: 90,
-  });
-  const [ingesting, setIngesting] = useState(false);
-
-  const { data, refetch } = useIncidents(filters);
-  const incidents = data?.data || [];
-
-  const handleIngest = async () => {
-    setIngesting(true);
-    try {
-      await ingestAlert({
-        ...alertForm,
-        timestamp: new Date().toISOString(),
-      });
-      setShowIngest(false);
-      setTimeout(refetch, 2000);
-    } catch (err) {
-      console.error('Ingest failed:', err);
-    } finally {
-      setIngesting(false);
-    }
-  };
-
-  return (
-    <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="font-headline text-2xl font-bold text-white">Incidents</h1>
-        <button
-          onClick={() => setShowIngest(!showIngest)}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors"
-        >
-          <Plus className="w-4 h-4" />
-          Ingest Alert
-        </button>
-      </div>
-
-      {showIngest && (
-        <div className="bg-slate-900 border border-slate-800 rounded-lg p-5">
-          <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
-            <h3 className="text-sm font-medium text-slate-300">Simulate New Alert</h3>
-            <button
-              type="button"
-              onClick={() => setAlertForm((prev) => ({ ...prev, ...ESCALATION_DEMO_ALERT }))}
-              className="text-xs px-3 py-1.5 rounded-lg border border-amber-700/60 text-amber-200/90 hover:bg-amber-950/40 transition-colors"
-            >
-              Load escalation demo (repeated_failure)
-            </button>
-          </div>
-          <div className="grid grid-cols-3 gap-4 mb-4">
-            <div>
-              <label className="block text-xs text-slate-400 mb-1">Alert Type</label>
-              <select
-                value={alertForm.alert_type}
-                onChange={(e) => setAlertForm({ ...alertForm, alert_type: e.target.value })}
-                className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200"
-              >
-                <option value="high_cpu">high_cpu</option>
-                <option value="disk_full">disk_full</option>
-                <option value="api_failure">api_failure</option>
-                <option value="service_down">service_down</option>
-                <option value="memory_leak">memory_leak</option>
-                <option value="network_timeout">network_timeout</option>
-                <option value="repeated_failure">repeated_failure (escalates — no auto-resolve)</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-xs text-slate-400 mb-1">Severity</label>
-              <select
-                value={alertForm.severity}
-                onChange={(e) => setAlertForm({ ...alertForm, severity: e.target.value })}
-                className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200"
-              >
-                <option value="critical">critical</option>
-                <option value="high">high</option>
-                <option value="medium">medium</option>
-                <option value="low">low</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-xs text-slate-400 mb-1">Service</label>
-              <select
-                value={alertForm.service}
-                onChange={(e) => setAlertForm({ ...alertForm, service: e.target.value })}
-                className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200"
-              >
-                <option value="checkout">checkout</option>
-                <option value="payments">payments</option>
-                <option value="payments-api">payments-api</option>
-                <option value="auth">auth</option>
-                <option value="orders">orders</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-xs text-slate-400 mb-1">Host</label>
-              <input
-                value={alertForm.host}
-                onChange={(e) => setAlertForm({ ...alertForm, host: e.target.value })}
-                className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200"
-              />
-            </div>
-            <div>
-              <label className="block text-xs text-slate-400 mb-1">Metric Value</label>
-              <input
-                type="number"
-                value={alertForm.metric_value}
-                onChange={(e) => setAlertForm({ ...alertForm, metric_value: parseFloat(e.target.value) })}
-                className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200"
-              />
-            </div>
-            <div>
-              <label className="block text-xs text-slate-400 mb-1">Threshold</label>
-              <input
-                type="number"
-                value={alertForm.threshold}
-                onChange={(e) => setAlertForm({ ...alertForm, threshold: parseFloat(e.target.value) })}
-                className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200"
-              />
-            </div>
-          </div>
-          <button
-            onClick={handleIngest}
-            disabled={ingesting}
-            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-700 text-white text-sm font-medium rounded-lg transition-colors"
-          >
-            {ingesting ? 'Processing...' : 'Send Alert to Pipeline'}
-          </button>
-        </div>
-      )}
-
-      <div className="flex items-center gap-3">
-        {[
-          { key: 'status', options: STATUSES, labels: ['All Status', 'Pending', 'In Progress', 'Resolved', 'Escalated'] },
-          { key: 'severity', options: SEVERITIES, labels: ['All Severity', 'Critical', 'High', 'Medium', 'Low'] },
-          { key: 'service', options: SERVICES, labels: ['All Services', 'checkout', 'payments', 'payments-api', 'auth', 'orders'] },
-        ].map(({ key, options, labels }) => (
-          <select
-            key={key}
-            value={filters[key]}
-            onChange={(e) => setFilters({ ...filters, [key]: e.target.value })}
-            className="bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-300"
-          >
-            {options.map((opt, i) => (
-              <option key={opt} value={opt}>{labels[i]}</option>
-            ))}
-          </select>
-        ))}
-        <div className="flex-1" />
-        <span className="text-xs text-slate-500">{data?.count ?? 0} incidents</span>
-      </div>
-
-      <IncidentTable incidents={incidents} />
-    </div>
-  );
-}
-</file>
-
 <file path="client/src/pages/ReportsPage.jsx">
 import { useState } from 'react';
 import { FileText } from 'lucide-react';
@@ -5143,6 +4959,190 @@ export function useSocket() {
 }
 </file>
 
+<file path="client/src/pages/IncidentsPage.jsx">
+import { useState } from 'react';
+import { Plus, Search } from 'lucide-react';
+import IncidentTable from '../components/Incidents/IncidentTable';
+import { useIncidents, ingestAlert } from '../hooks/useIncidents';
+
+const STATUSES = ['', 'pending', 'in_progress', 'resolved', 'escalated'];
+const SEVERITIES = ['', 'critical', 'high', 'medium', 'low'];
+const SERVICES = ['', 'checkout', 'payments', 'payments-api', 'auth', 'orders'];
+
+const ESCALATION_DEMO_ALERT = {
+  alert_type: 'repeated_failure',
+  severity: 'critical',
+  service: 'payments-api',
+  host: 'host-01',
+  metric_value: 1,
+  threshold: 0,
+};
+
+export default function IncidentsPage() {
+  const [filters, setFilters] = useState({ status: '', severity: '', service: '' });
+  const [showIngest, setShowIngest] = useState(false);
+  const [alertForm, setAlertForm] = useState({
+    alert_type: 'high_cpu',
+    severity: 'critical',
+    service: 'checkout',
+    host: 'host-01',
+    metric_value: 95,
+    threshold: 90,
+  });
+  const [ingesting, setIngesting] = useState(false);
+
+  const { data, refetch } = useIncidents(filters);
+  const incidents = data?.data || [];
+
+  const handleIngest = async () => {
+    setIngesting(true);
+    try {
+      await ingestAlert({
+        ...alertForm,
+        timestamp: new Date().toISOString(),
+      });
+      setShowIngest(false);
+      setTimeout(refetch, 2000);
+    } catch (err) {
+      console.error('Ingest failed:', err);
+    } finally {
+      setIngesting(false);
+    }
+  };
+
+  return (
+    <div className="p-6 space-y-6">
+      <div className="flex items-center justify-between">
+        <h1 className="font-headline text-2xl font-bold text-white">Incidents</h1>
+        <button
+          onClick={() => setShowIngest(!showIngest)}
+          className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors"
+        >
+          <Plus className="w-4 h-4" />
+          Ingest Alert
+        </button>
+      </div>
+
+      {showIngest && (
+        <div className="bg-slate-900 border border-slate-800 rounded-lg p-5">
+          <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+            <h3 className="text-sm font-medium text-slate-300">Simulate New Alert</h3>
+            <button
+              type="button"
+              onClick={() => setAlertForm((prev) => ({ ...prev, ...ESCALATION_DEMO_ALERT }))}
+              className="text-xs px-3 py-1.5 rounded-lg border border-amber-700/60 text-amber-200/90 hover:bg-amber-950/40 transition-colors"
+            >
+              Load escalation demo (repeated_failure)
+            </button>
+          </div>
+          <div className="grid grid-cols-3 gap-4 mb-4">
+            <div>
+              <label className="block text-xs text-slate-400 mb-1">Alert Type</label>
+              <select
+                value={alertForm.alert_type}
+                onChange={(e) => setAlertForm({ ...alertForm, alert_type: e.target.value })}
+                className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200"
+              >
+                <option value="high_cpu">high_cpu</option>
+                <option value="disk_full">disk_full</option>
+                <option value="api_failure">api_failure</option>
+                <option value="service_down">service_down</option>
+                <option value="memory_leak">memory_leak</option>
+                <option value="network_timeout">network_timeout</option>
+                <option value="repeated_failure">repeated_failure (escalates — no auto-resolve)</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs text-slate-400 mb-1">Severity</label>
+              <select
+                value={alertForm.severity}
+                onChange={(e) => setAlertForm({ ...alertForm, severity: e.target.value })}
+                className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200"
+              >
+                <option value="critical">critical</option>
+                <option value="high">high</option>
+                <option value="medium">medium</option>
+                <option value="low">low</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs text-slate-400 mb-1">Service</label>
+              <select
+                value={alertForm.service}
+                onChange={(e) => setAlertForm({ ...alertForm, service: e.target.value })}
+                className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200"
+              >
+                <option value="checkout">checkout</option>
+                <option value="payments">payments</option>
+                <option value="payments-api">payments-api</option>
+                <option value="auth">auth</option>
+                <option value="orders">orders</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs text-slate-400 mb-1">Host</label>
+              <input
+                value={alertForm.host}
+                onChange={(e) => setAlertForm({ ...alertForm, host: e.target.value })}
+                className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200"
+              />
+            </div>
+            <div>
+              <label className="block text-xs text-slate-400 mb-1">Metric Value</label>
+              <input
+                type="number"
+                value={alertForm.metric_value}
+                onChange={(e) => setAlertForm({ ...alertForm, metric_value: parseFloat(e.target.value) })}
+                className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200"
+              />
+            </div>
+            <div>
+              <label className="block text-xs text-slate-400 mb-1">Threshold</label>
+              <input
+                type="number"
+                value={alertForm.threshold}
+                onChange={(e) => setAlertForm({ ...alertForm, threshold: parseFloat(e.target.value) })}
+                className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200"
+              />
+            </div>
+          </div>
+          <button
+            onClick={handleIngest}
+            disabled={ingesting}
+            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-700 text-white text-sm font-medium rounded-lg transition-colors"
+          >
+            {ingesting ? 'Processing...' : 'Send Alert to Pipeline'}
+          </button>
+        </div>
+      )}
+
+      <div className="flex items-center gap-3">
+        {[
+          { key: 'status', options: STATUSES, labels: ['All Status', 'Pending', 'In Progress', 'Resolved', 'Escalated'] },
+          { key: 'severity', options: SEVERITIES, labels: ['All Severity', 'Critical', 'High', 'Medium', 'Low'] },
+          { key: 'service', options: SERVICES, labels: ['All Services', 'checkout', 'payments', 'payments-api', 'auth', 'orders'] },
+        ].map(({ key, options, labels }) => (
+          <select
+            key={key}
+            value={filters[key]}
+            onChange={(e) => setFilters({ ...filters, [key]: e.target.value })}
+            className="bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-300"
+          >
+            {options.map((opt, i) => (
+              <option key={opt} value={opt}>{labels[i]}</option>
+            ))}
+          </select>
+        ))}
+        <div className="flex-1" />
+        <span className="text-xs text-slate-500">{data?.count ?? 0} incidents</span>
+      </div>
+
+      <IncidentTable incidents={incidents} />
+    </div>
+  );
+}
+</file>
+
 <file path="client/vite.config.js">
 import fs from 'fs';
 import path from 'path';
@@ -5196,16 +5196,6 @@ export default defineConfig(({ mode }) => {
     },
   };
 });
-</file>
-
-<file path="data/alerts.csv">
-timestamp,alert_id,alert_type,severity,service,host,metric_value,threshold
-2025-01-10T10:05:00Z,ALT-001,high_cpu,critical,checkout,host-01,94.2,90
-2025-01-10T10:07:00Z,ALT-002,disk_full,critical,payments,host-02,97.1,95
-2025-01-10T10:09:00Z,ALT-003,api_failure,high,orders,host-03,500,200
-2025-01-10T10:11:00Z,ALT-004,service_down,critical,auth,host-04,0,1
-2025-01-10T10:13:00Z,ALT-005,high_cpu,critical,checkout,host-01,96.8,9
-2026-04-10T14:00:00Z,ALT-DEMO-ESC-01,repeated_failure,critical,payments-api,host-01,1,0
 </file>
 
 <file path="data/workflows.csv">
@@ -6432,6 +6422,16 @@ function setupIncidentSocket(io) {
 module.exports = { setupIncidentSocket };
 </file>
 
+<file path="data/alerts.csv">
+timestamp,alert_id,alert_type,severity,service,host,metric_value,threshold
+2025-01-10T10:05:00Z,ALT-001,high_cpu,critical,checkout,host-01,94.2,90
+2025-01-10T10:07:00Z,ALT-002,disk_full,critical,payments,host-02,97.1,95
+2025-01-10T10:09:00Z,ALT-003,api_failure,high,orders,host-03,500,200
+2025-01-10T10:11:00Z,ALT-004,service_down,critical,auth,host-04,0,1
+2025-01-10T10:13:00Z,ALT-005,high_cpu,critical,checkout,host-01,96.8,9
+2026-04-10T14:00:00Z,ALT-DEMO-ESC-01,repeated_failure,critical,payments-api,host-01,1,0
+</file>
+
 <file path="package.json">
 {
   "name": "aims",
@@ -6453,131 +6453,6 @@ module.exports = { setupIncidentSocket };
     "repomix": "^1.13.1"
   }
 }
-</file>
-
-<file path="server/jobs/alertIngestionJob.js">
-const fs = require('fs');
-const path = require('path');
-const { parseAlerts } = require('../services/csvParser');
-const AlertModel = require('../models/Alert');
-const { processAlert } = require('../engine/incidentPipeline');
-const logger = require('../services/logger');
-const env = require('../config/env');
-
-let isPolling = false;
-
-/** FIFO queue; pipeline runs here so CSV polls are not blocked. */
-const alertQueue = [];
-/**
- * Alert IDs queued or currently inside processAlert.
- * Checked FIRST (before any Supabase call) so that a Supabase outage during a
- * subsequent poll does not cause "fetch failed" errors for alerts already queued.
- */
-const inFlightAlertIds = new Set();
-let drainRunning = false;
-
-async function drainAlertQueue(io) {
-  if (drainRunning) return;
-  drainRunning = true;
-  logger.debug('[AlertJob] Drain started');
-
-  try {
-    while (alertQueue.length > 0) {
-      const alert = alertQueue.shift();
-      try {
-        logger.info(`[AlertJob] Processing alert: ${alert.alert_id} (${alert.alert_type})`);
-        await processAlert(alert, io);
-      } catch (err) {
-        logger.error(`[AlertJob] Pipeline error for ${alert.alert_id}: ${err.message}`);
-      } finally {
-        inFlightAlertIds.delete(alert.alert_id);
-      }
-    }
-  } finally {
-    drainRunning = false;
-    logger.debug('[AlertJob] Drain finished');
-  }
-}
-
-async function pollAlerts(io) {
-  // If drain has items but isn't running (it finished and more items arrived), restart it.
-  if (alertQueue.length > 0 && !drainRunning) {
-    void drainAlertQueue(io);
-  }
-
-  if (isPolling) return;
-  isPolling = true;
-
-  try {
-    const csvPath = path.resolve(__dirname, '../../data/alerts.csv');
-    if (!fs.existsSync(csvPath)) {
-      logger.debug('[AlertJob] No alerts.csv found, skipping poll');
-      return;
-    }
-
-    const alerts = await parseAlerts(csvPath);
-
-    for (const alert of alerts) {
-      if (!alert.alert_id) continue;
-
-      // ── Check in-flight FIRST (no Supabase call needed) ──
-      if (inFlightAlertIds.has(alert.alert_id)) continue;
-
-      // ── Only query Supabase for alerts not already tracked ──
-      let existing = null;
-      try {
-        existing = await AlertModel.findByAlertId(alert.alert_id);
-      } catch (dbErr) {
-        logger.warn(`[AlertJob] DB check failed for ${alert.alert_id}: ${dbErr.message} — will retry next poll`);
-        continue;
-      }
-
-      if (existing?.processed) continue;
-
-      // ── Register + upsert before queuing ──
-      try {
-        await AlertModel.upsertByAlertId({
-          alert_id: alert.alert_id,
-          alert_type: alert.alert_type,
-          severity: alert.severity,
-          service: alert.service,
-          host: alert.host,
-          metric_value: alert.metric_value,
-          threshold: alert.threshold,
-          timestamp: alert.timestamp,
-          processed: false,
-        });
-      } catch (dbErr) {
-        logger.warn(`[AlertJob] DB upsert failed for ${alert.alert_id}: ${dbErr.message} — skipping`);
-        continue;
-      }
-
-      inFlightAlertIds.add(alert.alert_id);
-      alertQueue.push(alert);
-      logger.info(`[AlertJob] Queued alert: ${alert.alert_id} (${alert.alert_type})`);
-    }
-  } catch (err) {
-    logger.error(`[AlertJob] Polling error: ${err.message}`);
-  } finally {
-    isPolling = false;
-  }
-
-  // Kick off drain if there are items (safe to call even if already running).
-  if (alertQueue.length > 0) {
-    void drainAlertQueue(io);
-  }
-}
-
-function startAlertPolling(io) {
-  const intervalMs = env.polling.alertPollIntervalMs;
-  logger.info(`[AlertJob] Starting CSV alert polling every ${intervalMs / 1000}s`);
-
-  pollAlerts(io);
-
-  setInterval(() => pollAlerts(io), intervalMs);
-}
-
-module.exports = { startAlertPolling, pollAlerts };
 </file>
 
 <file path="server/server.js">
@@ -6976,6 +6851,176 @@ module.exports = {
     delayMsMax: parseInt(process.env.HEALTH_CHECK_DELAY_MS_MAX, 10),
   },
 };
+</file>
+
+<file path="server/jobs/alertIngestionJob.js">
+const fs = require('fs');
+const path = require('path');
+const { parseAlerts } = require('../services/csvParser');
+const AlertModel = require('../models/Alert');
+const { processAlert } = require('../engine/incidentPipeline');
+const logger = require('../services/logger');
+const env = require('../config/env');
+
+let isPolling = false;
+
+/** FIFO queue; pipeline runs here so CSV polls are not blocked. */
+const alertQueue = [];
+/**
+ * Alert IDs queued or currently inside processAlert.
+ * Checked FIRST (before any Supabase call) so that a Supabase outage during a
+ * subsequent poll does not cause "fetch failed" errors for alerts already queued.
+ */
+const inFlightAlertIds = new Set();
+
+/**
+ * Alerts we've already encountered (and successfully queued) in THIS server runtime.
+ *
+ * Why this exists:
+ * - The polling job re-reads alerts.csv from the top every interval.
+ * - When Supabase is temporarily unavailable, the DB "already processed?" check can fail.
+ * - Without an in-memory dedupe, we repeatedly attempt the same DB read for old alerts and spam logs.
+ *
+ * This is NOT a replacement for the DB processed flag. It's a runtime cache to avoid repeated,
+ * noisy Supabase calls for alerts we've already seen in this session.
+ */
+const seenAlertIds = new Set();
+
+/**
+ * Alerts that completed `processAlert` successfully in THIS server runtime.
+ * Used to skip work even if the DB is unavailable and even if alerts.csv is re-polled from the top.
+ */
+const processedThisRun = new Set();
+
+/** Per-alert cooldown for DB failure warnings (suppresses spam). */
+const DB_FAILURE_WARNING_COOLDOWN_MS = 60_000;
+const dbFailureTimestamps = new Map(); // alert_id -> lastWarnEpochMs
+let drainRunning = false;
+
+async function drainAlertQueue(io) {
+  if (drainRunning) return;
+  drainRunning = true;
+  logger.debug('[AlertJob] Drain started');
+
+  try {
+    while (alertQueue.length > 0) {
+      const alert = alertQueue.shift();
+      try {
+        logger.info(`[AlertJob] Processing alert: ${alert.alert_id} (${alert.alert_type})`);
+        await processAlert(alert, io);
+        processedThisRun.add(alert.alert_id);
+      } catch (err) {
+        logger.error(`[AlertJob] Pipeline error for ${alert.alert_id}: ${err.message}`);
+        // If a previous run succeeded, don't erase it. Otherwise ensure we don't incorrectly
+        // mark this alert as processed for this runtime.
+        if (!processedThisRun.has(alert.alert_id)) processedThisRun.delete(alert.alert_id);
+      } finally {
+        inFlightAlertIds.delete(alert.alert_id);
+      }
+    }
+  } finally {
+    drainRunning = false;
+    logger.debug('[AlertJob] Drain finished');
+  }
+}
+
+async function pollAlerts(io) {
+  // If drain has items but isn't running (it finished and more items arrived), restart it.
+  if (alertQueue.length > 0 && !drainRunning) {
+    void drainAlertQueue(io);
+  }
+
+  if (isPolling) return;
+  isPolling = true;
+
+  try {
+    const csvPath = path.resolve(__dirname, '../../data/alerts.csv');
+    if (!fs.existsSync(csvPath)) {
+      logger.debug('[AlertJob] No alerts.csv found, skipping poll');
+      return;
+    }
+
+    const alerts = await parseAlerts(csvPath);
+
+    for (const alert of alerts) {
+      if (!alert.alert_id) continue;
+
+      // ── Check in-flight FIRST (no Supabase call needed) ──
+      if (inFlightAlertIds.has(alert.alert_id)) continue;
+
+      // ── Skip alerts already completed in this runtime ──
+      if (processedThisRun.has(alert.alert_id)) {
+        logger.debug(`[AlertJob] Skipping already processed alert from this run: ${alert.alert_id}`);
+        continue;
+      }
+
+      // ── Only query Supabase for alerts not already tracked ──
+      let existing = null;
+      try {
+        existing = await AlertModel.findByAlertId(alert.alert_id);
+      } catch (dbErr) {
+        const now = Date.now();
+        const lastWarn = dbFailureTimestamps.get(alert.alert_id) || 0;
+        const withinCooldown = now - lastWarn < DB_FAILURE_WARNING_COOLDOWN_MS;
+
+        // If we've already seen/queued this alert in this runtime, suppress noisy warnings
+        // during transient Supabase outages. Still allow one warning per cooldown window.
+        if (seenAlertIds.has(alert.alert_id) && withinCooldown) {
+          logger.debug(`[AlertJob] DB check still failing for already-seen ${alert.alert_id} (suppressed)`);
+        } else {
+          logger.warn(`[AlertJob] DB check failed for ${alert.alert_id}: ${dbErr.message} — will retry next poll`);
+          dbFailureTimestamps.set(alert.alert_id, now);
+        }
+        continue;
+      }
+
+      if (existing?.processed) continue;
+
+      // ── Register + upsert before queuing ──
+      try {
+        await AlertModel.upsertByAlertId({
+          alert_id: alert.alert_id,
+          alert_type: alert.alert_type,
+          severity: alert.severity,
+          service: alert.service,
+          host: alert.host,
+          metric_value: alert.metric_value,
+          threshold: alert.threshold,
+          timestamp: alert.timestamp,
+          processed: false,
+        });
+      } catch (dbErr) {
+        logger.warn(`[AlertJob] DB upsert failed for ${alert.alert_id}: ${dbErr.message} — skipping`);
+        continue;
+      }
+
+      inFlightAlertIds.add(alert.alert_id);
+      seenAlertIds.add(alert.alert_id);
+      alertQueue.push(alert);
+      logger.info(`[AlertJob] Queued alert: ${alert.alert_id} (${alert.alert_type})`);
+    }
+  } catch (err) {
+    logger.error(`[AlertJob] Polling error: ${err.message}`);
+  } finally {
+    isPolling = false;
+  }
+
+  // Kick off drain if there are items (safe to call even if already running).
+  if (alertQueue.length > 0) {
+    void drainAlertQueue(io);
+  }
+}
+
+function startAlertPolling(io) {
+  const intervalMs = env.polling.alertPollIntervalMs;
+  logger.info(`[AlertJob] Starting CSV alert polling every ${intervalMs / 1000}s`);
+
+  pollAlerts(io);
+
+  setInterval(() => pollAlerts(io), intervalMs);
+}
+
+module.exports = { startAlertPolling, pollAlerts };
 </file>
 
 <file path="server/engine/incidentPipeline.js">

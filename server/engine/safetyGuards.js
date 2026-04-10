@@ -15,11 +15,14 @@ const UNSAFE_ACTIONS = new Set([
 
 const SAFE_ACTIONS = new Set([
   'restart_service',
+  'restart_api_service',
   'cleanup_logs',
+  'cleanup_disk_space',
   'switch_to_fallback',
   'retry_connections',
   'scale_up_instances',
   'escalate_to_human',
+  'notify_admin',
 ]);
 
 function isDryRunRequired(rule) {
