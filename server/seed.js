@@ -1,3 +1,5 @@
+const fs = require('fs');
+const path = require('path');
 const { supabase } = require('./config/db');
 const { parseAlerts, parseWorkflows } = require('./services/csvParser');
 const logger = require('./services/logger');
@@ -6,6 +8,14 @@ async function seed() {
   logger.info('Seeding database from CSV files...');
 
   try {
+    const dataDir = path.resolve(__dirname, '../data');
+    for (const name of ['workflows.csv', 'alerts.csv']) {
+      const fp = path.join(dataDir, name);
+      if (!fs.existsSync(fp)) {
+        logger.warn(`Seed: CSV not found at ${fp} (rows for ${name} will be skipped). Deploy must include the data/ folder.`);
+      }
+    }
+
     const workflows = await parseWorkflows();
     if (workflows.length > 0) {
       const { error: delError } = await supabase.from('workflow_rules').delete().neq('id', '00000000-0000-0000-0000-000000000000');

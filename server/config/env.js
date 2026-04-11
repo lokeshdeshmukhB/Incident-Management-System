@@ -10,11 +10,17 @@ if (loaded.error) loaded = dotenv.config({ path: path.resolve(__dirname, '../../
 if (loaded.error) loaded = dotenv.config({ path: path.resolve(__dirname, '../.env.example') });
 if (loaded.error) loaded = dotenv.config({ path: path.resolve(__dirname, '../../.env.example') });
 
-const required = [
-  'SUPABASE_URL',
-  'SUPABASE_ANON_KEY',
-  'GROQ_API_KEY_1',
-];
+/** `seed.js` only talks to Supabase; Groq keys are not loaded on many hosts that run a one-off seed job. */
+function isRunningSeedScript() {
+  const main = process.argv[1];
+  if (!main) return false;
+  const norm = main.replace(/\\/g, '/');
+  return norm.endsWith('/seed.js') || norm === 'seed.js';
+}
+
+const required = isRunningSeedScript()
+  ? ['SUPABASE_URL', 'SUPABASE_ANON_KEY']
+  : ['SUPABASE_URL', 'SUPABASE_ANON_KEY', 'GROQ_API_KEY_1'];
 
 const missing = required.filter((key) => !process.env[key]);
 if (missing.length > 0) {
